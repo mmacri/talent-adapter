@@ -56,7 +56,9 @@ import {
   Eye,
   Download,
   Printer,
-  CalendarRange
+  CalendarRange,
+  Upload,
+  FileSpreadsheet
 } from 'lucide-react';
 import { JobApplication } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
@@ -68,6 +70,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import * as XLSX from 'xlsx';
 
 const statusColors = {
   prospect: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -93,11 +96,14 @@ const Jobs = () => {
     );
   }
 
-  const { jobApplications, variants, coverLetters, deleteJobApplication } = resumeContext;
+  const { jobApplications, variants, coverLetters, deleteJobApplication, addJobApplication, updateJobApplication } = resumeContext;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importMode, setImportMode] = useState<'update' | 'replace'>('update');
+  const [importFile, setImportFile] = useState<File | null>(null);
   const [reportDateRange, setReportDateRange] = useState<'week' | 'month' | '3months' | 'custom'>('month');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const { toast } = useToast();
@@ -337,6 +343,201 @@ const Jobs = () => {
     });
   };
 
+  // Export functions
+  const exportToCSV = () => {
+    const csvData = jobApplications.map(job => ({
+      'Company': job.company,
+      'Role': job.role,
+      'Location': job.location || '',
+      'Status': job.status,
+      'Applied Date': job.appliedOn || '',
+      'Variant ID': job.variantId || '',
+      'Cover Letter ID': job.coverLetterId || '',
+      'Notes': job.notes || '',
+      'Created At': job.createdAt,
+      'Updated At': job.updatedAt
+    }));
+
+    const csv = [
+      Object.keys(csvData[0] || {}).join(','),
+      ...csvData.map(row => 
+        Object.values(row).map(value => 
+          `"${String(value).replace(/"/g, '""')}"`
+        ).join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `job_applications_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "CSV Exported",
+      description: `Exported ${jobApplications.length} job applications to CSV.`,
+    });
+  };
+
+  const exportToExcel = () => {
+    const excelData = jobApplications.map(job => ({
+      'Company': job.company,
+      'Role': job.role,
+      'Location': job.location || '',
+      'Status': job.status,
+      'Applied Date': job.appliedOn || '',
+      'Variant ID': job.variantId || '',
+      'Cover Letter ID': job.coverLetterId || '',
+      'Notes': job.notes || '',
+      'Created At': job.createdAt,
+      'Updated At': job.updatedAt
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Job Applications');
+    
+    // Auto-size columns
+    const colWidths = Object.keys(excelData[0] || {}).map(key => ({
+      wch: Math.max(key.length, 15)
+    }));
+    worksheet['!cols'] = colWidths;
+
+    XLSX.writeFile(workbook, `job_applications_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+
+    toast({
+      title: "Excel Exported",
+      description: `Exported ${jobApplications.length} job applications to Excel.`,
+    });
+  };
+
+  // Import functions
+  const handleFileImport = async () => {
+    if (!importFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a CSV or Excel file to import.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const fileExtension = importFile.name.toLowerCase().split('.').pop();
+      let importedData: any[] = [];
+
+      if (fileExtension === 'csv') {
+        const text = await importFile.text();
+        const lines = text.split('\n');
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+        
+        importedData = lines.slice(1)
+          .filter(line => line.trim())
+          .map(line => {
+            const values = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g) || [];
+            const row: any = {};
+            headers.forEach((header, index) => {
+              const value = values[index]?.replace(/^"|"$/g, '').replace(/""/g, '"') || '';
+              row[header] = value;
+            });
+            return row;
+          });
+      } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+        const arrayBuffer = await importFile.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer);
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        importedData = XLSX.utils.sheet_to_json(worksheet);
+      } else {
+        throw new Error('Unsupported file format. Please use CSV or Excel files.');
+      }
+
+      // Convert imported data to JobApplication format
+      const processedApplications: JobApplication[] = importedData
+        .filter(row => row.Company && row.Role) // Must have company and role
+        .map((row, index) => ({
+          id: row.ID || `imported-${Date.now()}-${index}`,
+          company: row.Company || '',
+          role: row.Role || '',
+          location: row.Location || undefined,
+          status: (['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].includes(row.Status) 
+            ? row.Status : 'prospect') as JobApplication['status'],
+          appliedOn: row['Applied Date'] || new Date().toISOString().split('T')[0],
+          variantId: row['Variant ID'] || undefined,
+          coverLetterId: row['Cover Letter ID'] || undefined,
+          notes: row.Notes || undefined,
+          createdAt: row['Created At'] || new Date().toISOString(),
+          updatedAt: row['Updated At'] || new Date().toISOString()
+        }));
+
+      if (processedApplications.length === 0) {
+        toast({
+          title: "Import Failed",
+          description: "No valid job applications found in the file. Make sure it has Company and Role columns.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Apply import mode
+      if (importMode === 'replace') {
+        // Clear existing applications first
+        jobApplications.forEach(job => deleteJobApplication(job.id));
+        
+        // Add all imported applications
+        processedApplications.forEach(app => addJobApplication(app));
+        
+        toast({
+          title: "Import Complete",
+          description: `Replaced all applications with ${processedApplications.length} imported records.`,
+        });
+      } else {
+        // Update mode - merge with existing
+        let addedCount = 0;
+        let updatedCount = 0;
+
+        processedApplications.forEach(importedApp => {
+          const existingApp = jobApplications.find(app => 
+            app.company.toLowerCase() === importedApp.company.toLowerCase() && 
+            app.role.toLowerCase() === importedApp.role.toLowerCase()
+          );
+
+          if (existingApp) {
+            updateJobApplication(existingApp.id, {
+              ...importedApp,
+              id: existingApp.id, // Keep existing ID
+              updatedAt: new Date().toISOString()
+            });
+            updatedCount++;
+          } else {
+            addJobApplication(importedApp);
+            addedCount++;
+          }
+        });
+
+        toast({
+          title: "Import Complete",
+          description: `Added ${addedCount} new applications and updated ${updatedCount} existing ones.`,
+        });
+      }
+
+      setShowImportDialog(false);
+      setImportFile(null);
+
+    } catch (error) {
+      console.error('Import failed:', error);
+      toast({
+        title: "Import Failed",
+        description: error instanceof Error ? error.message : "Failed to import file. Please check the format.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredJobs = jobApplications.filter(job => {
     const matchesSearch = 
       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -520,6 +721,143 @@ const Jobs = () => {
                   <Button onClick={handlePrintReport} className="flex-1">
                     <Printer className="w-4 h-4 mr-2" />
                     Print Report
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Export/Import Dropdown */}
+          <Select onValueChange={(value) => {
+            if (value === 'export-csv') exportToCSV();
+            else if (value === 'export-excel') exportToExcel();
+            else if (value === 'import') setShowImportDialog(true);
+          }}>
+            <SelectTrigger className="w-auto">
+              <SelectValue placeholder={
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Export/Import</span>
+                </div>
+              } />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="export-csv">
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Export to CSV
+                </div>
+              </SelectItem>
+              <SelectItem value="export-excel">
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Export to Excel
+                </div>
+              </SelectItem>
+              <SelectItem value="import">
+                <div className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  Import from File
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Import Dialog */}
+          <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Upload className="w-5 h-5" />
+                  Import Job Applications
+                </DialogTitle>
+                <DialogDescription>
+                  Import job applications from CSV or Excel files to backup, update, or replace your current data.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 py-4">
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Import Mode</Label>
+                  <Select value={importMode} onValueChange={(value: any) => setImportMode(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="update">Update/Merge (keeps existing data)</SelectItem>
+                      <SelectItem value="replace">Replace All (clears existing data)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {importMode === 'update' 
+                      ? 'Adds new applications and updates existing ones based on Company + Role match.'
+                      : 'Replaces all current applications with imported data.'
+                    }
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Select File</Label>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                    <input
+                      type="file"
+                      accept=".csv,.xlsx,.xls"
+                      onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label htmlFor="file-upload" className="cursor-pointer">
+                      <div className="space-y-2">
+                        <FileSpreadsheet className="w-8 h-8 mx-auto text-muted-foreground" />
+                        <p className="text-sm">
+                          {importFile ? importFile.name : 'Click to select CSV or Excel file'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Supported formats: .csv, .xlsx, .xls
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {importFile && (
+                  <div className="p-4 bg-muted rounded-lg">
+                    <div className="flex items-center gap-2 text-sm">
+                      <FileText className="w-4 h-4" />
+                      <span className="font-medium">Ready to import:</span>
+                      <span className="text-primary">{importFile.name}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  <p className="font-medium">Required columns:</p>
+                  <ul className="list-disc list-inside space-y-1 ml-2">
+                    <li>Company (required)</li>
+                    <li>Role (required)</li>
+                    <li>Location, Status, Applied Date (optional)</li>
+                    <li>Variant ID, Cover Letter ID, Notes (optional)</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    onClick={() => {
+                      setShowImportDialog(false);
+                      setImportFile(null);
+                    }} 
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleFileImport} 
+                    disabled={!importFile}
+                    className="flex-1"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import
                   </Button>
                 </div>
               </div>
