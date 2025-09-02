@@ -5,6 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { 
   Layout,
   Search,
   Eye,
@@ -12,18 +19,41 @@ import {
   Palette,
   FileText,
   Settings,
-  Download
+  Download,
+  User,
+  ChevronDown
 } from 'lucide-react';
 import { Template } from '@/types/resume';
+import { VariantResolver } from '@/lib/variantResolver';
 
 const Templates = () => {
-  const { templates } = useResume();
+  const { templates, masterResume, variants } = useResume();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedVariantId, setSelectedVariantId] = useState<string>('master');
 
   const filteredTemplates = templates.filter(template =>
     template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     template.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Get the current resume content to preview
+  const getCurrentResumeContent = () => {
+    if (!masterResume) return null;
+    
+    if (selectedVariantId === 'master') {
+      return masterResume;
+    }
+    
+    const selectedVariant = variants.find(v => v.id === selectedVariantId);
+    if (selectedVariant) {
+      const resolved = VariantResolver.resolveVariant(masterResume, selectedVariant);
+      return resolved;
+    }
+    
+    return masterResume;
+  };
+
+  const currentResume = getCurrentResumeContent();
 
   const getLayoutIcon = (layout: string) => {
     switch (layout) {
@@ -60,8 +90,8 @@ const Templates = () => {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="flex items-center gap-4">
+      {/* Search and Variant Selector */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
@@ -70,6 +100,31 @@ const Templates = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Preview with:</span>
+          <Select value={selectedVariantId} onValueChange={setSelectedVariantId}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="master">
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Master Resume
+                </div>
+              </SelectItem>
+              {variants.map((variant) => (
+                <SelectItem key={variant.id} value={variant.id}>
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    {variant.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -94,11 +149,66 @@ const Templates = () => {
               
               <CardContent className="space-y-4">
                 {/* Template Preview Area */}
-                <div className="aspect-[3/4] bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20 flex items-center justify-center relative overflow-hidden">
-                  <div className="text-center space-y-2">
-                    <Layout className="w-8 h-8 text-muted-foreground mx-auto" />
-                    <span className="text-sm text-muted-foreground">Preview</span>
-                  </div>
+                <div className="aspect-[3/4] bg-background rounded-lg border-2 border-border relative overflow-hidden">
+                  {currentResume ? (
+                    <div className="p-3 text-xs space-y-2 h-full overflow-hidden">
+                      {/* Header */}
+                      <div className="text-center border-b pb-2 mb-2">
+                        <div className="font-bold text-sm">{currentResume.owner}</div>
+                        <div className="text-xs text-muted-foreground">{currentResume.headline}</div>
+                        <div className="text-xs">{currentResume.contacts.email}</div>
+                      </div>
+                      
+                      {/* Summary */}
+                      {currentResume.sections.summary.enabled && currentResume.summary.length > 0 && (
+                        <div>
+                          <div className="font-semibold text-xs mb-1">SUMMARY</div>
+                          <div className="text-xs space-y-1">
+                            {currentResume.summary.slice(0, 2).map((item, i) => (
+                              <div key={i} className="truncate">{item}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Experience */}
+                      {currentResume.sections.experience.enabled && currentResume.experience.length > 0 && (
+                        <div>
+                          <div className="font-semibold text-xs mb-1">EXPERIENCE</div>
+                          <div className="space-y-2">
+                            {currentResume.experience.slice(0, 2).map((exp, i) => (
+                              <div key={i}>
+                                <div className="font-medium text-xs truncate">{exp.title}</div>
+                                <div className="text-xs text-muted-foreground truncate">{exp.company}</div>
+                                <div className="text-xs">
+                                  {exp.bullets.slice(0, 1).map((bullet, j) => (
+                                    <div key={j} className="truncate">• {bullet}</div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Skills */}
+                      {currentResume.sections.skills.enabled && currentResume.skills.primary.length > 0 && (
+                        <div>
+                          <div className="font-semibold text-xs mb-1">SKILLS</div>
+                          <div className="text-xs">
+                            {currentResume.skills.primary.slice(0, 6).join(' • ')}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-center">
+                      <div className="space-y-2">
+                        <Layout className="w-8 h-8 text-muted-foreground mx-auto" />
+                        <span className="text-sm text-muted-foreground">No Resume Data</span>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Layout Indicator */}
                   <div className="absolute top-2 right-2">
@@ -106,6 +216,9 @@ const Templates = () => {
                       {template.styles?.layout?.replace('-', ' ') || 'Standard'}
                     </Badge>
                   </div>
+                  
+                  {/* Preview Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent pointer-events-none" />
                 </div>
 
                 {/* Template Properties */}
