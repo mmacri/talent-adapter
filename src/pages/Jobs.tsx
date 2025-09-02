@@ -12,6 +12,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { DatePickerWithRange } from '@/components/ui/date-picker';
+import { Label } from '@/components/ui/label';
 import { 
   Table,
   TableBody,
@@ -45,11 +55,14 @@ import {
   DollarSign,
   FileText,
   Eye,
-  Download
+  Download,
+  Printer,
+  CalendarRange
 } from 'lucide-react';
 import { JobApplication } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, subDays, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
 const statusColors = {
   prospect: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -79,8 +92,206 @@ const Jobs = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportDateRange, setReportDateRange] = useState<'week' | 'month' | '3months' | 'custom'>('month');
+  const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const getReportJobs = () => {
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = now;
+
+    switch (reportDateRange) {
+      case 'week':
+        startDate = startOfWeek(now);
+        endDate = endOfWeek(now);
+        break;
+      case 'month':
+        startDate = startOfMonth(now);
+        endDate = endOfMonth(now);
+        break;
+      case '3months':
+        startDate = subMonths(now, 3);
+        break;
+      case 'custom':
+        if (!customDateRange?.from) return [];
+        startDate = customDateRange.from;
+        endDate = customDateRange.to || now;
+        break;
+      default:
+        startDate = startOfMonth(now);
+        break;
+    }
+
+    return jobApplications
+      .filter(job => {
+        if (!job.appliedOn) return false;
+        const appliedDate = new Date(job.appliedOn);
+        return isWithinInterval(appliedDate, { start: startDate, end: endDate });
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.appliedOn!).getTime();
+        const dateB = new Date(b.appliedOn!).getTime();
+        return dateB - dateA; // Most recent first
+      });
+  };
+
+  const handlePrintReport = () => {
+    const reportJobs = getReportJobs();
+    if (reportJobs.length === 0) {
+      toast({
+        title: "No Applications Found",
+        description: "No job applications found in the selected date range.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        title: "Print Failed",
+        description: "Unable to open print window. Please check your popup settings.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const getDateRangeText = () => {
+      const now = new Date();
+      switch (reportDateRange) {
+        case 'week':
+          return `Week of ${format(startOfWeek(now), 'MMM dd')} - ${format(endOfWeek(now), 'MMM dd, yyyy')}`;
+        case 'month':
+          return format(now, 'MMMM yyyy');
+        case '3months':
+          return `${format(subMonths(now, 3), 'MMM yyyy')} - ${format(now, 'MMM yyyy')}`;
+        case 'custom':
+          if (customDateRange?.from && customDateRange?.to) {
+            return `${format(customDateRange.from, 'MMM dd, yyyy')} - ${format(customDateRange.to, 'MMM dd, yyyy')}`;
+          } else if (customDateRange?.from) {
+            return `Since ${format(customDateRange.from, 'MMM dd, yyyy')}`;
+          }
+          return 'Custom Range';
+        default:
+          return '';
+      }
+    };
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Job Applications Report - ${getDateRangeText()}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+              color: #333;
+            }
+            h1 {
+              color: #2563eb;
+              border-bottom: 2px solid #2563eb;
+              padding-bottom: 10px;
+              margin-bottom: 20px;
+            }
+            .report-info {
+              margin-bottom: 30px;
+              padding: 15px;
+              background-color: #f8fafc;
+              border-radius: 8px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            th, td {
+              border: 1px solid #e5e7eb;
+              padding: 12px;
+              text-align: left;
+            }
+            th {
+              background-color: #f3f4f6;
+              font-weight: bold;
+            }
+            tr:nth-child(even) {
+              background-color: #f9fafb;
+            }
+            .summary {
+              margin-top: 30px;
+              padding: 15px;
+              background-color: #ecfdf5;
+              border-radius: 8px;
+            }
+            @media print {
+              body {
+                margin: 0;
+              }
+              .no-print {
+                display: none;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Job Applications Report</h1>
+          
+          <div class="report-info">
+            <h3>Report Details</h3>
+            <p><strong>Period:</strong> ${getDateRangeText()}</p>
+            <p><strong>Generated:</strong> ${format(new Date(), 'MMMM dd, yyyy \'at\' h:mm a')}</p>
+            <p><strong>Total Applications:</strong> ${reportJobs.length}</p>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Role</th>
+                <th>Applied Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reportJobs.map(job => `
+                <tr>
+                  <td>${job.company}</td>
+                  <td>${job.role}</td>
+                  <td>${job.appliedOn ? format(new Date(job.appliedOn), 'MMM dd, yyyy') : 'Not applied'}</td>
+                  <td style="text-transform: capitalize;">${job.status}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="summary">
+            <h3>Summary</h3>
+            <p>This report shows ${reportJobs.length} job application${reportJobs.length !== 1 ? 's' : ''} for the period ${getDateRangeText()}.</p>
+            <p>Report generated on ${format(new Date(), 'MMMM dd, yyyy')} by Resume Manager.</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.print();
+      printWindow.close();
+    };
+
+    setShowReportDialog(false);
+    toast({
+      title: "Report Generated",
+      description: `Print dialog opened for ${reportJobs.length} application${reportJobs.length !== 1 ? 's' : ''}.`,
+    });
+  };
 
   const filteredJobs = jobApplications.filter(job => {
     const matchesSearch = 
@@ -195,13 +406,82 @@ const Jobs = () => {
             Track your job applications and associated resume variants
           </p>
         </div>
-        <Button 
-          onClick={() => navigate('/jobs/new')} 
-          className="bg-gradient-to-r from-primary to-primary-hover"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Application
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={() => navigate('/jobs/new')} 
+            className="bg-gradient-to-r from-primary to-primary-hover"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Application
+          </Button>
+          
+          <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Printer className="w-4 h-4 mr-2" />
+                Print Report
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Printer className="w-5 h-5" />
+                  Generate Application Report
+                </DialogTitle>
+                <DialogDescription>
+                  Create a printable report of your job applications for tracking and record-keeping.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 py-4">
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Report Period</Label>
+                  <Select value={reportDateRange} onValueChange={(value: any) => setReportDateRange(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="week">This Week</SelectItem>
+                      <SelectItem value="month">This Month</SelectItem>
+                      <SelectItem value="3months">Last 3 Months</SelectItem>
+                      <SelectItem value="custom">Custom Range</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {reportDateRange === 'custom' && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Custom Date Range</Label>
+                    <DatePickerWithRange
+                      date={customDateRange}
+                      onDateChange={setCustomDateRange}
+                    />
+                  </div>
+                )}
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <CalendarRange className="w-4 h-4" />
+                    <span className="font-medium">Applications in range:</span>
+                    <span className="text-primary font-semibold">
+                      {getReportJobs().length}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => setShowReportDialog(false)} variant="outline" className="flex-1">
+                    Cancel
+                  </Button>
+                  <Button onClick={handlePrintReport} className="flex-1">
+                    <Printer className="w-4 h-4 mr-2" />
+                    Print Report
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Stats Cards */}
