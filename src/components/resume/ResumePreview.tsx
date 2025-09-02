@@ -56,17 +56,33 @@ const ResumePreview = ({
 
   // Filter sections based on master resume section settings
   const getFilteredResume = (resume: ResumeMaster) => {
-    if (!resume.sections) return resume;
+    // If no sections object exists, assume all sections are enabled
+    if (!resume.sections) {
+      return resume;
+    }
     
     const filtered = { ...resume };
     
-    // Only include enabled sections
-    if (!resume.sections.summary?.enabled) filtered.summary = [];
-    if (!resume.sections.key_achievements?.enabled) filtered.key_achievements = [];
-    if (!resume.sections.experience?.enabled) filtered.experience = [];
-    if (!resume.sections.education?.enabled) filtered.education = [];
-    if (!resume.sections.awards?.enabled) filtered.awards = [];
-    if (!resume.sections.skills?.enabled) filtered.skills = { primary: [] };
+    // Default to enabled if section setting doesn't exist or is undefined
+    // Only filter out if explicitly disabled (enabled === false)
+    if (resume.sections.summary && resume.sections.summary.enabled === false) {
+      filtered.summary = [];
+    }
+    if (resume.sections.key_achievements && resume.sections.key_achievements.enabled === false) {
+      filtered.key_achievements = [];
+    }
+    if (resume.sections.experience && resume.sections.experience.enabled === false) {
+      filtered.experience = [];
+    }
+    if (resume.sections.education && resume.sections.education.enabled === false) {
+      filtered.education = [];
+    }
+    if (resume.sections.awards && resume.sections.awards.enabled === false) {
+      filtered.awards = [];
+    }
+    if (resume.sections.skills && resume.sections.skills.enabled === false) {
+      filtered.skills = { primary: [], secondary: [] };
+    }
     
     return filtered;
   };
@@ -395,19 +411,36 @@ const ResumePreview = ({
             )}
 
             {/* Skills */}
-            {displayResume.skills?.primary && displayResume.skills.primary.length > 0 && (
+            {displayResume.skills && (displayResume.skills.primary?.length > 0 || displayResume.skills.secondary?.length > 0) && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Core Skills</CardTitle>
+                  <CardTitle className="text-lg">Skills</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {displayResume.skills.primary.map((skill, index) => (
-                      <Badge key={index} variant="secondary">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
+                <CardContent className="space-y-3">
+                  {displayResume.skills.primary && displayResume.skills.primary.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Primary Skills</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {displayResume.skills.primary.map((skill, index) => (
+                          <Badge key={index} variant="default">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {displayResume.skills.secondary && displayResume.skills.secondary.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Additional Skills</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {displayResume.skills.secondary.map((skill, index) => (
+                          <Badge key={index} variant="secondary">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
