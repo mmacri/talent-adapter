@@ -7,6 +7,7 @@ import { ResumeProvider } from "@/contexts/ResumeContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import MasterResume from "./pages/MasterResume";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,7 @@ const App = () => (
             } />
             <Route path="/master" element={
               <MainLayout>
-                <Index />
+                <MasterResume />
               </MainLayout>
             } />
             <Route path="/variants" element={
