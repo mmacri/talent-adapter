@@ -16,22 +16,17 @@ import {
 } from '@/components/ui/select';
 import { 
   ArrowLeft, 
-  Save, 
-  ExternalLink,
-  FileText,
-  Download,
+  Save,
+  Calendar,
   Building,
   MapPin,
-  Calendar,
-  DollarSign,
-  Globe,
-  Target
+  FileText,
+  User,
+  Eye
 } from 'lucide-react';
 import { JobApplication } from '@/types/resume';
-import { DocxExporter } from '@/lib/docxExport';
-import { VariantResolver } from '@/lib/variantResolver';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { DatePicker } from '@/components/ui/date-picker';
 
 const JobEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,15 +66,11 @@ const JobEditor = () => {
         company: '',
         role: '',
         location: '',
-        source: '',
-        url: '',
-        jdText: '',
         status: 'prospect',
         variantId: '',
         coverLetterId: '',
-        appliedOn: '',
+        appliedOn: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
         notes: '',
-        salary: '',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -164,66 +155,21 @@ const JobEditor = () => {
     setIsEditing(true);
   };
 
-  const handleExportResume = async () => {
-    if (!job.variantId || !masterResume) {
-      toast({
-        title: "No Resume Selected",
-        description: "Please select a resume variant to export.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const variant = getVariant(job.variantId);
-      if (!variant) {
-        toast({
-          title: "Variant Not Found",
-          description: "The selected resume variant could not be found.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const resolved = VariantResolver.resolveVariant(masterResume, variant);
-      const fileName = `${masterResume.owner.replace(/\s+/g, '-')}_${variant.name.replace(/\s+/g, '-')}_${job.company.replace(/\s+/g, '-')}_${job.role.replace(/\s+/g, '-')}_${format(new Date(), 'yyyy-MM-dd')}.docx`;
-      
-      await DocxExporter.exportResume(resolved, variant, fileName);
-      
-      toast({
-        title: "Resume Exported",
-        description: `Resume exported for ${job.company} - ${job.role}`,
-      });
-    } catch (error) {
-      console.error('Export failed:', error);
-      toast({
-        title: "Export Failed",
-        description: "There was an error exporting the resume. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getVariantName = (variantId?: string) => {
-    if (!variantId) return 'No variant selected';
-    const variant = variants.find(v => v.id === variantId);
+  const getVariantName = (variantId: string) => {
+    if (!variantId) return 'Select resume variant...';
+    const variant = getVariant(variantId);
     return variant?.name || 'Unknown variant';
   };
 
-  const getCoverLetterTitle = (coverLetterId?: string) => {
-    if (!coverLetterId) return 'No cover letter selected';
-    const coverLetter = coverLetters.find(cl => cl.id === coverLetterId);
-    return coverLetter?.title || 'Unknown cover letter';
+  const getCoverLetterTitle = (letterid: string) => {
+    if (!letterid) return 'Select cover letter...';
+    const letter = coverLetters.find(l => l.id === letterid);
+    return letter?.title || 'Unknown cover letter';
   };
 
-  const statusOptions = [
-    { value: 'prospect', label: 'Prospect', description: 'Considering this opportunity' },
-    { value: 'applied', label: 'Applied', description: 'Application submitted' },
-    { value: 'interview', label: 'Interview', description: 'Interview scheduled or completed' },
-    { value: 'offer', label: 'Offer', description: 'Received job offer' },
-    { value: 'rejected', label: 'Rejected', description: 'Application declined' },
-    { value: 'closed', label: 'Closed', description: 'No longer pursuing' }
-  ];
+  const usedByApplications = jobApplications.filter(app => 
+    app.id !== job.id && (app.variantId === job.variantId || app.coverLetterId === job.coverLetterId)
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -239,10 +185,10 @@ const JobEditor = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">
-              {isNew ? 'New Application' : `${job.role} at ${job.company}`}
+              {isNew ? 'New Job Application' : `${job.role} at ${job.company}`}
             </h1>
             <p className="text-muted-foreground">
-              {isNew ? 'Add a new job application' : 'Manage your job application'}
+              {isNew ? 'Track a new job application' : 'Edit job application details'}
             </p>
           </div>
         </div>
@@ -252,16 +198,6 @@ const JobEditor = () => {
             <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
               Unsaved Changes
             </Badge>
-          )}
-          
-          {!isNew && job.variantId && (
-            <Button
-              onClick={handleExportResume}
-              variant="outline"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export Resume
-            </Button>
           )}
           
           <Button
@@ -278,12 +214,12 @@ const JobEditor = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Basic Information */}
+          {/* Basic Job Info */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building className="w-5 h-5" />
-                Job Details
+                Job Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -294,7 +230,7 @@ const JobEditor = () => {
                     id="company"
                     value={job.company}
                     onChange={(e) => handleFieldUpdate('company', e.target.value)}
-                    placeholder="Enter company name..."
+                    placeholder="Company name"
                     required
                   />
                 </div>
@@ -305,7 +241,7 @@ const JobEditor = () => {
                     id="role"
                     value={job.role}
                     onChange={(e) => handleFieldUpdate('role', e.target.value)}
-                    placeholder="Enter job title..."
+                    placeholder="Job title"
                     required
                   />
                 </div>
@@ -316,100 +252,48 @@ const JobEditor = () => {
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
-                    value={job.location || ''}
+                    value={job.location}
                     onChange={(e) => handleFieldUpdate('location', e.target.value)}
-                    placeholder="City, State or Remote..."
+                    placeholder="City, State or Remote"
                   />
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="salary">Salary Range</Label>
-                  <Input
-                    id="salary"
-                    value={job.salary || ''}
-                    onChange={(e) => handleFieldUpdate('salary', e.target.value)}
-                    placeholder="e.g., $100k - $150k"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="url">Job Posting URL</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="url"
-                      value={job.url || ''}
-                      onChange={(e) => handleFieldUpdate('url', e.target.value)}
-                      placeholder="https://..."
-                      className="flex-1"
-                    />
-                    {job.url && (
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={job.url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="source">Source</Label>
-                  <Input
-                    id="source"
-                    value={job.source || ''}
-                    onChange={(e) => handleFieldUpdate('source', e.target.value)}
-                    placeholder="LinkedIn, Indeed, Referral..."
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Application Status & Dates */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Application Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
-                  <Select value={job.status} onValueChange={(value) => handleFieldUpdate('status', value)}>
+                  <Select
+                    value={job.status}
+                    onValueChange={(value) => handleFieldUpdate('status', value)}
+                  >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {statusOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div>
-                            <div className="font-medium">{option.label}</div>
-                            <div className="text-xs text-muted-foreground">{option.description}</div>
-                          </div>
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="prospect">Prospect</SelectItem>
+                      <SelectItem value="applied">Applied</SelectItem>
+                      <SelectItem value="interview">Interview</SelectItem>
+                      <SelectItem value="offer">Offer</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="appliedOn">Application Date</Label>
-                  <Input
-                    id="appliedOn"
-                    type="date"
-                    value={job.appliedOn || ''}
-                    onChange={(e) => handleFieldUpdate('appliedOn', e.target.value)}
-                  />
-                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="appliedOn" className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Applied On
+                </Label>
+                <DatePicker
+                  date={job.appliedOn ? new Date(job.appliedOn) : undefined}
+                  onDateChange={(date) => handleFieldUpdate('appliedOn', date ? date.toISOString().split('T')[0] : '')}
+                  placeholder="Select application date"
+                />
               </div>
             </CardContent>
           </Card>
 
-          {/* Resume & Cover Letter */}
+          {/* Resume & Cover Letter Selection */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -418,76 +302,64 @@ const JobEditor = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="variant">Resume Variant</Label>
-                  <Select 
-                    value={job.variantId || ''} 
-                    onValueChange={(value) => handleFieldUpdate('variantId', value || undefined)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select resume variant..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No variant selected</SelectItem>
-                      {variants.map(variant => (
-                        <SelectItem key={variant.id} value={variant.id}>
-                          {variant.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="coverLetter">Cover Letter</Label>
-                  <Select 
-                    value={job.coverLetterId || ''} 
-                    onValueChange={(value) => handleFieldUpdate('coverLetterId', value || undefined)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select cover letter..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No cover letter selected</SelectItem>
-                      {coverLetters.map(letter => (
-                        <SelectItem key={letter.id} value={letter.id}>
-                          {letter.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="variant">Resume Variant</Label>
+                <Select
+                  value={job.variantId}
+                  onValueChange={(value) => handleFieldUpdate('variantId', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select resume variant..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No variant selected</SelectItem>
+                    {variants.map((variant) => (
+                      <SelectItem key={variant.id} value={variant.id}>
+                        {variant.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {job.variantId && (
+                  <div className="text-sm text-muted-foreground">
+                    {getVariant(job.variantId)?.description}
+                  </div>
+                )}
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Job Description */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Job Description</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={job.jdText || ''}
-                onChange={(e) => handleFieldUpdate('jdText', e.target.value)}
-                placeholder="Paste the job description here for reference..."
-                rows={8}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="coverLetter">Cover Letter</Label>
+                <Select
+                  value={job.coverLetterId}
+                  onValueChange={(value) => handleFieldUpdate('coverLetterId', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select cover letter..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No cover letter</SelectItem>
+                    {coverLetters.map((letter) => (
+                      <SelectItem key={letter.id} value={letter.id}>
+                        {letter.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
 
           {/* Notes */}
           <Card>
             <CardHeader>
-              <CardTitle>Notes & Follow-ups</CardTitle>
+              <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent>
               <Textarea
-                value={job.notes || ''}
+                value={job.notes}
                 onChange={(e) => handleFieldUpdate('notes', e.target.value)}
-                placeholder="Add notes about the interview process, contacts, follow-ups, etc..."
-                rows={5}
+                placeholder="Add notes about this application, contacts, interview feedback, etc."
+                className="min-h-32"
               />
             </CardContent>
           </Card>
@@ -495,89 +367,78 @@ const JobEditor = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Quick Actions */}
+          {/* Quick Stats */}
           <Card>
             <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
+              <CardTitle className="text-sm">Application Stats</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {job.url && (
-                <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href={job.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Job Posting
-                  </a>
-                </Button>
-              )}
-              
-              {job.variantId && (
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={handleExportResume}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Resume
-                </Button>
-              )}
-              
-              {job.coverLetterId && (
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={() => navigate(`/cover-letters/${job.coverLetterId}`)}
-                >
-                  <FileText className="w-4 h-4 mr-2" />
-                  View Cover Letter
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Application Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Application Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Status:</span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Status</span>
                 <Badge variant="outline" className="capitalize">
                   {job.status}
                 </Badge>
               </div>
               
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Resume:</span>
-                <span className="text-right text-xs">
-                  {getVariantName(job.variantId)}
-                </span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Cover Letter:</span>
-                <span className="text-right text-xs">
-                  {getCoverLetterTitle(job.coverLetterId)}
-                </span>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Created</span>
+                <span>{new Date(job.createdAt).toLocaleDateString()}</span>
               </div>
               
               {job.appliedOn && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Applied:</span>
-                  <span className="text-xs">
-                    {format(new Date(job.appliedOn), 'MMM d, yyyy')}
-                  </span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Applied</span>
+                  <span>{new Date(job.appliedOn).toLocaleDateString()}</span>
                 </div>
               )}
-              
-              {!isNew && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Created:</span>
-                  <span className="text-xs">
-                    {format(new Date(job.createdAt), 'MMM d, yyyy')}
-                  </span>
-                </div>
-              )}
+            </CardContent>
+          </Card>
+
+          {/* Document Usage */}
+          {(job.variantId || job.coverLetterId) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Document Usage</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {job.variantId && (
+                  <div>
+                    <div className="text-sm font-medium">Resume Variant</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getVariantName(job.variantId)}
+                    </div>
+                  </div>
+                )}
+                
+                {job.coverLetterId && (
+                  <div>
+                    <div className="text-sm font-medium">Cover Letter</div>
+                    <div className="text-sm text-muted-foreground">
+                      {getCoverLetterTitle(job.coverLetterId)}
+                    </div>
+                  </div>
+                )}
+
+                {usedByApplications > 0 && (
+                  <div className="pt-2 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      Also used by {usedByApplications} other application{usedByApplications !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tips */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Tips</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <p>• Track which resume variants and cover letters work best for different types of roles</p>
+              <p>• Use notes to record interview feedback and follow-up actions</p>
+              <p>• Keep application dates accurate for chronological reporting</p>
             </CardContent>
           </Card>
         </div>

@@ -79,6 +79,13 @@ const Jobs = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Sort jobs chronologically by applied date (most recent first)
+  const sortedJobs = [...filteredJobs].sort((a, b) => {
+    const dateA = a.appliedOn ? new Date(a.appliedOn).getTime() : 0;
+    const dateB = b.appliedOn ? new Date(b.appliedOn).getTime() : 0;
+    return dateB - dateA; // Most recent first
+  });
+
   const handleDeleteJob = (jobId: string) => {
     deleteJobApplication(jobId);
     toast({
@@ -155,13 +162,6 @@ const Jobs = () => {
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="w-3 h-3" />
                   {format(new Date(job.appliedOn), 'MMM d')}
-                </div>
-              )}
-
-              {job.salary && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <DollarSign className="w-3 h-3" />
-                  {job.salary}
                 </div>
               )}
             </div>
@@ -255,12 +255,11 @@ const Jobs = () => {
                 <TableHead>Applied Date</TableHead>
                 <TableHead>Variant Used</TableHead>
                 <TableHead>Cover Letter</TableHead>
-                <TableHead>Salary</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredJobs.map((job) => (
+              {sortedJobs.map((job) => (
                 <TableRow key={job.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell>
                     <div className="space-y-1">
@@ -307,27 +306,8 @@ const Jobs = () => {
                     <span className="text-sm">{getCoverLetterTitle(job.coverLetterId)}</span>
                   </TableCell>
                   
-                  <TableCell>
-                    {job.salary ? (
-                      <div className="flex items-center gap-2">
-                        <DollarSign className="w-4 h-4 text-muted-foreground" />
-                        {job.salary}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">Not specified</span>
-                    )}
-                  </TableCell>
-                  
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {job.url && (
-                        <Button variant="ghost" size="sm" asChild>
-                          <a href={job.url} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-                        </Button>
-                      )}
-                      
                       <Button
                         variant="ghost"
                         size="sm"
@@ -377,14 +357,14 @@ const Jobs = () => {
             <KanbanColumn
               key={status}
               status={status}
-              jobs={filteredJobs.filter(job => job.status === status)}
+              jobs={sortedJobs.filter(job => job.status === status)}
             />
           ))}
         </div>
       )}
 
       {/* Empty State */}
-      {filteredJobs.length === 0 && (
+      {sortedJobs.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
             <Building className="w-12 h-12 text-muted-foreground" />

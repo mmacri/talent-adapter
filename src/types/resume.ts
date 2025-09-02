@@ -105,15 +105,11 @@ export interface JobApplication {
   company: string;
   role: string;
   location?: string;
-  source?: string;
-  url?: string;
-  jdText?: string;
   status: 'prospect' | 'applied' | 'interview' | 'offer' | 'rejected' | 'closed';
-  variantId?: string;
-  coverLetterId?: string;
-  appliedOn?: string;
+  variantId?: string; // Resume variant used
+  coverLetterId?: string; // Cover letter used
+  appliedOn: string; // Required for chronological tracking
   notes?: string;
-  salary?: string;
   createdAt: string;
   updatedAt: string;
 }
