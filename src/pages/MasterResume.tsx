@@ -17,13 +17,16 @@ import {
   FileJson,
   Search,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Download
 } from 'lucide-react';
 import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
 import { TipTapEditor } from '@/components/resume/TipTapEditor';
 import { TagManager } from '@/components/resume/TagManager';
 import { SectionEditor } from '@/components/resume/SectionEditor';
+import { DocxExporter } from '@/lib/docxExport';
+import { useToast } from '@/hooks/use-toast';
 
 const MasterResume = () => {
   const { masterResume, setMasterResume } = useResume();
@@ -31,6 +34,7 @@ const MasterResume = () => {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const { toast } = useToast();
 
   if (!masterResume) {
     return (
@@ -96,6 +100,25 @@ const MasterResume = () => {
     
     const filteredExperience = masterResume.experience.filter(exp => exp.id !== experienceId);
     handleFieldUpdate('experience', filteredExperience);
+  };
+
+  const handleExport = async () => {
+    if (!masterResume) return;
+    
+    try {
+      await DocxExporter.exportResume(masterResume);
+      toast({
+        title: "Resume Exported",
+        description: "Your master resume has been downloaded as a Word document.",
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting your resume. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const sections = [
@@ -168,6 +191,14 @@ const MasterResume = () => {
               <p className="text-muted-foreground">{masterResume.headline}</p>
             </div>
             <div className="flex gap-2">
+              <Button
+                onClick={handleExport}
+                variant="outline"
+                className="bg-gradient-to-r from-accent to-accent hover:from-accent/80 hover:to-accent/80"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export to Word
+              </Button>
               {isEditing && (
                 <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
                   Unsaved Changes
