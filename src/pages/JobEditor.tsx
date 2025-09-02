@@ -179,6 +179,7 @@ const JobEditor = () => {
 
   const getVariantName = (variantId: string) => {
     if (!variantId) return 'Select resume variant...';
+    if (variantId === 'master') return 'Master Resume';
     const variant = getVariant(variantId);
     return variant?.name || 'Unknown variant';
   };
@@ -325,15 +326,16 @@ const JobEditor = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="variant">Resume Variant</Label>
+                <Label htmlFor="variant">Resume Used</Label>
                 <Select
                   value={job.variantId}
                   onValueChange={(value) => handleFieldUpdate('variantId', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select resume variant..." />
+                    <SelectValue placeholder="Select resume..." />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="master">Master Resume</SelectItem>
                     {variants.map((variant) => (
                       <SelectItem key={variant.id} value={variant.id}>
                         {variant.name}
@@ -341,9 +343,14 @@ const JobEditor = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                {job.variantId && (
+                {job.variantId && job.variantId !== 'master' && (
                   <div className="text-sm text-muted-foreground">
                     {getVariant(job.variantId)?.description}
+                  </div>
+                )}
+                {job.variantId === 'master' && (
+                  <div className="text-sm text-muted-foreground">
+                    Using the complete master resume with all sections
                   </div>
                 )}
               </div>
@@ -423,7 +430,7 @@ const JobEditor = () => {
               <CardContent className="space-y-3">
                 {job.variantId && (
                   <div>
-                    <div className="text-sm font-medium">Resume Variant</div>
+                    <div className="text-sm font-medium">Resume Used</div>
                     <div className="text-sm text-muted-foreground">
                       {getVariantName(job.variantId)}
                     </div>
