@@ -34,7 +34,21 @@ import { format } from 'date-fns';
 import { extractVariables, getPreviewText } from '@/lib/coverLetterUtils';
 
 const CoverLetters = () => {
-  const { coverLetters, addCoverLetter, deleteCoverLetter, jobApplications } = useResume();
+  const resumeContext = useResume();
+  
+  // Add loading guard
+  if (!resumeContext || resumeContext.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading cover letters...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { coverLetters, addCoverLetter, deleteCoverLetter, jobApplications } = resumeContext;
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
