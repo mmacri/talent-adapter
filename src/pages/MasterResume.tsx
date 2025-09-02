@@ -48,6 +48,13 @@ import { MasterResumeSections } from '@/lib/masterResumeUtils';
 
 const MasterResume = () => {
   const resumeContext = useResume();
+  const [selectedSection, setSelectedSection] = useState<string>('summary');
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [showJsonDialog, setShowJsonDialog] = useState(false);
+  const [showSectionSettings, setShowSectionSettings] = useState(false);
+  const { toast } = useToast();
   
   // Add loading guard
   if (!resumeContext || resumeContext.isLoading) {
@@ -62,13 +69,6 @@ const MasterResume = () => {
   }
 
   const { masterResume, setMasterResume } = resumeContext;
-  const [selectedSection, setSelectedSection] = useState<string>('summary');
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
-  const [showJsonDialog, setShowJsonDialog] = useState(false);
-  const [showSectionSettings, setShowSectionSettings] = useState(false);
-  const { toast } = useToast();
 
   const handleSave = useCallback(() => {
     if (masterResume) {
