@@ -36,6 +36,16 @@ const MasterResume = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
 
+  const handleSave = useCallback(() => {
+    if (masterResume) {
+      setMasterResume({
+        ...masterResume,
+        updatedAt: new Date().toISOString()
+      });
+      setIsEditing(false);
+    }
+  }, [masterResume, setMasterResume]);
+
   if (!masterResume) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -46,16 +56,6 @@ const MasterResume = () => {
       </div>
     );
   }
-
-  const handleSave = useCallback(() => {
-    if (masterResume) {
-      setMasterResume({
-        ...masterResume,
-        updatedAt: new Date().toISOString()
-      });
-      setIsEditing(false);
-    }
-  }, [masterResume, setMasterResume]);
 
   const handleFieldUpdate = (field: string, value: any) => {
     if (!masterResume) return;
