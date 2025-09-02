@@ -344,29 +344,70 @@ Sincerely,
 };
 
 export const initializeData = () => {
-  // Only seed if no master resume exists
-  if (!resumeStorage.getMaster()) {
+  const existingMaster = resumeStorage.getMaster();
+  const existingJobs = jobsStorage.getAll();
+  const existingVariants = resumeStorage.getVariants();
+  const existingLetters = coverLettersStorage.getAll();
+  const existingTemplates = templatesStorage.getAll();
+  
+  console.log('🌱 Checking seed data...');
+  console.log('Existing data:', {
+    master: !!existingMaster,
+    jobs: existingJobs.length,
+    variants: existingVariants.length,
+    letters: existingLetters.length,
+    templates: existingTemplates.length
+  });
+  
+  // Initialize missing data
+  const needsSeeding = !existingMaster || 
+                      existingJobs.length === 0 || 
+                      existingVariants.length === 0 || 
+                      existingLetters.length === 0 || 
+                      existingTemplates.length === 0;
+  
+  if (needsSeeding) {
+    console.log('🌱 Initializing seed data...');
     const { masterResume, variants, coverLetters, templates, jobApplications } = createSeedData();
     
-    // Set master resume
-    resumeStorage.setMaster(masterResume);
+    // Set master resume if missing
+    if (!existingMaster) {
+      console.log('📝 Setting master resume');
+      resumeStorage.setMaster(masterResume);
+    }
     
-    // Set variants
-    resumeStorage.setVariants(variants);
+    // Set variants if missing
+    if (existingVariants.length === 0) {
+      console.log('📂 Setting variants');
+      resumeStorage.setVariants(variants);
+    }
     
-    // Set cover letters
-    coverLetters.forEach(letter => {
-      coverLettersStorage.add(letter);
-    });
+    // Set cover letters if missing
+    if (existingLetters.length === 0) {
+      console.log('📄 Setting cover letters');
+      coverLetters.forEach(letter => {
+        coverLettersStorage.add(letter);
+      });
+    }
     
-    // Set templates
-    templates.forEach(template => {
-      templatesStorage.add(template);
-    });
+    // Set templates if missing
+    if (existingTemplates.length === 0) {
+      console.log('🎨 Setting templates');
+      templates.forEach(template => {
+        templatesStorage.add(template);
+      });
+    }
 
-    // Set job applications
-    jobApplications.forEach(job => {
-      jobsStorage.add(job);
-    });
+    // Set job applications if missing
+    if (existingJobs.length === 0) {
+      console.log('💼 Setting job applications');
+      jobApplications.forEach(job => {
+        jobsStorage.add(job);
+      });
+    }
+    
+    console.log('✅ Seed data initialization complete');
+  } else {
+    console.log('✅ All seed data already exists');
   }
 };

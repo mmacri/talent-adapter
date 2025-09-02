@@ -57,6 +57,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsLoading(true);
     try {
       // Initialize seed data if needed
+      console.log('🔄 Loading resume data...');
       initializeData();
       
       // Load all data from localStorage
@@ -65,6 +66,14 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const jobsData = jobsStorage.getAll();
       const lettersData = coverLettersStorage.getAll();
       const templatesData = templatesStorage.getAll();
+      
+      console.log('📊 Data loaded:', {
+        masterResume: !!master,
+        variants: variantsData.length,
+        jobApplications: jobsData.length,
+        coverLetters: lettersData.length,
+        templates: templatesData.length
+      });
       
       setMasterResumeState(master);
       setVariants(variantsData);
