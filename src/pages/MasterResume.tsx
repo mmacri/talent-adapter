@@ -57,7 +57,7 @@ import { MasterResumeSections } from '@/lib/masterResumeUtils';
 
 const MasterResume = () => {
   const resumeContext = useResume();
-  const [selectedSection, setSelectedSection] = useState<string>('summary');
+  const [selectedSection, setSelectedSection] = useState<string>('contacts');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -214,6 +214,13 @@ const MasterResume = () => {
 
   const sections = [
     { 
+      id: 'contacts', 
+      title: 'Contact Information', 
+      icon: User,
+      enabled: true,
+      order: 0
+    },
+    { 
       id: 'summary', 
       title: 'Professional Summary', 
       icon: Edit3,
@@ -256,6 +263,20 @@ const MasterResume = () => {
       order: masterResume?.sections?.skills?.order ?? 6
     },
   ].sort((a, b) => a.order - b.order);
+
+  const handleContactUpdate = (field: keyof typeof masterResume.contacts, value: string) => {
+    if (!masterResume) return;
+    
+    setMasterResume({
+      ...masterResume,
+      contacts: {
+        ...masterResume.contacts,
+        [field]: value
+      },
+      updatedAt: new Date().toISOString()
+    });
+    setIsEditing(true);
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -486,6 +507,126 @@ const MasterResume = () => {
             </div>
 
             <div className="p-6">
+              <TabsContent value="contacts" className="mt-0">
+                <HelpCard 
+                  title="Contact Information Tips" 
+                  icon={User}
+                  defaultVisible={false}
+                >
+                  <ul className="space-y-1 text-sm">
+                    <li>• Use a professional email address</li>
+                    <li>• Include your phone number with area code</li>
+                    <li>• Add your LinkedIn profile URL</li>
+                    <li>• Include your website or portfolio if relevant</li>
+                    <li>• Keep contact information current and professional</li>
+                  </ul>
+                </HelpCard>
+
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold">Contact Information</h3>
+                    <p className="text-muted-foreground">Your professional contact details</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Personal Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="full-name">Full Name</Label>
+                        <Input
+                          id="full-name"
+                          value={masterResume.owner}
+                          onChange={(e) => handleFieldUpdate('owner', e.target.value)}
+                          placeholder="Your full name"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="headline">Professional Headline</Label>
+                        <Input
+                          id="headline"
+                          value={masterResume.headline}
+                          onChange={(e) => handleFieldUpdate('headline', e.target.value)}
+                          placeholder="e.g. Senior Software Engineer"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Contact Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={masterResume.contacts.email}
+                          onChange={(e) => handleContactUpdate('email', e.target.value)}
+                          placeholder="your.email@example.com"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={masterResume.contacts.phone}
+                          onChange={(e) => handleContactUpdate('phone', e.target.value)}
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="website">Website</Label>
+                        <Input
+                          id="website"
+                          type="url"
+                          value={masterResume.contacts.website || ''}
+                          onChange={(e) => handleContactUpdate('website', e.target.value)}
+                          placeholder="https://yourwebsite.com"
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="linkedin">LinkedIn Profile</Label>
+                        <Input
+                          id="linkedin"
+                          type="url"
+                          value={masterResume.contacts.linkedin || ''}
+                          onChange={(e) => handleContactUpdate('linkedin', e.target.value)}
+                          placeholder="https://linkedin.com/in/yourprofile"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="mt-6 bg-muted/50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3">
+                      <Lightbulb className="w-5 h-5 text-warning mt-0.5" />
+                      <div>
+                        <h4 className="font-medium">Professional Contact Tips</h4>
+                        <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+                          <li>• Use a professional email that includes your name</li>
+                          <li>• Ensure your LinkedIn profile is complete and up-to-date</li>
+                          <li>• Only include a personal website if it showcases relevant work</li>
+                          <li>• Double-check all contact information for accuracy</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               <TabsContent value="summary" className="mt-0">
                 <HelpCard 
                   title="Professional Summary Tips" 
