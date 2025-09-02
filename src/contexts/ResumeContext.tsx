@@ -173,15 +173,17 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const clearMasterResumeSection = (section: string) => {
     if (!masterResume) return;
     
-    // Import here to avoid circular dependency
-    const { clearSectionData } = require('@/lib/masterResumeUtils');
-    
-    try {
-      const clearedResume = clearSectionData(masterResume, section);
-      setMasterResume(clearedResume);
-    } catch (error) {
-      console.error('Error clearing section:', error);
-    }
+    // Use dynamic import to avoid circular dependency
+    import('@/lib/masterResumeUtils').then(({ clearSectionData }) => {
+      try {
+        const clearedResume = clearSectionData(masterResume, section as any);
+        setMasterResume(clearedResume);
+      } catch (error) {
+        console.error('Error clearing section:', error);
+      }
+    }).catch((error) => {
+      console.error('Error importing masterResumeUtils:', error);
+    });
   };
 
   const refreshData = () => {
