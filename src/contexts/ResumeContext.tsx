@@ -20,6 +20,7 @@ interface ResumeContextType {
   addJobApplication: (job: JobApplication) => void;
   updateJobApplication: (id: string, updates: Partial<JobApplication>) => void;
   deleteJobApplication: (id: string) => void;
+  clearAllJobApplications: () => void;
   
   // Cover Letters
   coverLetters: CoverLetter[];
@@ -146,6 +147,11 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setJobApplications(prev => prev.filter(j => j.id !== id));
   };
 
+  const clearAllJobApplications = () => {
+    jobsStorage.clear();
+    setJobApplications([]);
+  };
+
   const addCoverLetter = (letter: CoverLetter) => {
     coverLettersStorage.add(letter);
     setCoverLetters(prev => [...prev, letter]);
@@ -177,6 +183,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     addJobApplication,
     updateJobApplication,
     deleteJobApplication,
+    clearAllJobApplications,
     coverLetters,
     addCoverLetter,
     updateCoverLetter,

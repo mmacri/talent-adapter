@@ -109,6 +109,10 @@ export const jobsStorage = {
     const jobs = jobsStorage.getAll().filter(j => j.id !== id);
     jobsStorage.setAll(jobs);
   },
+
+  clear: (): void => {
+    jobsStorage.setAll([]);
+  },
 };
 
 // Cover Letters operations

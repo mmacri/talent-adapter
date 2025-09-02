@@ -96,7 +96,7 @@ const Jobs = () => {
     );
   }
 
-  const { jobApplications, variants, coverLetters, deleteJobApplication, addJobApplication, updateJobApplication } = resumeContext;
+  const { jobApplications, variants, coverLetters, deleteJobApplication, clearAllJobApplications, addJobApplication, updateJobApplication } = resumeContext;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
@@ -659,6 +659,35 @@ const Jobs = () => {
             <Plus className="w-4 h-4 mr-2" />
             Add Application
           </Button>
+          
+          {/* Clear All Button */}
+          {jobApplications.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Clear All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear All Job Applications?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently delete all {jobApplications.length} job applications from your list. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={clearAllJobApplications}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Clear All Applications
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           
           <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
             <DialogTrigger asChild>
