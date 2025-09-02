@@ -25,13 +25,15 @@ import {
   Download,
   Eye,
   Calendar,
-  Tag
+  Tag,
+  FileText
 } from 'lucide-react';
 import { Variant } from '@/types/resume';
 import { DocxExporter } from '@/lib/docxExport';
 import { VariantResolver } from '@/lib/variantResolver';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import ResumePreview from '@/components/resume/ResumePreview';
 
 const Variants = () => {
   const { variants, masterResume, addVariant, deleteVariant } = useResume();
@@ -144,6 +146,42 @@ const Variants = () => {
         </Button>
       </div>
 
+      {/* Master Resume Preview */}
+      {masterResume && (
+        <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Master Resume</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {masterResume.owner} • Base template for all variants
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <ResumePreview 
+                  masterResume={masterResume}
+                  triggerText="Preview Master"
+                  triggerVariant="outline"
+                  triggerIcon={<Eye className="w-4 h-4" />}
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => DocxExporter.exportResume(masterResume, undefined, `${masterResume.owner.replace(/\s+/g, '-')}_Master_Resume_${format(new Date(), 'yyyy-MM-dd')}.docx`)}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      )}
+
       {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -246,9 +284,18 @@ const Variants = () => {
                   onClick={() => navigate(`/variants/${variant.id}`)}
                   className="flex-1"
                 >
-                  <Eye className="w-4 h-4 mr-2" />
+                  <Edit3 className="w-4 h-4 mr-2" />
                   Edit
                 </Button>
+                {masterResume && (
+                  <ResumePreview 
+                    masterResume={masterResume}
+                    variant={variant}
+                    triggerText=""
+                    triggerVariant="outline"
+                    triggerIcon={<Eye className="w-4 h-4" />}
+                  />
+                )}
                 <Button
                   variant="outline"
                   size="sm"
