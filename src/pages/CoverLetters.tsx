@@ -31,6 +31,7 @@ import {
 import { CoverLetter } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { extractVariables, getPreviewText } from '@/lib/coverLetterUtils';
 
 const CoverLetters = () => {
   const { coverLetters, addCoverLetter, deleteCoverLetter, jobApplications } = useResume();
@@ -111,19 +112,6 @@ Best regards,
 
   const getUsageCount = (letterId: string) => {
     return jobApplications.filter(job => job.coverLetterId === letterId).length;
-  };
-
-  const extractVariables = (body: string): string[] => {
-    const matches = body.match(/\{\{([^}]+)\}\}/g);
-    if (!matches) return [];
-    
-    return [...new Set(matches.map(match => match.slice(2, -2).trim()))];
-  };
-
-  const getPreviewText = (body: string, maxLength: number = 150): string => {
-    // Remove template variables for preview
-    const cleaned = body.replace(/\{\{[^}]+\}\}/g, '[variable]');
-    return cleaned.length > maxLength ? cleaned.substring(0, maxLength) + '...' : cleaned;
   };
 
   return (
