@@ -55,20 +55,10 @@ const MasterResume = () => {
   const [showJsonDialog, setShowJsonDialog] = useState(false);
   const [showSectionSettings, setShowSectionSettings] = useState(false);
   const { toast } = useToast();
-  
-  // Add loading guard
-  if (!resumeContext || resumeContext.isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading master resume...</p>
-        </div>
-      </div>
-    );
-  }
 
-  const { masterResume, setMasterResume } = resumeContext;
+  // Get masterResume and setMasterResume safely
+  const masterResume = resumeContext?.masterResume || null;
+  const setMasterResume = resumeContext?.setMasterResume || (() => {});
 
   const handleSave = useCallback(() => {
     if (masterResume) {
@@ -84,7 +74,7 @@ const MasterResume = () => {
     }
   }, [masterResume, setMasterResume, toast]);
 
-  const handleCopyJson = async () => {
+  const handleCopyJson = useCallback(async () => {
     if (!masterResume) return;
     
     try {
@@ -101,9 +91,9 @@ const MasterResume = () => {
         variant: "destructive",
       });
     }
-  };
+  }, [masterResume, toast]);
 
-  const handleSectionToggle = (sectionKey: string, enabled: boolean) => {
+  const handleSectionToggle = useCallback((sectionKey: string, enabled: boolean) => {
     if (!masterResume) return;
     
     setMasterResume({
@@ -118,9 +108,9 @@ const MasterResume = () => {
       updatedAt: new Date().toISOString()
     });
     setIsEditing(true);
-  };
+  }, [masterResume, setMasterResume]);
 
-  const handleSectionOrderChange = (sectionKey: string, order: number) => {
+  const handleSectionOrderChange = useCallback((sectionKey: string, order: number) => {
     if (!masterResume) return;
     
     setMasterResume({
@@ -135,7 +125,19 @@ const MasterResume = () => {
       updatedAt: new Date().toISOString()
     });
     setIsEditing(true);
-  };
+  }, [masterResume, setMasterResume]);
+
+  // Add loading guard AFTER all hooks
+  if (!resumeContext || resumeContext.isLoading || !masterResume) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading master resume...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleFieldUpdate = (field: string, value: any) => {
     if (!masterResume) return;
