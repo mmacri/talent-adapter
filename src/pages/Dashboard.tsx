@@ -55,14 +55,6 @@ const Dashboard = () => {
             Welcome back, {masterResume?.owner || 'User'}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/variants/new">
-            <Button className="bg-gradient-to-r from-primary to-primary-hover">
-              <Plus className="w-4 h-4 mr-2" />
-              New Variant
-            </Button>
-          </Link>
-        </div>
       </div>
 
       {/* Quick Stats */}
