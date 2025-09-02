@@ -782,6 +782,16 @@ const Jobs = () => {
             if (value === 'export-csv') exportToCSV();
             else if (value === 'export-excel') exportToExcel();
             else if (value === 'import') setShowImportDialog(true);
+            else if (value === 'download-template') {
+              const link = document.createElement('a');
+              link.href = '/templates/job-applications-template.csv';
+              link.download = 'job-applications-template.csv';
+              link.click();
+              toast({
+                title: "Template Downloaded",
+                description: "Job applications template ready for customization.",
+              });
+            }
           }}>
             <SelectTrigger className="w-full sm:w-auto">
               <SelectValue placeholder={
@@ -793,6 +803,12 @@ const Jobs = () => {
               } />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="download-template">
+                <div className="flex items-center gap-2">
+                  <Download className="w-4 h-4" />
+                  Download Template
+                </div>
+              </SelectItem>
               <SelectItem value="export-csv">
                 <div className="flex items-center gap-2">
                   <Download className="w-4 h-4" />
@@ -808,7 +824,7 @@ const Jobs = () => {
               <SelectItem value="import">
                 <div className="flex items-center gap-2">
                   <Upload className="w-4 h-4" />
-                  Import from File
+                  Import Data
                 </div>
               </SelectItem>
             </SelectContent>

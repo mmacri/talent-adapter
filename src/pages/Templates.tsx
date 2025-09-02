@@ -11,7 +11,8 @@ import {
   Edit2,
   Palette,
   FileText,
-  Settings
+  Settings,
+  Download
 } from 'lucide-react';
 import { Template } from '@/types/resume';
 
@@ -139,9 +140,15 @@ const Templates = () => {
                     size="sm"
                     variant="outline"
                     className="flex-1"
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = '/templates/resume-template.json';
+                      link.download = `${template.name.toLowerCase().replace(/\s+/g, '-')}-template.json`;
+                      link.click();
+                    }}
                   >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Preview
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
                   </Button>
                   
                   <Button

@@ -1,0 +1,47 @@
+{
+  "id": "custom-template-1",
+  "name": "Professional Modern",
+  "description": "Clean, modern design perfect for tech roles",
+  "thumbnail": "",
+  "styles": {
+    "layout": "two-column",
+    "fontSize": "medium",
+    "spacing": "comfortable",
+    "colors": "professional-blue",
+    "font": "Inter",
+    "margins": {
+      "top": "1in",
+      "bottom": "1in",
+      "left": "0.75in",
+      "right": "0.75in"
+    },
+    "headerStyle": {
+      "alignment": "left",
+      "showPhoto": false,
+      "contactLayout": "horizontal"
+    },
+    "sectionStyles": {
+      "headingColor": "primary",
+      "bulletStyle": "round",
+      "dateFormat": "MMM YYYY",
+      "showDividers": true
+    },
+    "typography": {
+      "nameSize": "24px",
+      "headingSize": "14px",
+      "bodySize": "11px",
+      "lineHeight": "1.4"
+    }
+  },
+  "sectionConfig": {
+    "useVariantSections": true,
+    "enabledSections": [
+      "summary",
+      "experience", 
+      "education",
+      "skills",
+      "key_achievements",
+      "awards"
+    ]
+  }
+}

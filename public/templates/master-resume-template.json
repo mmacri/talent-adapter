@@ -1,0 +1,68 @@
+{
+  "id": "master-resume-template",
+  "owner": "Your Name",
+  "contacts": {
+    "email": "your.email@example.com",
+    "phone": "(555) 123-4567",
+    "website": "https://yourwebsite.com",
+    "linkedin": "https://linkedin.com/in/yourprofile"
+  },
+  "headline": "Your Professional Title",
+  "summary": [
+    "Experienced professional with X+ years in [industry/field]",
+    "Proven track record of [key achievement or skill]",
+    "Expertise in [relevant technologies/methodologies]"
+  ],
+  "key_achievements": [
+    "Achieved [specific metric or outcome]",
+    "Led [project/initiative] resulting in [impact]",
+    "Recognized for [award/recognition]"
+  ],
+  "experience": [
+    {
+      "id": "exp-1",
+      "company": "Company Name",
+      "title": "Your Job Title",
+      "location": "City, State",
+      "date_start": "2020-01",
+      "date_end": null,
+      "bullets": [
+        "Accomplished [specific task] that resulted in [measurable outcome]",
+        "Managed [responsibility] leading to [positive result]",
+        "Developed [solution/process] that improved [metric] by [percentage]"
+      ],
+      "tags": ["leadership", "technical", "results"]
+    }
+  ],
+  "education": [
+    {
+      "id": "edu-1",
+      "degree": "Bachelor of Science in [Field]",
+      "school": "University Name",
+      "location": "City, State",
+      "year": "2020"
+    }
+  ],
+  "awards": [
+    {
+      "id": "award-1",
+      "title": "Award Name",
+      "date": "2023",
+      "description": "Brief description of the award"
+    }
+  ],
+  "skills": {
+    "primary": ["Skill 1", "Skill 2", "Skill 3"],
+    "secondary": ["Secondary Skill 1", "Secondary Skill 2"]
+  },
+  "sections": {
+    "summary": { "enabled": true, "order": 1 },
+    "key_achievements": { "enabled": true, "order": 2 },
+    "experience": { "enabled": true, "order": 3 },
+    "education": { "enabled": true, "order": 4 },
+    "skills": { "enabled": true, "order": 5 },
+    "awards": { "enabled": false, "order": 6 }
+  },
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

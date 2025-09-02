@@ -1,0 +1,4 @@
+Company,Role,Location,Status,Applied Date,Variant ID,Cover Letter ID,Notes,Created At,Updated At
+"Example Corp","Software Engineer","San Francisco, CA","applied","2024-01-15","","","Great company culture","2024-01-15T10:30:00.000Z","2024-01-15T10:30:00.000Z"
+"Tech Startup","Senior Developer","Remote","interview","2024-01-20","variant-1","cover-1","Fast-growing startup","2024-01-20T14:15:00.000Z","2024-01-20T14:15:00.000Z"
+"Big Tech Co","Principal Engineer","Seattle, WA","prospect","","","","Dream job opportunity","2024-01-25T09:00:00.000Z","2024-01-25T09:00:00.000Z"

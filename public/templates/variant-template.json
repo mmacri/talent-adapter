@@ -1,0 +1,50 @@
+{
+  "id": "variant-template",
+  "name": "Template Variant Name",
+  "description": "Description of when to use this variant",
+  "rules": [
+    {
+      "type": "include_tags",
+      "value": ["relevant", "tags", "here"]
+    },
+    {
+      "type": "max_bullets", 
+      "value": 3
+    },
+    {
+      "type": "date_range",
+      "value": {
+        "startDate": "2020-01-01",
+        "endDate": "2024-12-31"
+      }
+    }
+  ],
+  "overrides": [
+    {
+      "path": "headline",
+      "operation": "set",
+      "value": "Customized headline for this variant"
+    },
+    {
+      "path": "summary.0",
+      "operation": "set", 
+      "value": "Custom summary statement tailored for specific role"
+    },
+    {
+      "path": "experience.0.bullets",
+      "operation": "add",
+      "value": "Additional bullet point specific to this variant"
+    }
+  ],
+  "sectionSettings": {
+    "summary": { "enabled": true },
+    "key_achievements": { "enabled": true },
+    "experience": { "enabled": true },
+    "education": { "enabled": true },
+    "skills": { "enabled": true },
+    "awards": { "enabled": false }
+  },
+  "templateId": "",
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z"
+}

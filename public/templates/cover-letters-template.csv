@@ -1,0 +1,25 @@
+Title,Body,Variables,Created At,Updated At
+"Generic Cover Letter","Dear Hiring Manager,
+
+I am writing to express my interest in the {{POSITION}} role at {{COMPANY}}. With my background in {{FIELD}}, I am confident I would be a valuable addition to your team.
+
+In my previous role at {{PREVIOUS_COMPANY}}, I {{KEY_ACHIEVEMENT}}. This experience has prepared me well for the challenges of this position.
+
+I am particularly excited about {{COMPANY_SPECIFIC_REASON}} and would welcome the opportunity to contribute to {{COMPANY}}'s continued success.
+
+Thank you for your consideration.
+
+Best regards,
+{{YOUR_NAME}}","POSITION,COMPANY,FIELD,PREVIOUS_COMPANY,KEY_ACHIEVEMENT,COMPANY_SPECIFIC_REASON,YOUR_NAME","2024-01-01T00:00:00.000Z","2024-01-01T00:00:00.000Z"
+"Tech Role Cover Letter","Dear {{HIRING_MANAGER}},
+
+I am excited to apply for the {{POSITION}} position at {{COMPANY}}. As a software engineer with {{YEARS_EXPERIENCE}} years of experience in {{TECH_STACK}}, I am eager to bring my skills to your innovative team.
+
+At {{CURRENT_COMPANY}}, I have {{SPECIFIC_ACCOMPLISHMENT}}. My expertise in {{TECHNICAL_SKILLS}} and passion for {{RELEVANT_INTEREST}} align perfectly with your team's goals.
+
+I am particularly drawn to {{COMPANY}} because of {{COMPANY_VALUES}}. I would love to discuss how my experience with {{RELEVANT_PROJECTS}} can contribute to your upcoming initiatives.
+
+Looking forward to hearing from you.
+
+Best regards,
+{{YOUR_NAME}}","HIRING_MANAGER,POSITION,COMPANY,YEARS_EXPERIENCE,TECH_STACK,CURRENT_COMPANY,SPECIFIC_ACCOMPLISHMENT,TECHNICAL_SKILLS,RELEVANT_INTEREST,COMPANY_VALUES,RELEVANT_PROJECTS,YOUR_NAME","2024-01-01T00:00:00.000Z","2024-01-01T00:00:00.000Z"
