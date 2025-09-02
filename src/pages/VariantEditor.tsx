@@ -24,6 +24,8 @@ import { DocxExporter } from '@/lib/docxExport';
 import { VariantResolver } from '@/lib/variantResolver';
 import { VariantRulesEditor } from '@/components/resume/VariantRulesEditor';
 import { VariantOverridesEditor } from '@/components/resume/VariantOverridesEditor';
+import { VariantContentEditor } from '@/components/resume/VariantContentEditor';
+import { VariantSectionSettings } from '@/components/resume/VariantSectionSettings';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -35,7 +37,7 @@ const VariantEditor = () => {
   
   const [variant, setVariant] = useState<Variant | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('rules');
+  const [activeTab, setActiveTab] = useState('content');
 
   useEffect(() => {
     if (id) {
@@ -194,7 +196,15 @@ const VariantEditor = () => {
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="content" className="flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Content
+                  </TabsTrigger>
+                  <TabsTrigger value="sections" className="flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    Sections
+                  </TabsTrigger>
                   <TabsTrigger value="rules" className="flex items-center gap-2">
                     <Settings className="w-4 h-4" />
                     Rules
@@ -208,6 +218,24 @@ const VariantEditor = () => {
                     Diff
                   </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="content" className="mt-6">
+                  <VariantContentEditor
+                    customSummary={variant.customSummary}
+                    customKeyAchievements={variant.customKeyAchievements}
+                    onSummaryChange={(summary) => handleFieldUpdate('customSummary', summary)}
+                    onKeyAchievementsChange={(achievements) => handleFieldUpdate('customKeyAchievements', achievements)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="sections" className="mt-6">
+                  <VariantSectionSettings
+                    sectionSettings={variant.sectionSettings}
+                    onSectionSettingsChange={(settings) => handleFieldUpdate('sectionSettings', settings)}
+                    hasCustomSummary={Boolean(variant.customSummary?.length)}
+                    hasCustomKeyAchievements={Boolean(variant.customKeyAchievements?.length)}
+                  />
+                </TabsContent>
 
                 <TabsContent value="rules" className="mt-6">
                   <VariantRulesEditor

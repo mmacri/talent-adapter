@@ -167,6 +167,14 @@ export const createSeedData = () => {
         { type: 'section_order', value: ['summary', 'skills', 'experience', 'education', 'awards'] }
       ],
       overrides: [],
+      sectionSettings: {
+        summary: { enabled: true, useCustom: false },
+        key_achievements: { enabled: true, useCustom: false },
+        experience: { enabled: true },
+        education: { enabled: true },
+        awards: { enabled: true },
+        skills: { enabled: true }
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     },
@@ -180,6 +188,14 @@ export const createSeedData = () => {
         { type: 'section_order', value: ['summary', 'key_achievements', 'experience', 'education', 'awards'] }
       ],
       overrides: [],
+      sectionSettings: {
+        summary: { enabled: true, useCustom: false },
+        key_achievements: { enabled: true, useCustom: false },
+        experience: { enabled: true },
+        education: { enabled: true },
+        awards: { enabled: true },
+        skills: { enabled: true }
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }

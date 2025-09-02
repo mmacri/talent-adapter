@@ -81,6 +81,16 @@ export interface Variant {
   description?: string;
   rules: VariantRule[];
   overrides: VariantOverride[];
+  customSummary?: string[];
+  customKeyAchievements?: string[];
+  sectionSettings: {
+    summary: { enabled: boolean; useCustom: boolean };
+    key_achievements: { enabled: boolean; useCustom: boolean };
+    experience: { enabled: boolean };
+    education: { enabled: boolean };
+    awards: { enabled: boolean };
+    skills: { enabled: boolean };
+  };
   templateId?: string;
   createdAt: string;
   updatedAt: string;

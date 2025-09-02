@@ -5,13 +5,51 @@ export class VariantResolver {
     // Start with a deep copy of the master resume
     let resolved = JSON.parse(JSON.stringify(master)) as ResumeMaster;
 
-    // Apply rules first
+    // Apply variant section settings first
+    resolved = this.applySectionSettings(resolved, variant);
+
+    // Apply custom content
+    resolved = this.applyCustomContent(resolved, variant);
+
+    // Apply rules
     resolved = this.applyRules(resolved, variant.rules);
 
     // Then apply overrides
     resolved = this.applyOverrides(resolved, variant.overrides);
 
     return resolved;
+  }
+
+  private static applySectionSettings(resume: ResumeMaster, variant: Variant): ResumeMaster {
+    const result = { ...resume };
+    
+    // Update section settings based on variant configuration
+    const newSections = { ...resume.sections };
+    
+    Object.entries(variant.sectionSettings).forEach(([sectionKey, settings]) => {
+      if (newSections[sectionKey as keyof typeof newSections]) {
+        newSections[sectionKey as keyof typeof newSections].enabled = settings.enabled;
+      }
+    });
+    
+    result.sections = newSections;
+    return result;
+  }
+
+  private static applyCustomContent(resume: ResumeMaster, variant: Variant): ResumeMaster {
+    const result = { ...resume };
+    
+    // Apply custom summary if enabled
+    if (variant.sectionSettings.summary?.useCustom && variant.customSummary) {
+      result.summary = [...variant.customSummary];
+    }
+    
+    // Apply custom key achievements if enabled
+    if (variant.sectionSettings.key_achievements?.useCustom && variant.customKeyAchievements) {
+      result.key_achievements = [...variant.customKeyAchievements];
+    }
+    
+    return result;
   }
 
   private static applyRules(resume: ResumeMaster, rules: VariantRule[]): ResumeMaster {

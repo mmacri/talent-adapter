@@ -53,6 +53,14 @@ const Variants = () => {
       description: 'A new resume variant',
       rules: [],
       overrides: [],
+      sectionSettings: {
+        summary: { enabled: true, useCustom: false },
+        key_achievements: { enabled: true, useCustom: false },
+        experience: { enabled: true },
+        education: { enabled: true },
+        awards: { enabled: true },
+        skills: { enabled: true }
+      },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
