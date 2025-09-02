@@ -13,12 +13,60 @@ import {
   WidthType,
   SectionType,
   PageOrientation,
-  convertInchesToTwip
+  convertInchesToTwip,
+  LevelFormat,
+  NumberFormat
 } from 'docx';
 import { ResumeMaster, Variant } from '@/types/resume';
 import { format } from 'date-fns';
 
 export class DocxExporter {
+  // Helper method to create formatted bullet paragraphs with proper indentation
+  private static createBulletParagraph(text: string, level: number = 0): Paragraph {
+    const indentLevel = level * 360; // 0.25 inch per level
+    const bulletSymbols = ['•', '◦', '▪', '‣'];
+    const symbol = bulletSymbols[Math.min(level, bulletSymbols.length - 1)];
+    
+    return new Paragraph({
+      children: [
+        new TextRun({
+          text: `${symbol} ${text.replace(/^[•◦▪‣\-\*]\s*/, '')}`, // Remove existing bullet if present
+          size: 20,
+        }),
+      ],
+      indent: {
+        left: indentLevel,
+        hanging: convertInchesToTwip(0.25),
+      },
+      spacing: { after: 80 },
+    });
+  }
+
+  // Helper method to parse and format hierarchical bullet points
+  private static formatBulletPoints(bullets: string[]): Paragraph[] {
+    return bullets.map((bullet) => {
+      // Detect indentation level based on leading spaces, tabs, or dash patterns
+      let level = 0;
+      const trimmed = bullet.trim();
+      
+      // Count indentation based on leading whitespace or nested patterns
+      if (bullet.match(/^\s{2,4}/) || bullet.match(/^\t/)) {
+        level = 1;
+      } else if (bullet.match(/^\s{5,8}/) || bullet.match(/^\t\t/)) {
+        level = 2;
+      } else if (bullet.match(/^\s{9,}/) || bullet.match(/^\t\t\t/)) {
+        level = 3;
+      }
+      
+      // Also detect sub-bullet patterns like "- Sub item" or "o Sub item"
+      if (trimmed.match(/^[-o]\s/) && level === 0) {
+        level = 1;
+      }
+      
+      return this.createBulletParagraph(trimmed, level);
+    });
+  }
+
   static async exportResume(resume: ResumeMaster, variant?: Variant, fileName?: string): Promise<void> {
     const doc = new Document({
       sections: [{
@@ -89,17 +137,7 @@ export class DocxExporter {
               ],
               spacing: { before: 200, after: 100 },
             }),
-            ...resume.summary.map(bullet => 
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${bullet}`,
-                    size: 20,
-                  }),
-                ],
-                spacing: { after: 100 },
-              })
-            ),
+            ...this.formatBulletPoints(resume.summary),
           ] : []),
 
           // Key Achievements
@@ -115,17 +153,7 @@ export class DocxExporter {
               ],
               spacing: { before: 200, after: 100 },
             }),
-            ...resume.key_achievements.map(bullet => 
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${bullet}`,
-                    size: 20,
-                  }),
-                ],
-                spacing: { after: 100 },
-              })
-            ),
+            ...this.formatBulletPoints(resume.key_achievements),
           ] : []),
 
           // Experience
@@ -162,17 +190,7 @@ export class DocxExporter {
                 ],
                 spacing: { after: 100 },
               }),
-              ...exp.bullets.map(bullet => 
-                new Paragraph({
-                  children: [
-                    new TextRun({
-                      text: `• ${bullet}`,
-                      size: 20,
-                    }),
-                  ],
-                  spacing: { after: 80 },
-                })
-              ),
+              ...this.formatBulletPoints(exp.bullets),
             ]),
           ] : []),
 
@@ -249,15 +267,7 @@ export class DocxExporter {
               spacing: { before: 200, after: 100 },
             }),
             ...resume.awards.map(award => 
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `• ${award.title}${award.date ? ` – ${award.date}` : ''}`,
-                    size: 20,
-                  }),
-                ],
-                spacing: { after: 80 },
-              })
+              this.createBulletParagraph(`${award.title}${award.date ? ` – ${award.date}` : ''}`, 0)
             ),
           ] : []),
         ],
