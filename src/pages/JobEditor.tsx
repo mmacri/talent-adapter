@@ -38,7 +38,8 @@ const JobEditor = () => {
     masterResume,
     variants,
     coverLetters,
-    getVariant
+    getVariant,
+    isLoading
   } = useResume();
   const { toast } = useToast();
   
@@ -47,11 +48,24 @@ const JobEditor = () => {
   const [isNew, setIsNew] = useState(false);
 
   useEffect(() => {
+    console.log('JobEditor useEffect called with id:', id);
+    console.log('jobApplications length:', jobApplications?.length || 0);
+    console.log('isLoading:', isLoading);
+    
+    // Don't proceed if still loading
+    if (isLoading) {
+      console.log('Still loading data, waiting...');
+      return;
+    }
+    
     if (id && id !== 'new') {
+      console.log('Looking for existing job with id:', id);
       const foundJob = jobApplications.find(j => j.id === id);
       if (foundJob) {
+        console.log('Found existing job:', foundJob);
         setJob(foundJob);
       } else {
+        console.log('Job not found, redirecting to /jobs');
         navigate('/jobs');
         toast({
           title: "Application Not Found",
@@ -60,6 +74,7 @@ const JobEditor = () => {
         });
       }
     } else if (id === 'new') {
+      console.log('Creating new job application');
       setIsNew(true);
       const newJob: JobApplication = {
         id: `job-${Date.now()}`,
@@ -74,10 +89,13 @@ const JobEditor = () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      console.log('New job created:', newJob);
       setJob(newJob);
       setIsEditing(true);
+    } else {
+      console.log('No valid id provided, id is:', id);
     }
-  }, [id, jobApplications, navigate, toast]);
+  }, [id, jobApplications, navigate, toast, isLoading]);
 
   if (!job) {
     return (
