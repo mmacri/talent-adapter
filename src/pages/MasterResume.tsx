@@ -39,9 +39,12 @@ import { ContentTree } from '@/components/resume/ContentTree';
 import { TipTapEditor } from '@/components/resume/TipTapEditor';
 import { TagManager } from '@/components/resume/TagManager';
 import { SectionEditor } from '@/components/resume/SectionEditor';
+import { MasterResumeActions } from '@/components/resume/MasterResumeActions';
+import { SectionActions } from '@/components/resume/SectionActions';
 import { DocxExporter } from '@/lib/docxExport';
 import ResumePreview from '@/components/resume/ResumePreview';
 import { useToast } from '@/hooks/use-toast';
+import { MasterResumeSections } from '@/lib/masterResumeUtils';
 
 const MasterResume = () => {
   const resumeContext = useResume();
@@ -410,7 +413,7 @@ const MasterResume = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
+        {/* Header - Enhanced with import/export actions */}
         <div className="p-6 border-b border-border bg-card">
           <div className="flex items-center justify-between">
             <div>
@@ -418,6 +421,8 @@ const MasterResume = () => {
               <p className="text-muted-foreground">{masterResume.headline}</p>
             </div>
             <div className="flex gap-2">
+              <MasterResumeActions className="flex-shrink-0" />
+              
               {masterResume && (
                 <ResumePreview 
                   masterResume={masterResume}
@@ -468,9 +473,20 @@ const MasterResume = () => {
 
             <div className="p-6">
               <TabsContent value="summary" className="mt-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">Professional Summary</h3>
+                    <p className="text-muted-foreground">A brief overview of your professional background and expertise</p>
+                  </div>
+                  <SectionActions
+                    section="summary"
+                    sectionTitle="Professional Summary"
+                    onSave={() => handleSave()}
+                  />
+                </div>
                 <SectionEditor
-                  title="Professional Summary"
-                  description="A brief overview of your professional background and expertise"
+                  title=""
+                  description=""
                   content={masterResume.summary}
                   onUpdate={(content) => handleFieldUpdate('summary', content)}
                   type="list"
@@ -478,9 +494,20 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="key_achievements" className="mt-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">Key Achievements</h3>
+                    <p className="text-muted-foreground">Your most significant professional accomplishments</p>
+                  </div>
+                  <SectionActions
+                    section="key_achievements"
+                    sectionTitle="Key Achievements"
+                    onSave={() => handleSave()}
+                  />
+                </div>
                 <SectionEditor
-                  title="Key Achievements"
-                  description="Your most significant professional accomplishments"
+                  title=""
+                  description=""
                   content={masterResume.key_achievements}
                   onUpdate={(content) => handleFieldUpdate('key_achievements', content)}
                   type="list"
@@ -494,10 +521,17 @@ const MasterResume = () => {
                       <h3 className="text-xl font-semibold">Work Experience</h3>
                       <p className="text-muted-foreground">Your professional work history</p>
                     </div>
-                    <Button onClick={addExperience} className="bg-gradient-to-r from-accent to-accent">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Experience
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <SectionActions
+                        section="experience"
+                        sectionTitle="Work Experience"
+                        onSave={() => handleSave()}
+                      />
+                      <Button onClick={addExperience} className="bg-gradient-to-r from-accent to-accent">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Experience
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -568,9 +602,20 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="education" className="mt-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">Education</h3>
+                    <p className="text-muted-foreground">Your educational background and qualifications</p>
+                  </div>
+                  <SectionActions
+                    section="education"
+                    sectionTitle="Education"
+                    onSave={() => handleSave()}
+                  />
+                </div>
                 <SectionEditor
-                  title="Education"
-                  description="Your educational background and qualifications"
+                  title=""
+                  description=""
                   content={masterResume.education}
                   onUpdate={(content) => handleFieldUpdate('education', content)}
                   type="education"
@@ -578,9 +623,20 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="awards" className="mt-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">Awards & Recognition</h3>
+                    <p className="text-muted-foreground">Professional awards and recognition you've received</p>
+                  </div>
+                  <SectionActions
+                    section="awards"
+                    sectionTitle="Awards & Recognition"
+                    onSave={() => handleSave()}
+                  />
+                </div>
                 <SectionEditor
-                  title="Awards & Recognition"
-                  description="Professional awards and recognition you've received"
+                  title=""
+                  description=""
                   content={masterResume.awards}
                   onUpdate={(content) => handleFieldUpdate('awards', content)}
                   type="awards"
@@ -588,9 +644,20 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="skills" className="mt-0">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">Skills & Expertise</h3>
+                    <p className="text-muted-foreground">Your key skills and areas of expertise</p>
+                  </div>
+                  <SectionActions
+                    section="skills"
+                    sectionTitle="Skills & Expertise"
+                    onSave={() => handleSave()}
+                  />
+                </div>
                 <SectionEditor
-                  title="Skills & Expertise"
-                  description="Your key skills and areas of expertise"
+                  title=""
+                  description=""
                   content={masterResume.skills}
                   onUpdate={(content) => handleFieldUpdate('skills', content)}
                   type="skills"

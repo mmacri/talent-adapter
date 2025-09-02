@@ -31,6 +31,9 @@ interface ResumeContextType {
   // Templates
   templates: Template[];
   
+  // Clear sections methods for master resume
+  clearMasterResumeSection: (section: string) => void;
+  
   // State
   isLoading: boolean;
   refreshData: () => void;
@@ -167,6 +170,20 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCoverLetters(prev => prev.filter(l => l.id !== id));
   };
 
+  const clearMasterResumeSection = (section: string) => {
+    if (!masterResume) return;
+    
+    // Import here to avoid circular dependency
+    const { clearSectionData } = require('@/lib/masterResumeUtils');
+    
+    try {
+      const clearedResume = clearSectionData(masterResume, section);
+      setMasterResume(clearedResume);
+    } catch (error) {
+      console.error('Error clearing section:', error);
+    }
+  };
+
   const refreshData = () => {
     loadData();
   };
@@ -191,6 +208,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     templates,
     isLoading,
     refreshData,
+    clearMasterResumeSection,
   };
 
   return (

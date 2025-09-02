@@ -6,6 +6,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/contexts/ResumeContext';
 import { Download, Upload, FileArchive } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Trash2 } from 'lucide-react';
 import { exportBackup, importBackup } from '@/lib/backupUtils';
 import { resumeStorage, jobsStorage, coverLettersStorage } from '@/lib/storage';
 
@@ -18,6 +30,7 @@ export default function Settings() {
     coverLetters,
     setMasterResume,
     refreshData,
+    clearMasterResumeSection,
   } = useResume();
 
   const [exportOptions, setExportOptions] = React.useState({
@@ -285,6 +298,116 @@ export default function Settings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Master Resume Data Management Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Master Resume Data Management</CardTitle>
+          <CardDescription>
+            Clear specific sections of your master resume to remove all data and start fresh.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Clear Individual Sections:</Label>
+              <div className="space-y-2">
+                {[
+                  { id: 'contacts', label: 'Contact Information' },
+                  { id: 'headline', label: 'Professional Headline' },
+                  { id: 'summary', label: 'Professional Summary' },
+                  { id: 'key_achievements', label: 'Key Achievements' },
+                  { id: 'experience', label: 'Work Experience' },
+                  { id: 'education', label: 'Education' },
+                  { id: 'awards', label: 'Awards & Certifications' },
+                  { id: 'skills', label: 'Skills' },
+                ].map((section) => (
+                  <AlertDialog key={section.id}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Clear {section.label}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Clear {section.label}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently remove all data from the {section.label} section of your master resume. 
+                          This action cannot be undone. Consider exporting the section first as a backup.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            clearMasterResumeSection(section.id);
+                            toast({
+                              title: "Section Cleared",
+                              description: `${section.label} has been cleared successfully.`,
+                            });
+                          }}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Clear Section
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Bulk Actions:</Label>
+              <div className="space-y-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Clear All Resume Data
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear Entire Master Resume?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove ALL data from your master resume, including contacts, 
+                        summary, experience, education, awards, and skills. This action cannot be undone.
+                        Consider creating a full backup first.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          ['contacts', 'headline', 'summary', 'key_achievements', 'experience', 'education', 'awards', 'skills'].forEach(section => {
+                            clearMasterResumeSection(section);
+                          });
+                          toast({
+                            title: "All Sections Cleared",
+                            description: "All master resume data has been cleared successfully.",
+                          });
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Clear All Data
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
