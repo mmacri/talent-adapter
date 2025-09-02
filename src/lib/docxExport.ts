@@ -264,8 +264,7 @@ export class DocxExporter {
       }],
     });
 
-    const buffer = await Packer.toBuffer(doc);
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const blob = await Packer.toBlob(doc);
     
     const defaultFileName = `${resume.owner.replace(/\s+/g, '-')}_Resume_${format(new Date(), 'yyyy-MM-dd')}.docx`;
     const link = document.createElement('a');
