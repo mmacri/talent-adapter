@@ -54,13 +54,13 @@ export class VariantResolver {
       return result;
     }
     
-    // Apply custom summary if enabled
-    if (variant.sectionSettings.summary?.useCustom && variant.customSummary) {
+    // Apply custom summary if enabled and exists
+    if (variant.sectionSettings.summary?.useCustom && variant.customSummary && variant.customSummary.length > 0) {
       result.summary = [...variant.customSummary];
     }
     
-    // Apply custom key achievements if enabled
-    if (variant.sectionSettings.key_achievements?.useCustom && variant.customKeyAchievements) {
+    // Apply custom key achievements if enabled and exists
+    if (variant.sectionSettings.key_achievements?.useCustom && variant.customKeyAchievements && variant.customKeyAchievements.length > 0) {
       result.key_achievements = [...variant.customKeyAchievements];
     }
     

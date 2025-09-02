@@ -19,6 +19,7 @@ import {
   Diff,
   History
 } from 'lucide-react';
+import ResumePreview from '@/components/resume/ResumePreview';
 import { Variant } from '@/types/resume';
 import { DocxExporter } from '@/lib/docxExport';
 import { VariantResolver } from '@/lib/variantResolver';
@@ -309,49 +310,136 @@ const VariantEditor = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-96">
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <h4 className="font-semibold">{resolvedResume.owner}</h4>
-                    <p className="text-muted-foreground">{resolvedResume.headline}</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h5 className="font-medium">Quick Preview</h5>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {variant.rules.length} rules
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {variant.overrides.length} overrides
+                    </Badge>
                   </div>
-
-                  {resolvedResume.summary && resolvedResume.summary.length > 0 && (
-                    <div>
-                      <h5 className="font-medium mb-2">Summary</h5>
-                      <ul className="space-y-1 text-xs">
-                        {resolvedResume.summary.map((bullet, index) => (
-                          <li key={index}>• {bullet}</li>
-                        ))}
-                      </ul>
+                </div>
+                
+                <ScrollArea className="h-80 border rounded-lg p-4 bg-muted/20">
+                  <div className="space-y-4 text-sm">
+                    <div className="text-center border-b pb-2">
+                      <h4 className="font-semibold">{resolvedResume.owner}</h4>
+                      <p className="text-muted-foreground text-xs">{resolvedResume.headline}</p>
                     </div>
-                  )}
 
-                  {resolvedResume.experience && resolvedResume.experience.length > 0 && (
-                    <div>
-                      <h5 className="font-medium mb-2">Experience</h5>
-                      <div className="space-y-3">
-                        {resolvedResume.experience.slice(0, 3).map((exp, index) => (
-                          <div key={index} className="text-xs">
-                            <p className="font-medium">{exp.title} at {exp.company}</p>
-                            <p className="text-muted-foreground">{exp.date_start} - {exp.date_end || 'Present'}</p>
-                            <ul className="mt-1 space-y-1">
-                              {exp.bullets.slice(0, 2).map((bullet, bIndex) => (
-                                <li key={bIndex}>• {bullet}</li>
+                    {resolvedResume.summary && resolvedResume.summary.length > 0 && (
+                      <div>
+                        <h5 className="font-medium mb-2 text-primary">
+                          Summary {variant.sectionSettings?.summary?.useCustom && 
+                          <Badge variant="secondary" className="ml-1 text-xs">Custom</Badge>}
+                        </h5>
+                        <ul className="space-y-1 text-xs">
+                          {resolvedResume.summary.map((bullet, index) => (
+                            <li key={index}>• {bullet}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {resolvedResume.key_achievements && resolvedResume.key_achievements.length > 0 && (
+                      <div>
+                        <h5 className="font-medium mb-2 text-primary">
+                          Key Achievements {variant.sectionSettings?.key_achievements?.useCustom && 
+                          <Badge variant="secondary" className="ml-1 text-xs">Custom</Badge>}
+                        </h5>
+                        <ul className="space-y-1 text-xs">
+                          {resolvedResume.key_achievements.map((achievement, index) => (
+                            <li key={index}>• {achievement}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {resolvedResume.experience && resolvedResume.experience.length > 0 && (
+                      <div>
+                        <h5 className="font-medium mb-2 text-primary">Experience ({resolvedResume.experience.length} positions)</h5>
+                        <div className="space-y-3">
+                          {resolvedResume.experience.map((exp, index) => (
+                            <div key={exp.id} className="text-xs border-l-2 border-muted pl-2">
+                              <p className="font-medium">{exp.title}</p>
+                              <p className="text-muted-foreground">{exp.company} • {exp.date_start} - {exp.date_end || 'Present'}</p>
+                              <ul className="mt-1 space-y-1">
+                                {exp.bullets.map((bullet, bIndex) => (
+                                  <li key={bIndex} className="text-muted-foreground">• {bullet.length > 60 ? bullet.substring(0, 60) + '...' : bullet}</li>
+                                ))}
+                              </ul>
+                              {exp.tags && exp.tags.length > 0 && (
+                                <div className="flex gap-1 mt-1">
+                                  {exp.tags.map((tag, tIndex) => (
+                                    <Badge key={tIndex} variant="outline" className="text-xs h-4">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {resolvedResume.skills && (resolvedResume.skills.primary?.length > 0 || resolvedResume.skills.secondary?.length > 0) && (
+                      <div>
+                        <h5 className="font-medium mb-2 text-primary">Skills</h5>
+                        {resolvedResume.skills.primary && resolvedResume.skills.primary.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-xs font-medium">Primary:</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {resolvedResume.skills.primary.map((skill, index) => (
+                                <Badge key={index} variant="default" className="text-xs h-4">
+                                  {skill}
+                                </Badge>
                               ))}
-                            </ul>
+                            </div>
                           </div>
-                        ))}
-                        {resolvedResume.experience.length > 3 && (
-                          <p className="text-xs text-muted-foreground">
-                            +{resolvedResume.experience.length - 3} more positions...
-                          </p>
+                        )}
+                        {resolvedResume.skills.secondary && resolvedResume.skills.secondary.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium">Secondary:</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {resolvedResume.skills.secondary.slice(0, 8).map((skill, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs h-4">
+                                  {skill}
+                                </Badge>
+                              ))}
+                              {resolvedResume.skills.secondary.length > 8 && (
+                                <Badge variant="outline" className="text-xs h-4">
+                                  +{resolvedResume.skills.secondary.length - 8}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                </ScrollArea>
+
+                <div className="flex gap-2">
+                  <ResumePreview 
+                    masterResume={masterResume}
+                    variant={variant}
+                    triggerText="Full Preview"
+                    triggerVariant="outline"
+                  />
+                  <Button
+                    onClick={handleExport}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
                 </div>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
 
