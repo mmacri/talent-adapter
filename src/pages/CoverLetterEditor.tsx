@@ -63,7 +63,7 @@ const CoverLetterEditor = () => {
       setIsNew(true);
       const newLetter: CoverLetter = {
         id: `letter-${Date.now()}`,
-        title: '',
+        title: 'New Cover Letter',
         body: `Dear Hiring Manager,
 
 I am writing to express my strong interest in the {{role}} position at {{company}}. With my background in {{field}}, I am confident that I would be a valuable addition to your team.
