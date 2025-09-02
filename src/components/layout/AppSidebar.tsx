@@ -61,12 +61,10 @@ export function AppSidebar() {
           <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-lg">
             <FileBarChart className="w-5 h-5 text-primary-foreground" />
           </div>
-          {!isCollapsed && (
-            <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">Resume Manager</h1>
-              <p className="text-xs text-sidebar-foreground/60">Mike Macri</p>
-            </div>
-          )}
+          <div className={isCollapsed ? "hidden" : "block"}>
+            <h1 className="text-lg font-bold text-sidebar-foreground">Resume Manager</h1>
+            <p className="text-xs text-sidebar-foreground/60">Mike Macri</p>
+          </div>
         </div>
 
         {/* Main Navigation */}
@@ -76,10 +74,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
+                  <SidebarMenuButton>
+                    <NavLink to={item.url} className={`flex items-center gap-2 ${getNavClassName(item.url)}`}>
                       <item.icon className="w-4 h-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
+                      <span className={isCollapsed ? "hidden" : "block"}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -94,10 +92,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {utilityItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
+                  <SidebarMenuButton>
+                    <NavLink to={item.url} className={`flex items-center gap-2 ${getNavClassName(item.url)}`}>
                       <item.icon className="w-4 h-4" />
-                      {!isCollapsed && <span>{item.title}</span>}
+                      <span className={isCollapsed ? "hidden" : "block"}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -107,23 +105,21 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* User Profile */}
-        {!isCollapsed && (
-          <div className="mt-auto p-4 border-t border-sidebar-border">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 bg-accent rounded-full">
-                <User className="w-4 h-4 text-accent-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  Mike Macri
-                </p>
-                <p className="text-xs text-sidebar-foreground/60 truncate">
-                  MikeMacri@gmail.com
-                </p>
-              </div>
+        <div className={`mt-auto p-4 border-t border-sidebar-border ${isCollapsed ? "hidden" : "block"}`}>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-8 h-8 bg-accent rounded-full">
+              <User className="w-4 h-4 text-accent-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-foreground truncate">
+                Mike Macri
+              </p>
+              <p className="text-xs text-sidebar-foreground/60 truncate">
+                MikeMacri@gmail.com
+              </p>
             </div>
           </div>
-        )}
+        </div>
       </SidebarContent>
     </Sidebar>
   );
