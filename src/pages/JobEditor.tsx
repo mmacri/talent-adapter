@@ -100,9 +100,12 @@ const JobEditor = () => {
   }
 
   const handleSave = () => {
+    console.log('handleSave called with job:', job);
+    
     if (job) {
       // Validate required fields
       if (!job.company.trim() || !job.role.trim()) {
+        console.log('Validation failed - missing fields');
         toast({
           title: "Missing Required Fields",
           description: "Please fill in both Company and Role before saving.",
@@ -111,18 +114,34 @@ const JobEditor = () => {
         return;
       }
 
+      console.log('Validation passed, creating updated job');
       const updatedJob = {
         ...job,
         updatedAt: new Date().toISOString()
       };
 
       if (isNew) {
-        addJobApplication(updatedJob);
-        navigate('/jobs');
-        toast({
-          title: "Application Added",
-          description: "Your job application has been saved successfully.",
-        });
+        console.log('Adding new job application:', updatedJob);
+        try {
+          addJobApplication(updatedJob);
+          console.log('Job application added successfully');
+          
+          console.log('Navigating to /jobs');
+          navigate('/jobs');
+          
+          console.log('Showing success toast');
+          toast({
+            title: "Application Added",
+            description: "Your job application has been saved successfully.",
+          });
+        } catch (error) {
+          console.error('Error adding job application:', error);
+          toast({
+            title: "Error",
+            description: "Failed to save job application. Please try again.",
+            variant: "destructive",
+          });
+        }
       } else {
         updateJobApplication(job.id, updatedJob);
         setJob(updatedJob);

@@ -107,8 +107,24 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const addJobApplication = (job: JobApplication) => {
-    jobsStorage.add(job);
-    setJobApplications(prev => [...prev, job]);
+    console.log('addJobApplication called with:', job);
+    try {
+      console.log('Calling jobsStorage.add');
+      jobsStorage.add(job);
+      console.log('jobsStorage.add completed');
+      
+      console.log('Updating state with setJobApplications');
+      setJobApplications(prev => {
+        console.log('Previous job applications:', prev.length);
+        const newList = [...prev, job];
+        console.log('New job applications count:', newList.length);
+        return newList;
+      });
+      console.log('setJobApplications completed');
+    } catch (error) {
+      console.error('Error in addJobApplication:', error);
+      throw error;
+    }
   };
 
   const updateJobApplication = (id: string, updates: Partial<JobApplication>) => {
