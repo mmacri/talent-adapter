@@ -133,6 +133,251 @@ const ResumeViewer = () => {
 
   const stats = getResumeStats(selectedResume);
 
+  // Helper function to render resume content
+  const renderResumeContent = (resume: ResumeMaster, variant?: any, isCompact = false) => (
+    <div className={`space-y-${isCompact ? '4' : '6'}`}>
+      {/* Header Section */}
+      <div className="text-center space-y-2 pb-4 border-b">
+        <h1 className={`${isCompact ? 'text-xl' : 'text-2xl'} font-bold`}>{resume.owner}</h1>
+        <p className={`${isCompact ? 'text-base' : 'text-lg'} text-muted-foreground`}>{resume.headline}</p>
+        <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+          <span>{resume.contacts.email}</span>
+          <span>•</span>
+          <span>{resume.contacts.phone}</span>
+          {resume.contacts.linkedin && (
+            <>
+              <span>•</span>
+              <span>LinkedIn</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Dynamic Sections based on enabled status and order */}
+      {Object.entries(resume.sections || {})
+        .filter(([_, section]) => section.enabled)
+        .sort(([_, a], [__, b]) => a.order - b.order)
+        .map(([sectionKey]) => (
+          <div key={sectionKey} className="space-y-3">
+            {sectionKey === 'summary' && resume.summary && resume.summary.length > 0 && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Professional Summary</h3>
+                <ul className="space-y-2">
+                  {resume.summary.map((item, index) => (
+                    <li key={index} className="text-sm leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            
+            {sectionKey === 'key_achievements' && resume.key_achievements && resume.key_achievements.length > 0 && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Key Achievements</h3>
+                <ul className="space-y-2">
+                  {resume.key_achievements.map((item, index) => (
+                    <li key={index} className="text-sm leading-relaxed">• {item}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+            
+            {sectionKey === 'experience' && resume.experience && resume.experience.length > 0 && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Experience</h3>
+                <div className={`space-y-${isCompact ? '3' : '4'}`}>
+                  {resume.experience.map((exp) => (
+                    <div key={exp.id} className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium">{exp.title}</h4>
+                          <p className="text-muted-foreground">{exp.company} • {exp.location}</p>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {exp.date_start} - {exp.date_end || 'Present'}
+                        </span>
+                      </div>
+                      <ul className="space-y-1 ml-4">
+                        {exp.bullets.slice(0, isCompact ? 3 : exp.bullets.length).map((bullet, index) => (
+                          <li key={index} className="text-sm">• {bullet}</li>
+                        ))}
+                        {isCompact && exp.bullets.length > 3 && (
+                          <li className="text-sm text-muted-foreground">... and {exp.bullets.length - 3} more</li>
+                        )}
+                      </ul>
+                      {exp.tags.length > 0 && (
+                        <div className="flex gap-1 flex-wrap ml-4">
+                          {exp.tags.slice(0, isCompact ? 3 : exp.tags.length).map((tag, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {isCompact && exp.tags.length > 3 && (
+                            <Badge variant="outline" className="text-xs">+{exp.tags.length - 3}</Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            
+            {sectionKey === 'education' && resume.education && resume.education.length > 0 && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Education</h3>
+                <div className="space-y-2">
+                  {resume.education.map((edu) => (
+                    <div key={edu.id} className="flex justify-between">
+                      <div>
+                        <p className="font-medium">{edu.degree}</p>
+                        <p className="text-muted-foreground">{edu.school} • {edu.location}</p>
+                      </div>
+                      {edu.year && (
+                        <span className="text-sm text-muted-foreground">{edu.year}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            
+            {sectionKey === 'awards' && resume.awards && resume.awards.length > 0 && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Awards</h3>
+                <div className="space-y-2">
+                  {resume.awards.map((award) => (
+                    <div key={award.id} className="flex justify-between">
+                      <div>
+                        <p className="font-medium">{award.title}</p>
+                        {award.description && (
+                          <p className="text-sm text-muted-foreground">{award.description}</p>
+                        )}
+                      </div>
+                      {award.date && (
+                        <span className="text-sm text-muted-foreground">{award.date}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            
+            {sectionKey === 'skills' && resume.skills && (resume.skills.primary?.length > 0 || resume.skills.secondary?.length > 0) && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Skills</h3>
+                <div className="space-y-3">
+                  {resume.skills.primary && resume.skills.primary.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Primary Skills</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {resume.skills.primary.map((skill, index) => (
+                          <Badge key={index} variant="default" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {resume.skills.secondary && resume.skills.secondary.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Additional Skills</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {resume.skills.secondary.map((skill, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+    </div>
+  );
+
+  // Helper function to handle export for a specific resume
+  const handleExportResume = async (resume: ResumeMaster, variant?: any) => {
+    try {
+      const filename = variant 
+        ? `${resume.owner.replace(/\s+/g, '-')}_${variant.name.replace(/\s+/g, '-')}_${format(new Date(), 'yyyy-MM-dd')}.docx`
+        : `${resume.owner.replace(/\s+/g, '-')}_Master_Resume_${format(new Date(), 'yyyy-MM-dd')}.docx`;
+      
+      await DocxExporter.exportResume(resume, variant, filename);
+      
+      toast({
+        title: "Resume Exported",
+        description: `${variant ? variant.name : 'Master Resume'} has been downloaded as a Word document.`,
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting the resume. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Helper function to handle copy JSON for a specific resume
+  const handleCopyResumeJson = async (resume: ResumeMaster, variant?: any) => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(resume, null, 2));
+      toast({
+        title: "JSON Copied",
+        description: `${variant ? variant.name : 'Master Resume'} data has been copied to your clipboard.`,
+      });
+    } catch (error) {
+      console.error('Copy failed:', error);
+      toast({
+        title: "Copy Failed",
+        description: "Unable to copy to clipboard. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Get all resume versions (master + resolved variants)
+  const getAllResumeVersions = () => {
+    type ResumeVersion = {
+      id: string;
+      name: string;
+      description: string;
+      resume: ResumeMaster;
+      variant: any;
+      type: 'master' | 'variant';
+    };
+
+    const versions: ResumeVersion[] = [
+      {
+        id: 'master',
+        name: 'Master Resume',
+        description: 'Original base resume with all content',
+        resume: masterResume,
+        variant: null,
+        type: 'master'
+      }
+    ];
+
+    variants.forEach(variant => {
+      const resolvedResume = VariantResolver.resolveVariant(masterResume, variant);
+      versions.push({
+        id: variant.id,
+        name: variant.name,
+        description: variant.description,
+        resume: resolvedResume,
+        variant,
+        type: 'variant'
+      });
+    });
+
+    return versions;
+  };
+
+  const allVersions = getAllResumeVersions();
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -140,327 +385,81 @@ const ResumeViewer = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Resume Viewer</h1>
           <p className="text-muted-foreground">
-            Preview and export your master resume or any variant
+            View all your resume versions with complete content for easy comparison and export
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handleExport}
-            className="bg-gradient-to-r from-primary to-primary-hover"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export to Word
-          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Panel - Selection & Info */}
-        <div className="space-y-6">
-          {/* Resume Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="w-5 h-5" />
-                Select Resume Version
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Select value={selectedResumeId} onValueChange={setSelectedResumeId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a resume version" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="master">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4" />
-                      Master Resume
-                    </div>
-                  </SelectItem>
-                  {variants.map((variant) => (
-                    <SelectItem key={variant.id} value={variant.id}>
-                      <div className="flex items-center gap-2">
-                        <Layers className="w-4 h-4" />
-                        {variant.name}
+      {/* All Resume Versions */}
+      <div className="space-y-8">
+        {allVersions.map((version) => (
+          <Card key={version.id} className="w-full">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {version.type === 'master' ? (
+                    <FileText className="w-6 h-6 text-primary" />
+                  ) : (
+                    <Layers className="w-6 h-6 text-secondary-foreground" />
+                  )}
+                  <div>
+                    <CardTitle className="text-xl">{version.name}</CardTitle>
+                    <p className="text-muted-foreground text-sm">{version.description}</p>
+                    {version.variant && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                        <Calendar className="w-3 h-3" />
+                        Updated {format(new Date(version.variant.updatedAt), 'MMM d, yyyy')}
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              {selectedVariant && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <h4 className="font-medium mb-1">{selectedVariant.name}</h4>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {selectedVariant.description}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
-                    Updated {format(new Date(selectedVariant.updatedAt), 'MMM d, yyyy')}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Resume Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Resume Statistics
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{stats.enabledSections}</p>
-                  <p className="text-xs text-muted-foreground">Sections</p>
-                </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{stats.totalExperience}</p>
-                  <p className="text-xs text-muted-foreground">Positions</p>
-                </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{stats.totalBullets}</p>
-                  <p className="text-xs text-muted-foreground">Bullets</p>
-                </div>
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <p className="text-2xl font-bold">{stats.totalSummaryPoints}</p>
-                  <p className="text-xs text-muted-foreground">Summary</p>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span>Key Achievements:</span>
-                  <Badge variant="secondary">{stats.totalAchievements}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Education Entries:</span>
-                  <Badge variant="secondary">{selectedResume.education?.length || 0}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Awards:</span>
-                  <Badge variant="secondary">{selectedResume.awards?.length || 0}</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Skills Categories:</span>
-                  <Badge variant="secondary">
-                    {(selectedResume.skills?.primary?.length || 0) + (selectedResume.skills?.secondary?.length || 0)}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <ResumePreview 
-                masterResume={selectedResume}
-                variant={selectedVariant}
-                triggerText="Full Preview"
-                triggerVariant="outline"
-                triggerIcon={<Eye className="w-4 h-4" />}
-              />
-              
-              <Button 
-                variant="outline" 
-                onClick={handleExport}
-                className="w-full justify-start"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export to Word
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={handleCopyJson}
-                className="w-full justify-start"
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Copy JSON Data
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Panel - Preview */}
-        <div className="lg:col-span-2">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Resume Preview
-                {selectedVariant && (
-                  <Badge variant="secondary" className="ml-2">
-                    Variant: {selectedVariant.name}
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6 max-h-[800px] overflow-y-auto">
-                {/* Header Section */}
-                <div className="text-center space-y-2 pb-4 border-b">
-                  <h1 className="text-2xl font-bold">{selectedResume.owner}</h1>
-                  <p className="text-lg text-muted-foreground">{selectedResume.headline}</p>
-                  <div className="flex justify-center gap-4 text-sm text-muted-foreground">
-                    <span>{selectedResume.contacts.email}</span>
-                    <span>•</span>
-                    <span>{selectedResume.contacts.phone}</span>
-                    {selectedResume.contacts.linkedin && (
-                      <>
-                        <span>•</span>
-                        <span>LinkedIn</span>
-                      </>
                     )}
                   </div>
                 </div>
-
-                {/* Dynamic Sections based on enabled status and order */}
-                {Object.entries(selectedResume.sections || {})
-                  .filter(([_, section]) => section.enabled)
-                  .sort(([_, a], [__, b]) => a.order - b.order)
-                  .map(([sectionKey]) => (
-                    <div key={sectionKey} className="space-y-3">
-                      {sectionKey === 'summary' && selectedResume.summary && selectedResume.summary.length > 0 && (
-                        <>
-                          <h3 className="text-lg font-semibold border-b pb-1">Professional Summary</h3>
-                          <ul className="space-y-2">
-                            {selectedResume.summary.map((item, index) => (
-                              <li key={index} className="text-sm leading-relaxed">• {item}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-                      
-                      {sectionKey === 'key_achievements' && selectedResume.key_achievements && selectedResume.key_achievements.length > 0 && (
-                        <>
-                          <h3 className="text-lg font-semibold border-b pb-1">Key Achievements</h3>
-                          <ul className="space-y-2">
-                            {selectedResume.key_achievements.map((item, index) => (
-                              <li key={index} className="text-sm leading-relaxed">• {item}</li>
-                            ))}
-                          </ul>
-                        </>
-                      )}
-                      
-                      {sectionKey === 'experience' && selectedResume.experience && selectedResume.experience.length > 0 && (
-                        <>
-                          <h3 className="text-lg font-semibold border-b pb-1">Experience</h3>
-                          <div className="space-y-4">
-                            {selectedResume.experience.map((exp) => (
-                              <div key={exp.id} className="space-y-2">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-medium">{exp.title}</h4>
-                                    <p className="text-muted-foreground">{exp.company} • {exp.location}</p>
-                                  </div>
-                                  <span className="text-sm text-muted-foreground">
-                                    {exp.date_start} - {exp.date_end || 'Present'}
-                                  </span>
-                                </div>
-                                <ul className="space-y-1 ml-4">
-                                  {exp.bullets.map((bullet, index) => (
-                                    <li key={index} className="text-sm">• {bullet}</li>
-                                  ))}
-                                </ul>
-                                {exp.tags.length > 0 && (
-                                  <div className="flex gap-1 flex-wrap ml-4">
-                                    {exp.tags.map((tag, index) => (
-                                      <Badge key={index} variant="outline" className="text-xs">
-                                        {tag}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                      
-                      {sectionKey === 'education' && selectedResume.education && selectedResume.education.length > 0 && (
-                        <>
-                          <h3 className="text-lg font-semibold border-b pb-1">Education</h3>
-                          <div className="space-y-2">
-                            {selectedResume.education.map((edu) => (
-                              <div key={edu.id} className="flex justify-between">
-                                <div>
-                                  <p className="font-medium">{edu.degree}</p>
-                                  <p className="text-muted-foreground">{edu.school} • {edu.location}</p>
-                                </div>
-                                {edu.year && (
-                                  <span className="text-sm text-muted-foreground">{edu.year}</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                      
-                      {sectionKey === 'awards' && selectedResume.awards && selectedResume.awards.length > 0 && (
-                        <>
-                          <h3 className="text-lg font-semibold border-b pb-1">Awards</h3>
-                          <div className="space-y-2">
-                            {selectedResume.awards.map((award) => (
-                              <div key={award.id} className="flex justify-between">
-                                <div>
-                                  <p className="font-medium">{award.title}</p>
-                                  {award.description && (
-                                    <p className="text-sm text-muted-foreground">{award.description}</p>
-                                  )}
-                                </div>
-                                {award.date && (
-                                  <span className="text-sm text-muted-foreground">{award.date}</span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                      
-                      {sectionKey === 'skills' && selectedResume.skills && (
-                        <>
-                          <h3 className="text-lg font-semibold border-b pb-1">Skills</h3>
-                          <div className="space-y-2">
-                            {selectedResume.skills.primary && selectedResume.skills.primary.length > 0 && (
-                              <div>
-                                <p className="font-medium text-sm mb-2">Primary Skills</p>
-                                <div className="flex gap-2 flex-wrap">
-                                  {selectedResume.skills.primary.map((skill, index) => (
-                                    <Badge key={index} variant="secondary">{skill}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                            {selectedResume.skills.secondary && selectedResume.skills.secondary.length > 0 && (
-                              <div>
-                                <p className="font-medium text-sm mb-2">Secondary Skills</p>
-                                <div className="flex gap-2 flex-wrap">
-                                  {selectedResume.skills.secondary.map((skill, index) => (
-                                    <Badge key={index} variant="outline">{skill}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <ResumePreview 
+                    masterResume={version.resume}
+                    variant={version.variant}
+                    triggerText="Full Preview"
+                    triggerVariant="outline"
+                    triggerIcon={<Eye className="w-4 h-4" />}
+                  />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleExportResume(version.resume, version.variant)}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleCopyResumeJson(version.resume, version.variant)}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy JSON
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-[600px] overflow-y-auto border rounded-lg p-4 bg-background/50">
+                {renderResumeContent(version.resume, version.variant, true)}
               </div>
             </CardContent>
           </Card>
-        </div>
+        ))}
       </div>
+
+      {allVersions.length === 1 && (
+        <Card className="text-center py-8">
+          <CardContent>
+            <Layers className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Variants Created</h3>
+            <p className="text-muted-foreground">
+              Create resume variants to see multiple versions here for easy comparison.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
