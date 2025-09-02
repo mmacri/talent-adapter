@@ -18,6 +18,7 @@ import Templates from "./pages/Templates";
 import Reports from "./pages/Reports";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
+import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -103,6 +104,11 @@ const App = () => {
             <Route path="/settings" element={
               <MainLayout>
                 <Settings />
+              </MainLayout>
+            } />
+            <Route path="/guide" element={
+              <MainLayout>
+                <Guide />
               </MainLayout>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

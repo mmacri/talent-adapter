@@ -32,7 +32,14 @@ import {
   Eye,
   Copy,
   Settings,
-  Layout
+  Layout,
+  Lightbulb,
+  Target,
+  Briefcase,
+  User,
+  GraduationCap,
+  Trophy,
+  Wrench
 } from 'lucide-react';
 import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
@@ -40,6 +47,8 @@ import { TipTapEditor } from '@/components/resume/TipTapEditor';
 import { TagManager } from '@/components/resume/TagManager';
 import { SectionEditor } from '@/components/resume/SectionEditor';
 import { MasterResumeActions } from '@/components/resume/MasterResumeActions';
+import { HelpCard } from '@/components/ui/help-card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 // import { SectionActions } from '@/components/resume/SectionActions';
 import { DocxExporter } from '@/lib/docxExport';
 import ResumePreview from '@/components/resume/ResumePreview';
@@ -254,7 +263,10 @@ const MasterResume = () => {
       <div className="w-80 border-r border-border bg-card flex flex-col">
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Master Resume</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Master Resume</h2>
+              <InfoTooltip content="Your comprehensive resume containing all experience and skills. This is the foundation for creating targeted variants." />
+            </div>
             <Button
               onClick={handleSave}
               disabled={!isEditing}
@@ -475,6 +487,19 @@ const MasterResume = () => {
 
             <div className="p-6">
               <TabsContent value="summary" className="mt-0">
+                <HelpCard 
+                  title="Professional Summary Tips" 
+                  icon={User}
+                  defaultVisible={!masterResume.summary || masterResume.summary.length === 0}
+                >
+                  <ul className="space-y-1 text-sm">
+                    <li>• Write in first person without using "I"</li>
+                    <li>• Highlight your most valuable skills and experience</li>
+                    <li>• Keep it concise - 3-4 sentences maximum</li>
+                    <li>• Include quantifiable achievements when possible</li>
+                  </ul>
+                </HelpCard>
+
                  <div className="flex items-center justify-between mb-4">
                    <div>
                      <h3 className="text-xl font-semibold">Professional Summary</h3>
@@ -517,6 +542,19 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="experience" className="mt-0">
+                <HelpCard 
+                  title="Experience Section Best Practices" 
+                  icon={Briefcase}
+                  defaultVisible={!masterResume.experience || masterResume.experience.length === 0}
+                >
+                  <ul className="space-y-1 text-sm">
+                    <li>• <strong>Use action verbs:</strong> "Developed", "Led", "Achieved", "Implemented"</li>
+                    <li>• <strong>Quantify results:</strong> Include percentages, dollar amounts, team sizes</li>
+                    <li>• <strong>Be comprehensive:</strong> Add all positions, even if not used in every variant</li>
+                    <li>• <strong>Add tags:</strong> Use tags to group related experience for variant filtering</li>
+                  </ul>
+                </HelpCard>
+
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -604,6 +642,22 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="education" className="mt-0">
+                <HelpCard 
+                  title="Education Section Guide" 
+                  icon={GraduationCap}
+                  defaultVisible={false}
+                >
+                  <div className="space-y-2 text-sm">
+                    <p>Include degrees, certifications, and relevant coursework:</p>
+                    <ul className="space-y-1 ml-4">
+                      <li>• Degree type, major/field of study</li>
+                      <li>• Institution name and location</li>
+                      <li>• Graduation year (or expected)</li>
+                      <li>• Relevant certifications and completion dates</li>
+                    </ul>
+                  </div>
+                </HelpCard>
+
                  <div className="flex items-center justify-between mb-4">
                    <div>
                      <h3 className="text-xl font-semibold">Education</h3>
@@ -646,6 +700,20 @@ const MasterResume = () => {
               </TabsContent>
 
               <TabsContent value="skills" className="mt-0">
+                <HelpCard 
+                  title="Skills Section Strategy" 
+                  icon={Wrench}
+                  defaultVisible={false}
+                >
+                  <div className="space-y-2 text-sm">
+                    <p><strong>Primary Skills:</strong> Your core competencies and main technical skills</p>
+                    <p><strong>Secondary Skills:</strong> Supporting skills and technologies you're familiar with</p>
+                    <div className="mt-2">
+                      <p>💡 <strong>Tip:</strong> List skills you actually use - variants can filter these based on job requirements</p>
+                    </div>
+                  </div>
+                </HelpCard>
+
                  <div className="flex items-center justify-between mb-4">
                    <div>
                      <h3 className="text-xl font-semibold">Skills & Expertise</h3>

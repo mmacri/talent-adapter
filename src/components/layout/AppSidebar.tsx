@@ -8,7 +8,8 @@ import {
   BarChart3, 
   Settings,
   User,
-  FileBarChart
+  FileBarChart,
+  HelpCircle
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,6 +35,7 @@ const navigationItems = [
 ];
 
 const utilityItems = [
+  { title: "Guide", url: "/guide", icon: HelpCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 

@@ -10,9 +10,14 @@ import {
   Download,
   Plus,
   Eye,
-  FileBarChart
+  FileBarChart,
+  HelpCircle,
+  Target,
+  Lightbulb,
+  ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { HelpCard } from '@/components/ui/help-card';
 
 const Dashboard = () => {
   const resumeContext = useResume();
@@ -47,6 +52,30 @@ const Dashboard = () => {
 
   return (
     <div className="p-3 md:p-6 space-y-4 md:space-y-6">
+      <HelpCard 
+        title="Getting Started with Resume Manager" 
+        icon={Lightbulb}
+        defaultVisible={variants.length === 0 && jobApplications.length === 0}
+      >
+        <div className="space-y-2">
+          <p>Welcome! Here's how to get started:</p>
+          <div className="space-y-1 text-sm">
+            <div className="flex items-center gap-2">
+              <ArrowRight className="w-3 h-3 text-blue-600" />
+              <span>1. Build your <strong>Master Resume</strong> with all experience</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ArrowRight className="w-3 h-3 text-green-600" />
+              <span>2. Create <strong>Variants</strong> for different job types</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ArrowRight className="w-3 h-3 text-purple-600" />
+              <span>3. Track applications and export targeted resumes</span>
+            </div>
+          </div>
+        </div>
+      </HelpCard>
+
       {/* Header - Mobile responsive */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
         <div>

@@ -26,7 +26,10 @@ import {
   Eye,
   Calendar,
   Tag,
-  FileText
+  FileText,
+  Layers,
+  Target,
+  Filter
 } from 'lucide-react';
 import { Variant } from '@/types/resume';
 import { DocxExporter } from '@/lib/docxExport';
@@ -34,6 +37,8 @@ import { VariantResolver } from '@/lib/variantResolver';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import ResumePreview from '@/components/resume/ResumePreview';
+import { HelpCard } from '@/components/ui/help-card';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 
 const Variants = () => {
   const { variants, masterResume, addVariant, deleteVariant } = useResume();
@@ -140,13 +145,36 @@ const Variants = () => {
 
   return (
     <div className="space-y-6">
+      <HelpCard 
+        title="Resume Variants Explained" 
+        icon={Target}
+        defaultVisible={variants.length === 0}
+      >
+        <div className="space-y-2">
+          <p>Variants are targeted versions of your master resume customized for specific roles or industries.</p>
+          <div className="grid gap-2 md:grid-cols-2 text-sm">
+            <div className="flex items-start gap-2">
+              <Filter className="w-4 h-4 mt-0.5 text-blue-600" />
+              <span><strong>Rules:</strong> Filter content by tags, dates, or experience</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <Edit3 className="w-4 h-4 mt-0.5 text-green-600" />
+              <span><strong>Overrides:</strong> Custom content for specific sections</span>
+            </div>
+          </div>
+        </div>
+      </HelpCard>
+
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resume Variants</h1>
-          <p className="text-muted-foreground">
-            Create targeted versions of your resume for different opportunities
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Resume Variants</h1>
+            <p className="text-muted-foreground">
+              Create targeted versions of your resume for different opportunities
+            </p>
+          </div>
+          <InfoTooltip content="Variants allow you to customize your master resume for specific job types. Create rules to filter content and overrides to customize text for targeted applications." />
         </div>
         <Button onClick={handleCreateVariant} className="bg-gradient-to-r from-primary to-primary-hover">
           <Plus className="w-4 h-4 mr-2" />
