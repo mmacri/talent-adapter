@@ -64,61 +64,69 @@ const Dashboard = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="glass">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <FileText className="h-6 w-6 text-primary" />
+        <Link to="/variants">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-2xl font-bold">{variants.length}</p>
+                  <p className="text-sm text-muted-foreground">Resume Variants</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-2xl font-bold">{variants.length}</p>
-                <p className="text-sm text-muted-foreground">Resume Variants</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="glass">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-accent/10 rounded-lg">
-                <Briefcase className="h-6 w-6 text-accent" />
+        <Link to="/jobs">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-accent/10 rounded-lg">
+                  <Briefcase className="h-6 w-6 text-accent" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-2xl font-bold">{jobApplications.length}</p>
+                  <p className="text-sm text-muted-foreground">Job Applications</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-2xl font-bold">{jobApplications.length}</p>
-                <p className="text-sm text-muted-foreground">Job Applications</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="glass">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-success/10 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-success" />
+        <Link to="/jobs">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-success/10 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-success" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-2xl font-bold">{statusCounts.interview || 0}</p>
+                  <p className="text-sm text-muted-foreground">Interviews</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-2xl font-bold">{statusCounts.interview || 0}</p>
-                <p className="text-sm text-muted-foreground">Interviews</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="glass">
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-warning/10 rounded-lg">
-                <Download className="h-6 w-6 text-warning" />
+        <Link to="/cover-letters">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <div className="p-2 bg-warning/10 rounded-lg">
+                  <Download className="h-6 w-6 text-warning" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-2xl font-bold">{coverLetters.length}</p>
+                  <p className="text-sm text-muted-foreground">Cover Letters</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-2xl font-bold">{coverLetters.length}</p>
-                <p className="text-sm text-muted-foreground">Cover Letters</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
