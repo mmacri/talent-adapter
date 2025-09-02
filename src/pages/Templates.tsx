@@ -55,6 +55,67 @@ const Templates = () => {
 
   const currentResume = getCurrentResumeContent();
 
+  // Get style classes based on template configuration
+  const getTemplateStyles = (template: Template) => {
+    const styles = template.styles || {};
+    
+    // Font size mapping
+    const fontSizeClasses = {
+      'small': 'text-[9px]',
+      'medium': 'text-[10px]',
+      'large': 'text-[11px]'
+    };
+    
+    // Spacing mapping
+    const spacingClasses = {
+      'compact': 'space-y-1',
+      'comfortable': 'space-y-2',
+      'traditional': 'space-y-1.5'
+    };
+    
+    // Color scheme mapping
+    const colorSchemes = {
+      'professional-blue': {
+        header: 'bg-blue-900 text-white',
+        headings: 'text-blue-700',
+        text: 'text-gray-800',
+        accent: 'border-blue-200'
+      },
+      'modern-gray': {
+        header: 'bg-gray-800 text-white',
+        headings: 'text-gray-700',
+        text: 'text-gray-600',
+        accent: 'border-gray-300'
+      },
+      'classic-black': {
+        header: 'bg-gray-900 text-white',
+        headings: 'text-gray-900',
+        text: 'text-gray-800',
+        accent: 'border-gray-400'
+      },
+      'creative-purple': {
+        header: 'bg-purple-700 text-white',
+        headings: 'text-purple-700',
+        text: 'text-gray-700',
+        accent: 'border-purple-200'
+      }
+    };
+    
+    // Layout classes
+    const layoutClasses = {
+      'single-column': 'flex flex-col',
+      'two-column': 'grid grid-cols-3 gap-2',
+      'three-column': 'grid grid-cols-4 gap-1'
+    };
+    
+    return {
+      fontSize: fontSizeClasses[styles.fontSize as keyof typeof fontSizeClasses] || 'text-[10px]',
+      spacing: spacingClasses[styles.spacing as keyof typeof spacingClasses] || 'space-y-2',
+      colors: colorSchemes[styles.colors as keyof typeof colorSchemes] || colorSchemes['modern-gray'],
+      layout: layoutClasses[styles.layout as keyof typeof layoutClasses] || 'flex flex-col'
+    };
+  };
+
   const getLayoutIcon = (layout: string) => {
     switch (layout) {
       case 'two-column':
@@ -151,53 +212,164 @@ const Templates = () => {
                 {/* Template Preview Area */}
                 <div className="aspect-[3/4] bg-background rounded-lg border-2 border-border relative overflow-hidden">
                   {currentResume ? (
-                    <div className="p-3 text-xs space-y-2 h-full overflow-hidden">
-                      {/* Header */}
-                      <div className="text-center border-b pb-2 mb-2">
-                        <div className="font-bold text-sm">{currentResume.owner}</div>
-                        <div className="text-xs text-muted-foreground">{currentResume.headline}</div>
-                        <div className="text-xs">{currentResume.contacts.email}</div>
-                      </div>
-                      
-                      {/* Summary */}
-                      {currentResume.sections.summary.enabled && currentResume.summary.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-xs mb-1">SUMMARY</div>
-                          <div className="text-xs space-y-1">
-                            {currentResume.summary.slice(0, 2).map((item, i) => (
-                              <div key={i} className="truncate">{item}</div>
-                            ))}
+                    <div className={`p-2 h-full overflow-hidden ${getTemplateStyles(template).fontSize} ${getTemplateStyles(template).spacing}`}>
+                      {template.styles?.layout === 'two-column' ? (
+                        /* Two Column Layout */
+                        <div className="grid grid-cols-3 gap-2 h-full">
+                          {/* Left Sidebar */}
+                          <div className={`col-span-1 ${getTemplateStyles(template).colors.header} p-2 rounded-sm`}>
+                            <div className="space-y-2">
+                              <div className="text-center">
+                                <div className="font-bold text-xs">{currentResume.owner}</div>
+                                <div className="text-xs opacity-90">{currentResume.contacts.email}</div>
+                                <div className="text-xs opacity-90">{currentResume.contacts.phone}</div>
+                              </div>
+                              
+                              {/* Skills in sidebar */}
+                              {currentResume.sections.skills.enabled && (
+                                <div>
+                                  <div className="font-semibold text-xs mb-1 border-b border-white/20 pb-1">SKILLS</div>
+                                  <div className="space-y-1">
+                                    {currentResume.skills.primary.slice(0, 6).map((skill, i) => (
+                                      <div key={i} className="text-xs">• {skill}</div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* Main Content */}
+                          <div className="col-span-2 p-2 space-y-2">
+                            <div className={`${getTemplateStyles(template).colors.headings} font-bold text-sm border-b ${getTemplateStyles(template).colors.accent} pb-1`}>
+                              {currentResume.headline}
+                            </div>
+                            
+                            {/* Summary */}
+                            {currentResume.sections.summary.enabled && (
+                              <div>
+                                <div className={`font-semibold text-xs mb-1 ${getTemplateStyles(template).colors.headings}`}>SUMMARY</div>
+                                {currentResume.summary.slice(0, 2).map((item, i) => (
+                                  <div key={i} className={`text-xs ${getTemplateStyles(template).colors.text} leading-tight`}>{item}</div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Experience */}
+                            {currentResume.sections.experience.enabled && (
+                              <div>
+                                <div className={`font-semibold text-xs mb-1 ${getTemplateStyles(template).colors.headings}`}>EXPERIENCE</div>
+                                {currentResume.experience.slice(0, 2).map((exp, i) => (
+                                  <div key={i} className="mb-2">
+                                    <div className={`font-medium text-xs ${getTemplateStyles(template).colors.text}`}>{exp.title}</div>
+                                    <div className={`text-xs ${getTemplateStyles(template).colors.text} opacity-75`}>{exp.company}</div>
+                                    {exp.bullets.slice(0, 1).map((bullet, j) => (
+                                      <div key={j} className={`text-xs ${getTemplateStyles(template).colors.text} leading-tight`}>• {bullet}</div>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      )}
-                      
-                      {/* Experience */}
-                      {currentResume.sections.experience.enabled && currentResume.experience.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-xs mb-1">EXPERIENCE</div>
-                          <div className="space-y-2">
-                            {currentResume.experience.slice(0, 2).map((exp, i) => (
-                              <div key={i}>
-                                <div className="font-medium text-xs truncate">{exp.title}</div>
-                                <div className="text-xs text-muted-foreground truncate">{exp.company}</div>
-                                <div className="text-xs">
-                                  {exp.bullets.slice(0, 1).map((bullet, j) => (
-                                    <div key={j} className="truncate">• {bullet}</div>
+                      ) : template.styles?.layout === 'three-column' ? (
+                        /* Three Column Layout */
+                        <div className="grid grid-cols-4 gap-1 h-full">
+                          {/* Left sidebar - Contact */}
+                          <div className={`col-span-1 ${getTemplateStyles(template).colors.header} p-1.5 rounded-sm`}>
+                            <div className="text-center">
+                              <div className="font-bold text-xs">{currentResume.owner}</div>
+                              <div className="text-xs opacity-90 leading-tight">{currentResume.contacts.email}</div>
+                            </div>
+                          </div>
+                          
+                          {/* Main content */}
+                          <div className="col-span-2 p-1.5 space-y-1">
+                            <div className={`${getTemplateStyles(template).colors.headings} font-bold text-xs`}>{currentResume.headline}</div>
+                            
+                            {currentResume.sections.summary.enabled && (
+                              <div>
+                                <div className={`font-semibold text-xs ${getTemplateStyles(template).colors.headings}`}>SUMMARY</div>
+                                <div className={`text-xs ${getTemplateStyles(template).colors.text} leading-tight`}>
+                                  {currentResume.summary[0]}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {currentResume.sections.experience.enabled && (
+                              <div>
+                                <div className={`font-semibold text-xs ${getTemplateStyles(template).colors.headings}`}>EXPERIENCE</div>
+                                <div className={`text-xs ${getTemplateStyles(template).colors.text}`}>
+                                  <div className="font-medium">{currentResume.experience[0]?.title}</div>
+                                  <div className="opacity-75">{currentResume.experience[0]?.company}</div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Right sidebar - Skills */}
+                          <div className="col-span-1 p-1.5">
+                            {currentResume.sections.skills.enabled && (
+                              <div>
+                                <div className={`font-semibold text-xs mb-1 ${getTemplateStyles(template).colors.headings}`}>SKILLS</div>
+                                <div className="space-y-0.5">
+                                  {currentResume.skills.primary.slice(0, 4).map((skill, i) => (
+                                    <div key={i} className={`text-xs ${getTemplateStyles(template).colors.text}`}>• {skill}</div>
                                   ))}
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
                         </div>
-                      )}
-                      
-                      {/* Skills */}
-                      {currentResume.sections.skills.enabled && currentResume.skills.primary.length > 0 && (
-                        <div>
-                          <div className="font-semibold text-xs mb-1">SKILLS</div>
-                          <div className="text-xs">
-                            {currentResume.skills.primary.slice(0, 6).join(' • ')}
+                      ) : (
+                        /* Single Column Layout */
+                        <div className="space-y-2">
+                          {/* Header */}
+                          <div className={`text-center ${getTemplateStyles(template).colors.header} p-2 rounded-sm`}>
+                            <div className="font-bold text-sm">{currentResume.owner}</div>
+                            <div className="text-xs opacity-90">{currentResume.headline}</div>
+                            <div className="text-xs opacity-90">{currentResume.contacts.email}</div>
                           </div>
+                          
+                          {/* Summary */}
+                          {currentResume.sections.summary.enabled && (
+                            <div>
+                              <div className={`font-semibold text-xs mb-1 ${getTemplateStyles(template).colors.headings} border-b ${getTemplateStyles(template).colors.accent} pb-0.5`}>SUMMARY</div>
+                              <div className={`text-xs ${getTemplateStyles(template).colors.text} leading-tight space-y-1`}>
+                                {currentResume.summary.slice(0, template.styles?.spacing === 'compact' ? 1 : 2).map((item, i) => (
+                                  <div key={i}>{item}</div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Experience */}
+                          {currentResume.sections.experience.enabled && (
+                            <div>
+                              <div className={`font-semibold text-xs mb-1 ${getTemplateStyles(template).colors.headings} border-b ${getTemplateStyles(template).colors.accent} pb-0.5`}>EXPERIENCE</div>
+                              <div className="space-y-1">
+                                {currentResume.experience.slice(0, template.styles?.spacing === 'compact' ? 1 : 2).map((exp, i) => (
+                                  <div key={i}>
+                                    <div className={`font-medium text-xs ${getTemplateStyles(template).colors.text}`}>{exp.title}</div>
+                                    <div className={`text-xs ${getTemplateStyles(template).colors.text} opacity-75`}>{exp.company}</div>
+                                    {exp.bullets.slice(0, 1).map((bullet, j) => (
+                                      <div key={j} className={`text-xs ${getTemplateStyles(template).colors.text} leading-tight`}>• {bullet}</div>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Skills */}
+                          {currentResume.sections.skills.enabled && (
+                            <div>
+                              <div className={`font-semibold text-xs mb-1 ${getTemplateStyles(template).colors.headings} border-b ${getTemplateStyles(template).colors.accent} pb-0.5`}>SKILLS</div>
+                              <div className={`text-xs ${getTemplateStyles(template).colors.text}`}>
+                                {currentResume.skills.primary.slice(0, template.styles?.spacing === 'compact' ? 4 : 6).join(' • ')}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
