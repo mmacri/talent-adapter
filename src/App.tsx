@@ -13,6 +13,7 @@ import Jobs from "./pages/Jobs";
 import JobEditor from "./pages/JobEditor";
 import CoverLetters from "./pages/CoverLetters";
 import CoverLetterEditor from "./pages/CoverLetterEditor";
+import Reports from "./pages/Reports";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -79,6 +80,11 @@ const App = () => (
             <Route path="/cover-letters/new" element={
               <MainLayout>
                 <CoverLetterEditor />
+              </MainLayout>
+            } />
+            <Route path="/reports" element={
+              <MainLayout>
+                <Reports />
               </MainLayout>
             } />
             <Route path="/templates" element={
