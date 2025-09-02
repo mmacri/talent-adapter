@@ -58,7 +58,7 @@ import {
   Printer,
   CalendarRange,
   Upload,
-  FileSpreadsheet
+  Table2
 } from 'lucide-react';
 import { JobApplication } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
@@ -736,7 +736,7 @@ const Jobs = () => {
             <SelectTrigger className="w-auto">
               <SelectValue placeholder={
                 <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4" />
+                  <Table2 className="w-4 h-4" />
                   <span>Export/Import</span>
                 </div>
               } />
@@ -808,7 +808,7 @@ const Jobs = () => {
                     />
                     <label htmlFor="file-upload" className="cursor-pointer">
                       <div className="space-y-2">
-                        <FileSpreadsheet className="w-8 h-8 mx-auto text-muted-foreground" />
+                        <Table2 className="w-8 h-8 mx-auto text-muted-foreground" />
                         <p className="text-sm">
                           {importFile ? importFile.name : 'Click to select CSV or Excel file'}
                         </p>
