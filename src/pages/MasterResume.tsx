@@ -7,6 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Save, 
   Plus, 
@@ -18,7 +27,9 @@ import {
   Search,
   ChevronDown,
   ChevronRight,
-  Download
+  Download,
+  Eye,
+  Copy
 } from 'lucide-react';
 import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
@@ -26,6 +37,7 @@ import { TipTapEditor } from '@/components/resume/TipTapEditor';
 import { TagManager } from '@/components/resume/TagManager';
 import { SectionEditor } from '@/components/resume/SectionEditor';
 import { DocxExporter } from '@/lib/docxExport';
+import ResumePreview from '@/components/resume/ResumePreview';
 import { useToast } from '@/hooks/use-toast';
 
 const MasterResume = () => {
@@ -34,6 +46,7 @@ const MasterResume = () => {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [showJsonDialog, setShowJsonDialog] = useState(false);
   const { toast } = useToast();
 
   const handleSave = useCallback(() => {
@@ -43,8 +56,31 @@ const MasterResume = () => {
         updatedAt: new Date().toISOString()
       });
       setIsEditing(false);
+      toast({
+        title: "Resume Saved",
+        description: "Your master resume has been saved successfully.",
+      });
     }
-  }, [masterResume, setMasterResume]);
+  }, [masterResume, setMasterResume, toast]);
+
+  const handleCopyJson = async () => {
+    if (!masterResume) return;
+    
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(masterResume, null, 2));
+      toast({
+        title: "JSON Copied",
+        description: "Resume data has been copied to your clipboard.",
+      });
+    } catch (error) {
+      console.error('Copy failed:', error);
+      toast({
+        title: "Copy Failed",
+        description: "Unable to copy to clipboard. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!masterResume) {
     return (
@@ -169,14 +205,51 @@ const MasterResume = () => {
         
         <div className="mt-auto p-4 border-t border-border">
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start">
-              <History className="w-4 h-4 mr-2" />
-              View History
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              <FileJson className="w-4 h-4 mr-2" />
-              JSON View
-            </Button>
+            {masterResume && (
+              <ResumePreview 
+                masterResume={masterResume}
+                triggerText="Preview Resume"
+                triggerVariant="outline"
+                triggerIcon={<Eye className="w-4 h-4" />}
+              />
+            )}
+            
+            <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <FileJson className="w-4 h-4 mr-2" />
+                  JSON View
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <FileJson className="w-5 h-5" />
+                    Master Resume JSON Data
+                  </DialogTitle>
+                  <DialogDescription>
+                    Raw JSON data structure for your master resume
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="flex gap-2 mb-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleCopyJson}
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copy JSON
+                  </Button>
+                </div>
+
+                <ScrollArea className="flex-1">
+                  <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
+                    <code>{JSON.stringify(masterResume, null, 2)}</code>
+                  </pre>
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
@@ -191,6 +264,15 @@ const MasterResume = () => {
               <p className="text-muted-foreground">{masterResume.headline}</p>
             </div>
             <div className="flex gap-2">
+              {masterResume && (
+                <ResumePreview 
+                  masterResume={masterResume}
+                  triggerText="Preview"
+                  triggerVariant="outline"
+                  triggerIcon={<Eye className="w-4 h-4" />}
+                />
+              )}
+              
               <Button
                 onClick={handleExport}
                 variant="outline"
@@ -199,6 +281,7 @@ const MasterResume = () => {
                 <Download className="w-4 h-4 mr-2" />
                 Export to Word
               </Button>
+              
               {isEditing && (
                 <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
                   Unsaved Changes
