@@ -23,10 +23,20 @@ export class VariantResolver {
   private static applySectionSettings(resume: ResumeMaster, variant: Variant): ResumeMaster {
     const result = { ...resume };
     
+    // Ensure sectionSettings exists with defaults if missing
+    const sectionSettings = variant.sectionSettings || {
+      summary: { enabled: true, useCustom: false },
+      key_achievements: { enabled: true, useCustom: false },
+      experience: { enabled: true },
+      education: { enabled: true },
+      awards: { enabled: true },
+      skills: { enabled: true }
+    };
+    
     // Update section settings based on variant configuration
     const newSections = { ...resume.sections };
     
-    Object.entries(variant.sectionSettings).forEach(([sectionKey, settings]) => {
+    Object.entries(sectionSettings).forEach(([sectionKey, settings]) => {
       if (newSections[sectionKey as keyof typeof newSections]) {
         newSections[sectionKey as keyof typeof newSections].enabled = settings.enabled;
       }
@@ -38,6 +48,11 @@ export class VariantResolver {
 
   private static applyCustomContent(resume: ResumeMaster, variant: Variant): ResumeMaster {
     const result = { ...resume };
+    
+    // Ensure sectionSettings exists before checking useCustom
+    if (!variant.sectionSettings) {
+      return result;
+    }
     
     // Apply custom summary if enabled
     if (variant.sectionSettings.summary?.useCustom && variant.customSummary) {
