@@ -54,6 +54,25 @@ const ResumePreview = ({
     ? VariantResolver.resolveVariant(masterResume, variant)
     : masterResume;
 
+  // Filter sections based on master resume section settings
+  const getFilteredResume = (resume: ResumeMaster) => {
+    if (!resume.sections) return resume;
+    
+    const filtered = { ...resume };
+    
+    // Only include enabled sections
+    if (!resume.sections.summary?.enabled) filtered.summary = [];
+    if (!resume.sections.key_achievements?.enabled) filtered.key_achievements = [];
+    if (!resume.sections.experience?.enabled) filtered.experience = [];
+    if (!resume.sections.education?.enabled) filtered.education = [];
+    if (!resume.sections.awards?.enabled) filtered.awards = [];
+    if (!resume.sections.skills?.enabled) filtered.skills = { primary: [] };
+    
+    return filtered;
+  };
+
+  const displayResume = getFilteredResume(resolvedResume);
+
   const formatDateRange = (startDate: string, endDate: string | null) => {
     const start = format(new Date(startDate), 'MMM yyyy');
     const end = endDate ? format(new Date(endDate), 'MMM yyyy') : 'Present';
@@ -64,7 +83,7 @@ const ResumePreview = ({
     setIsCopying(true);
     try {
       // Create a text version of the resume
-      const resumeText = generateResumeText(resolvedResume);
+      const resumeText = generateResumeText(displayResume);
       await navigator.clipboard.writeText(resumeText);
       
       toast({
@@ -90,7 +109,7 @@ const ResumePreview = ({
         ? `${masterResume.owner.replace(/\s+/g, '-')}_${variant.name.replace(/\s+/g, '-')}_${format(new Date(), 'yyyy-MM-dd')}.docx`
         : `${masterResume.owner.replace(/\s+/g, '-')}_Master_Resume_${format(new Date(), 'yyyy-MM-dd')}.docx`;
       
-      await DocxExporter.exportResume(resolvedResume, variant, fileName);
+      await DocxExporter.exportResume(displayResume, variant, fileName);
       
       toast({
         title: "Resume Downloaded",
@@ -245,33 +264,33 @@ const ResumePreview = ({
             <Card>
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl font-bold">
-                  {resolvedResume.owner}
+                  {displayResume.owner}
                 </CardTitle>
                 <p className="text-lg text-muted-foreground">
-                  {resolvedResume.headline}
+                  {displayResume.headline}
                 </p>
                 
                 {/* Contact Info */}
                 <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm">
-                  {resolvedResume.contacts.email && (
+                  {displayResume.contacts.email && (
                     <div className="flex items-center gap-1">
                       <Mail className="w-3 h-3" />
-                      <span>{resolvedResume.contacts.email}</span>
+                      <span>{displayResume.contacts.email}</span>
                     </div>
                   )}
-                  {resolvedResume.contacts.phone && (
+                  {displayResume.contacts.phone && (
                     <div className="flex items-center gap-1">
                       <Phone className="w-3 h-3" />
-                      <span>{resolvedResume.contacts.phone}</span>
+                      <span>{displayResume.contacts.phone}</span>
                     </div>
                   )}
-                  {resolvedResume.contacts.website && (
+                  {displayResume.contacts.website && (
                     <div className="flex items-center gap-1">
                       <Globe className="w-3 h-3" />
-                      <span>{resolvedResume.contacts.website}</span>
+                      <span>{displayResume.contacts.website}</span>
                     </div>
                   )}
-                  {resolvedResume.contacts.linkedin && (
+                  {displayResume.contacts.linkedin && (
                     <div className="flex items-center gap-1">
                       <Linkedin className="w-3 h-3" />
                       <span>LinkedIn</span>
@@ -282,14 +301,14 @@ const ResumePreview = ({
             </Card>
 
             {/* Summary */}
-            {resolvedResume.summary && resolvedResume.summary.length > 0 && (
+            {displayResume.summary && displayResume.summary.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Professional Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {resolvedResume.summary.map((bullet, index) => (
+                    {displayResume.summary.map((bullet, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                         <span className="text-sm">{bullet}</span>
@@ -301,14 +320,14 @@ const ResumePreview = ({
             )}
 
             {/* Key Achievements */}
-            {resolvedResume.key_achievements && resolvedResume.key_achievements.length > 0 && (
+            {displayResume.key_achievements && displayResume.key_achievements.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Key Achievements</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {resolvedResume.key_achievements.map((achievement, index) => (
+                    {displayResume.key_achievements.map((achievement, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <span className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
                         <span className="text-sm">{achievement}</span>
@@ -320,13 +339,13 @@ const ResumePreview = ({
             )}
 
             {/* Experience */}
-            {resolvedResume.experience && resolvedResume.experience.length > 0 && (
+            {displayResume.experience && displayResume.experience.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Professional Experience</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {resolvedResume.experience.map((exp, index) => (
+                  {displayResume.experience.map((exp, index) => (
                     <div key={exp.id}>
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -366,7 +385,7 @@ const ResumePreview = ({
                         </div>
                       )}
                       
-                      {index < resolvedResume.experience.length - 1 && (
+                      {index < displayResume.experience.length - 1 && (
                         <Separator className="mt-4" />
                       )}
                     </div>
@@ -376,14 +395,14 @@ const ResumePreview = ({
             )}
 
             {/* Skills */}
-            {resolvedResume.skills?.primary && resolvedResume.skills.primary.length > 0 && (
+            {displayResume.skills?.primary && displayResume.skills.primary.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Core Skills</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {resolvedResume.skills.primary.map((skill, index) => (
+                    {displayResume.skills.primary.map((skill, index) => (
                       <Badge key={index} variant="secondary">
                         {skill}
                       </Badge>
@@ -394,13 +413,13 @@ const ResumePreview = ({
             )}
 
             {/* Education */}
-            {resolvedResume.education && resolvedResume.education.length > 0 && (
+            {displayResume.education && displayResume.education.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Education</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {resolvedResume.education.map((edu, index) => (
+                  {displayResume.education.map((edu, index) => (
                     <div key={edu.id} className="flex justify-between items-center">
                       <div>
                         <h4 className="font-semibold">{edu.degree}</h4>
@@ -421,14 +440,14 @@ const ResumePreview = ({
             )}
 
             {/* Awards */}
-            {resolvedResume.awards && resolvedResume.awards.length > 0 && (
+            {displayResume.awards && displayResume.awards.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Awards & Recognition</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {resolvedResume.awards.map((award) => (
+                    {displayResume.awards.map((award) => (
                       <li key={award.id} className="flex items-start gap-2">
                         <span className="w-2 h-2 bg-success rounded-full mt-2 flex-shrink-0" />
                         <span className="text-sm">

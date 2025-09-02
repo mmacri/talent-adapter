@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -29,7 +30,9 @@ import {
   ChevronRight,
   Download,
   Eye,
-  Copy
+  Copy,
+  Settings,
+  Layout
 } from 'lucide-react';
 import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
@@ -47,6 +50,7 @@ const MasterResume = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [showJsonDialog, setShowJsonDialog] = useState(false);
+  const [showSectionSettings, setShowSectionSettings] = useState(false);
   const { toast } = useToast();
 
   const handleSave = useCallback(() => {
@@ -80,6 +84,40 @@ const MasterResume = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleSectionToggle = (sectionKey: string, enabled: boolean) => {
+    if (!masterResume) return;
+    
+    setMasterResume({
+      ...masterResume,
+      sections: {
+        ...masterResume.sections,
+        [sectionKey]: {
+          ...masterResume.sections[sectionKey],
+          enabled
+        }
+      },
+      updatedAt: new Date().toISOString()
+    });
+    setIsEditing(true);
+  };
+
+  const handleSectionOrderChange = (sectionKey: string, order: number) => {
+    if (!masterResume) return;
+    
+    setMasterResume({
+      ...masterResume,
+      sections: {
+        ...masterResume.sections,
+        [sectionKey]: {
+          ...masterResume.sections[sectionKey],
+          order
+        }
+      },
+      updatedAt: new Date().toISOString()
+    });
+    setIsEditing(true);
   };
 
   if (!masterResume) {
@@ -158,13 +196,49 @@ const MasterResume = () => {
   };
 
   const sections = [
-    { id: 'summary', title: 'Professional Summary', icon: Edit3 },
-    { id: 'achievements', title: 'Key Achievements', icon: Plus },
-    { id: 'experience', title: 'Experience', icon: Edit3 },
-    { id: 'education', title: 'Education', icon: Edit3 },
-    { id: 'awards', title: 'Awards', icon: Plus },
-    { id: 'skills', title: 'Skills', icon: Tag },
-  ];
+    { 
+      id: 'summary', 
+      title: 'Professional Summary', 
+      icon: Edit3,
+      enabled: masterResume?.sections?.summary?.enabled ?? true,
+      order: masterResume?.sections?.summary?.order ?? 1
+    },
+    { 
+      id: 'key_achievements', 
+      title: 'Key Achievements', 
+      icon: Plus,
+      enabled: masterResume?.sections?.key_achievements?.enabled ?? true,
+      order: masterResume?.sections?.key_achievements?.order ?? 2
+    },
+    { 
+      id: 'experience', 
+      title: 'Experience', 
+      icon: Edit3,
+      enabled: masterResume?.sections?.experience?.enabled ?? true,
+      order: masterResume?.sections?.experience?.order ?? 3
+    },
+    { 
+      id: 'education', 
+      title: 'Education', 
+      icon: Edit3,
+      enabled: masterResume?.sections?.education?.enabled ?? true,
+      order: masterResume?.sections?.education?.order ?? 4
+    },
+    { 
+      id: 'awards', 
+      title: 'Awards', 
+      icon: Plus,
+      enabled: masterResume?.sections?.awards?.enabled ?? true,
+      order: masterResume?.sections?.awards?.order ?? 5
+    },
+    { 
+      id: 'skills', 
+      title: 'Skills', 
+      icon: Tag,
+      enabled: masterResume?.sections?.skills?.enabled ?? true,
+      order: masterResume?.sections?.skills?.order ?? 6
+    },
+  ].sort((a, b) => a.order - b.order);
 
   return (
     <div className="flex h-screen bg-background">
@@ -213,6 +287,83 @@ const MasterResume = () => {
                 triggerIcon={<Eye className="w-4 h-4" />}
               />
             )}
+            
+            <Dialog open={showSectionSettings} onOpenChange={setShowSectionSettings}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <Layout className="w-4 h-4 mr-2" />
+                  Section Settings
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Layout className="w-5 h-5" />
+                    Section Visibility & Order
+                  </DialogTitle>
+                  <DialogDescription>
+                    Control which sections appear in your master resume and their order
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div className="grid gap-4">
+                    {sections.map((section) => (
+                      <Card key={section.id} className={`p-4 ${!section.enabled ? 'opacity-60' : ''}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <section.icon className="w-5 h-5" />
+                            <div>
+                              <h4 className="font-medium">{section.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Order: {section.order}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`order-${section.id}`} className="text-sm">
+                                Order:
+                              </Label>
+                              <Input
+                                id={`order-${section.id}`}
+                                type="number"
+                                min="1"
+                                max="6"
+                                value={section.order}
+                                onChange={(e) => handleSectionOrderChange(section.id, parseInt(e.target.value) || 1)}
+                                className="w-16"
+                              />
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`switch-${section.id}`} className="text-sm">
+                                Include:
+                              </Label>
+                              <Switch
+                                id={`switch-${section.id}`}
+                                checked={section.enabled}
+                                onCheckedChange={(enabled) => handleSectionToggle(section.id, enabled)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  <div className="flex justify-between pt-4 border-t">
+                    <p className="text-sm text-muted-foreground">
+                      {sections.filter(s => s.enabled).length} of {sections.length} sections enabled
+                    </p>
+                    <Button onClick={() => setShowSectionSettings(false)}>
+                      Done
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
             
             <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
               <DialogTrigger asChild>
@@ -299,7 +450,7 @@ const MasterResume = () => {
           <Tabs value={selectedSection} onValueChange={setSelectedSection} className="h-full">
             <div className="border-b border-border bg-muted/50">
               <TabsList className="h-auto p-2 bg-transparent">
-                {sections.map((section) => (
+                {sections.filter(section => section.enabled).map((section) => (
                   <TabsTrigger
                     key={section.id}
                     value={section.id}
@@ -323,7 +474,7 @@ const MasterResume = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="achievements" className="mt-0">
+              <TabsContent value="key_achievements" className="mt-0">
                 <SectionEditor
                   title="Key Achievements"
                   description="Your most significant professional accomplishments"

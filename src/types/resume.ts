@@ -53,7 +53,12 @@ export interface ResumeMaster {
     secondary?: string[];
   };
   sections: {
-    [key: string]: any;
+    summary: { enabled: boolean; order: number };
+    key_achievements: { enabled: boolean; order: number };
+    experience: { enabled: boolean; order: number };
+    education: { enabled: boolean; order: number };
+    awards: { enabled: boolean; order: number };
+    skills: { enabled: boolean; order: number };
   };
   createdAt: string;
   updatedAt: string;

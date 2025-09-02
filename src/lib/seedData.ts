@@ -144,7 +144,14 @@ export const createSeedData = () => {
     skills: {
       primary: ['ServiceNow GRC/IRM', 'Partner Strategy', 'Solution Consulting', 'Customer Success', 'AI Governance']
     },
-    sections: {},
+    sections: {
+      summary: { enabled: true, order: 1 },
+      key_achievements: { enabled: true, order: 2 },
+      experience: { enabled: true, order: 3 },
+      education: { enabled: true, order: 4 },
+      awards: { enabled: true, order: 5 },
+      skills: { enabled: true, order: 6 }
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
