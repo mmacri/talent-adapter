@@ -20,7 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { DatePickerWithRange } from '@/components/ui/date-picker';
 import { Label } from '@/components/ui/label';
 import { 
   Table,
@@ -49,7 +48,7 @@ import {
   Edit3, 
   ExternalLink,
   Trash2, 
-  Calendar,
+  Calendar as CalendarIcon,
   Building,
   MapPin,
   DollarSign,
@@ -63,6 +62,12 @@ import { JobApplication } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
 import { format, subDays, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const statusColors = {
   prospect: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -97,6 +102,45 @@ const Jobs = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Simple inline DatePickerWithRange component
+  const DatePickerWithRange = ({ date, onDateChange }: { date?: DateRange, onDateChange?: (date: DateRange | undefined) => void }) => {
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-[260px] justify-start text-left font-normal"
+          >
+            <CalendarRange className="mr-2 h-4 w-4" />
+            {date?.from ? (
+              date.to ? (
+                <>
+                  {format(date.from, "LLL dd, y")} -{" "}
+                  {format(date.to, "LLL dd, y")}
+                </>
+              ) : (
+                format(date.from, "LLL dd, y")
+              )
+            ) : (
+              <span>Pick a date range</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            initialFocus
+            mode="range"
+            defaultMonth={date?.from}
+            selected={date}
+            onSelect={(range) => onDateChange?.(range)}
+            numberOfMonths={2}
+            className="p-3 pointer-events-auto"
+          />
+        </PopoverContent>
+      </Popover>
+    );
+  };
 
   const getReportJobs = () => {
     const now = new Date();
@@ -385,7 +429,7 @@ const Jobs = () => {
 
               {job.appliedOn && (
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Calendar className="w-3 h-3" />
+                  <CalendarIcon className="w-3 h-3" />
                   {format(new Date(job.appliedOn), 'MMM d')}
                 </div>
               )}
@@ -584,7 +628,7 @@ const Jobs = () => {
                   <TableCell>
                     {job.appliedOn ? (
                       <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
                         {format(new Date(job.appliedOn), 'MMM d, yyyy')}
                       </div>
                     ) : (
