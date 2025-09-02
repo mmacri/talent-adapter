@@ -3,7 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ResumeProvider } from "@/contexts/ResumeContext";
+import { MainLayout } from "@/components/layout/MainLayout";
 import Index from "./pages/Index";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -13,13 +16,69 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <ResumeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={
+              <MainLayout>
+                <Dashboard />
+              </MainLayout>
+            } />
+            <Route path="/master" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/variants" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/variants/:id" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/variants/new" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/jobs" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/jobs/:id" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/jobs/new" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/cover-letters" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/templates" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            <Route path="/settings" element={
+              <MainLayout>
+                <Index />
+              </MainLayout>
+            } />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </ResumeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
