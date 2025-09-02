@@ -660,31 +660,33 @@ const Jobs = () => {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6">
+      {/* Header - Mobile responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Job Applications</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Job Applications</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Track your job applications and associated resume variants
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <Button 
             onClick={() => navigate('/jobs/new')} 
-            className="bg-gradient-to-r from-primary to-primary-hover"
+            className="bg-gradient-to-r from-primary to-primary-hover touch-manipulation w-full sm:w-auto"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Add Application
+            <span className="hidden sm:inline">Add Application</span>
+            <span className="sm:hidden">Add</span>
           </Button>
           
           {/* Clear All Button */}
           {jobApplications.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground">
+                <Button variant="outline" className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground touch-manipulation w-full sm:w-auto">
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Clear All
+                  <span className="hidden sm:inline">Clear All</span>
+                  <span className="sm:hidden">Clear</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -709,9 +711,10 @@ const Jobs = () => {
           
           <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto touch-manipulation">
                 <Printer className="w-4 h-4 mr-2" />
-                Print Report
+                <span className="hidden sm:inline">Print Report</span>
+                <span className="sm:hidden">Report</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -774,17 +777,18 @@ const Jobs = () => {
             </DialogContent>
           </Dialog>
 
-          {/* Export/Import Dropdown */}
+          {/* Export/Import Dropdown - Mobile responsive */}
           <Select onValueChange={(value) => {
             if (value === 'export-csv') exportToCSV();
             else if (value === 'export-excel') exportToExcel();
             else if (value === 'import') setShowImportDialog(true);
           }}>
-            <SelectTrigger className="w-auto">
+            <SelectTrigger className="w-full sm:w-auto">
               <SelectValue placeholder={
                 <div className="flex items-center gap-2">
                   <Table2 className="w-4 h-4" />
-                  <span>Export/Import</span>
+                  <span className="hidden sm:inline">Export/Import</span>
+                  <span className="sm:hidden">Export</span>
                 </div>
               } />
             </SelectTrigger>
@@ -913,27 +917,27 @@ const Jobs = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      {/* Stats Cards - Mobile responsive grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         {statusColumns.map((status) => (
           <Card key={status}>
-            <CardContent className="p-4">
+            <CardContent className="p-3 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground capitalize">
+                  <p className="text-xs md:text-sm text-muted-foreground capitalize">
                     {status === 'prospect' ? 'Prospects' : status}
                   </p>
-                  <p className="text-2xl font-bold">{statusStats[status]}</p>
+                  <p className="text-lg md:text-2xl font-bold">{statusStats[status]}</p>
                 </div>
-                <div className={`w-3 h-3 rounded-full ${statusColors[status].split(' ')[0]}`} />
+                <div className={`w-2 h-2 md:w-3 md:h-3 rounded-full ${statusColors[status].split(' ')[0]}`} />
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="flex items-center gap-4">
+      {/* Filters - Mobile responsive */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -945,7 +949,7 @@ const Jobs = () => {
         </div>
         
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -960,122 +964,132 @@ const Jobs = () => {
         </Select>
 
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'kanban')}>
-          <TabsList>
-            <TabsTrigger value="table">Table</TabsTrigger>
-            <TabsTrigger value="kanban">Kanban</TabsTrigger>
+          <TabsList className="w-full sm:w-auto">
+            <TabsTrigger value="table" className="flex-1 sm:flex-initial">Table</TabsTrigger>
+            <TabsTrigger value="kanban" className="flex-1 sm:flex-initial">Kanban</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      {/* Content */}
+      {/* Content - Mobile responsive */}
       {viewMode === 'table' ? (
         <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Company & Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Applied Date</TableHead>
-                <TableHead>Variant Used</TableHead>
-                <TableHead>Cover Letter</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedJobs.map((job) => (
-                <TableRow key={job.id} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-medium">{job.role}</div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Building className="w-3 h-3" />
-                        {job.company}
-                        {job.location && (
-                          <>
-                            <span>•</span>
-                            <MapPin className="w-3 h-3" />
-                            {job.location}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  
-                  <TableCell>
-                    <Badge 
-                      variant="outline" 
-                      className={statusColors[job.status]}
-                    >
-                      {job.status === 'prospect' ? 'Prospect' : job.status}
-                    </Badge>
-                  </TableCell>
-                  
-                  <TableCell>
-                    {job.appliedOn ? (
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="w-4 h-4 text-muted-foreground" />
-                        {format(new Date(job.appliedOn), 'MMM d, yyyy')}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">Not applied</span>
-                    )}
-                  </TableCell>
-                  
-                  <TableCell>
-                    <span className="text-sm">{getVariantName(job.variantId)}</span>
-                  </TableCell>
-                  
-                  <TableCell>
-                    <span className="text-sm">{getCoverLetterTitle(job.coverLetterId)}</span>
-                  </TableCell>
-                  
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/jobs/${job.id}`)}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </Button>
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Application</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this job application for "{job.role}" at {job.company}? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteJob(job.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[200px]">Company & Role</TableHead>
+                  <TableHead className="min-w-[100px]">Status</TableHead>
+                  <TableHead className="min-w-[120px]">Applied Date</TableHead>
+                  <TableHead className="min-w-[150px] hidden md:table-cell">Variant Used</TableHead>
+                  <TableHead className="min-w-[150px] hidden lg:table-cell">Cover Letter</TableHead>
+                  <TableHead className="text-right min-w-[100px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {sortedJobs.map((job) => (
+                  <TableRow key={job.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm md:text-base">{job.role}</div>
+                        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                          <Building className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{job.company}</span>
+                          {job.location && (
+                            <>
+                              <span className="hidden sm:inline">•</span>
+                              <MapPin className="w-3 h-3 flex-shrink-0 hidden sm:inline" />
+                              <span className="truncate hidden sm:inline">{job.location}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    
+                    <TableCell>
+                      <Badge 
+                        variant="outline" 
+                        className={`${statusColors[job.status]} text-xs`}
+                      >
+                        <span className="hidden sm:inline">
+                          {job.status === 'prospect' ? 'Prospect' : job.status}
+                        </span>
+                        <span className="sm:hidden">
+                          {job.status.charAt(0).toUpperCase()}
+                        </span>
+                      </Badge>
+                    </TableCell>
+                    
+                    <TableCell>
+                      {job.appliedOn ? (
+                        <div className="flex items-center gap-1 md:gap-2">
+                          <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-xs md:text-sm">
+                            {format(new Date(job.appliedOn), 'MMM d, yyyy')}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs md:text-sm">Not applied</span>
+                      )}
+                    </TableCell>
+                    
+                    <TableCell className="hidden md:table-cell">
+                      <span className="text-sm truncate block max-w-[150px]">{getVariantName(job.variantId)}</span>
+                    </TableCell>
+                    
+                    <TableCell className="hidden lg:table-cell">
+                      <span className="text-sm truncate block max-w-[150px]">{getCoverLetterTitle(job.coverLetterId)}</span>
+                    </TableCell>
+                    
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/jobs/${job.id}`)}
+                          className="touch-manipulation"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive touch-manipulation"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Application</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this job application for "{job.role}" at {job.company}? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteJob(job.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
           {statusColumns.map((status) => (
             <KanbanColumn
               key={status}

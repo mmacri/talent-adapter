@@ -46,29 +46,29 @@ const Dashboard = () => {
   }, {} as Record<string, number>);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-3 md:p-6 space-y-4 md:space-y-6">
+      {/* Header - Mobile responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Welcome back, {masterResume?.owner || 'User'}
           </p>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Quick Stats - Mobile responsive grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <Link to="/variants">
-          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
-            <CardContent className="p-6">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 touch-manipulation">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-primary/10 rounded-lg">
-                  <FileText className="h-6 w-6 text-primary" />
+                  <FileText className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-2xl font-bold">{variants.length}</p>
-                  <p className="text-sm text-muted-foreground">Resume Variants</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xl md:text-2xl font-bold">{variants.length}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Resume Variants</p>
                 </div>
               </div>
             </CardContent>
@@ -76,15 +76,15 @@ const Dashboard = () => {
         </Link>
 
         <Link to="/jobs">
-          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
-            <CardContent className="p-6">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 touch-manipulation">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-accent/10 rounded-lg">
-                  <Briefcase className="h-6 w-6 text-accent" />
+                  <Briefcase className="h-5 w-5 md:h-6 md:w-6 text-accent" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-2xl font-bold">{jobApplications.length}</p>
-                  <p className="text-sm text-muted-foreground">Job Applications</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xl md:text-2xl font-bold">{jobApplications.length}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Job Applications</p>
                 </div>
               </div>
             </CardContent>
@@ -92,15 +92,15 @@ const Dashboard = () => {
         </Link>
 
         <Link to="/jobs">
-          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
-            <CardContent className="p-6">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 touch-manipulation">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-success/10 rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-success" />
+                  <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-success" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-2xl font-bold">{statusCounts.interview || 0}</p>
-                  <p className="text-sm text-muted-foreground">Interviews</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xl md:text-2xl font-bold">{statusCounts.interview || 0}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Interviews</p>
                 </div>
               </div>
             </CardContent>
@@ -108,15 +108,15 @@ const Dashboard = () => {
         </Link>
 
         <Link to="/cover-letters">
-          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105">
-            <CardContent className="p-6">
+          <Card className="glass hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-105 touch-manipulation">
+            <CardContent className="p-4 md:p-6">
               <div className="flex items-center">
                 <div className="p-2 bg-warning/10 rounded-lg">
-                  <Download className="h-6 w-6 text-warning" />
+                  <Download className="h-5 w-5 md:h-6 md:w-6 text-warning" />
                 </div>
-                <div className="ml-4">
-                  <p className="text-2xl font-bold">{coverLetters.length}</p>
-                  <p className="text-sm text-muted-foreground">Cover Letters</p>
+                <div className="ml-3 md:ml-4">
+                  <p className="text-xl md:text-2xl font-bold">{coverLetters.length}</p>
+                  <p className="text-xs md:text-sm text-muted-foreground">Cover Letters</p>
                 </div>
               </div>
             </CardContent>
@@ -124,7 +124,7 @@ const Dashboard = () => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
         {/* Recent Variants */}
         <Card>
           <CardHeader>
@@ -230,43 +230,43 @@ const Dashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
             <Link to="/master">
-              <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                <FileText className="w-6 h-6" />
+              <Button variant="outline" className="w-full h-auto p-3 md:p-4 flex flex-col items-center gap-2 touch-manipulation">
+                <FileText className="w-5 h-5 md:w-6 md:h-6" />
                 <div className="text-center">
-                  <p className="font-medium">Edit Master Resume</p>
-                  <p className="text-xs text-muted-foreground">Update your base resume</p>
+                  <p className="text-sm md:font-medium">Edit Master Resume</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">Update your base resume</p>
                 </div>
               </Button>
             </Link>
             
             <Link to="/variants/new">
-              <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                <Layers className="w-6 h-6" />
+              <Button variant="outline" className="w-full h-auto p-3 md:p-4 flex flex-col items-center gap-2 touch-manipulation">
+                <Layers className="w-5 h-5 md:w-6 md:h-6" />
                 <div className="text-center">
-                  <p className="font-medium">Create Variant</p>
-                  <p className="text-xs text-muted-foreground">Tailor for specific roles</p>
+                  <p className="text-sm md:font-medium">Create Variant</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">Tailor for specific roles</p>
                 </div>
               </Button>
             </Link>
             
             <Link to="/jobs/new">
-              <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                <Briefcase className="w-6 h-6" />
+              <Button variant="outline" className="w-full h-auto p-3 md:p-4 flex flex-col items-center gap-2 touch-manipulation">
+                <Briefcase className="w-5 h-5 md:w-6 md:h-6" />
                 <div className="text-center">
-                  <p className="font-medium">Track Application</p>
-                  <p className="text-xs text-muted-foreground">Log new job applications</p>
+                  <p className="text-sm md:font-medium">Track Application</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">Log new job applications</p>
                 </div>
               </Button>
             </Link>
             
             <Link to="/viewer">
-              <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
-                <FileBarChart className="w-6 h-6" />
+              <Button variant="outline" className="w-full h-auto p-3 md:p-4 flex flex-col items-center gap-2 touch-manipulation">
+                <FileBarChart className="w-5 h-5 md:w-6 md:h-6" />
                 <div className="text-center">
-                  <p className="font-medium">Resume Viewer</p>
-                  <p className="text-xs text-muted-foreground">Preview and export resumes</p>
+                  <p className="text-sm md:font-medium">Resume Viewer</p>
+                  <p className="text-xs text-muted-foreground hidden sm:block">Preview and export resumes</p>
                 </div>
               </Button>
             </Link>

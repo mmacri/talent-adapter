@@ -201,3 +201,50 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile optimizations and Touch improvements */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling for mobile */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Improve mobile input handling */
+input, textarea, select {
+  font-size: 16px; /* Prevents zoom on iOS */
+}
+
+/* Mobile-friendly button sizes */
+@media (max-width: 768px) {
+  .btn-mobile {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Optimize glass effect for performance */
+.glass {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Improved focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Mobile sidebar overlay */
+@media (max-width: 768px) {
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 40;
+  }
+}
