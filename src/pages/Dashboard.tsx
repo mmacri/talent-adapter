@@ -14,15 +14,10 @@ import {
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { 
-    masterResume, 
-    variants, 
-    jobApplications, 
-    coverLetters, 
-    isLoading 
-  } = useResume();
-
-  if (isLoading) {
+  const resumeContext = useResume();
+  
+  // Add loading guard
+  if (!resumeContext || resumeContext.isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -32,6 +27,13 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const { 
+    masterResume, 
+    variants, 
+    jobApplications, 
+    coverLetters
+  } = resumeContext;
 
   const recentApplications = jobApplications
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
