@@ -9,6 +9,10 @@ import Dashboard from "./pages/Dashboard";
 import MasterResume from "./pages/MasterResume";
 import Variants from "./pages/Variants";
 import VariantEditor from "./pages/VariantEditor";
+import Jobs from "./pages/Jobs";
+import JobEditor from "./pages/JobEditor";
+import CoverLetters from "./pages/CoverLetters";
+import CoverLetterEditor from "./pages/CoverLetterEditor";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -49,22 +53,32 @@ const App = () => (
             } />
             <Route path="/jobs" element={
               <MainLayout>
-                <Index />
+                <Jobs />
               </MainLayout>
             } />
             <Route path="/jobs/:id" element={
               <MainLayout>
-                <Index />
+                <JobEditor />
               </MainLayout>
             } />
             <Route path="/jobs/new" element={
               <MainLayout>
-                <Index />
+                <JobEditor />
               </MainLayout>
             } />
             <Route path="/cover-letters" element={
               <MainLayout>
-                <Index />
+                <CoverLetters />
+              </MainLayout>
+            } />
+            <Route path="/cover-letters/:id" element={
+              <MainLayout>
+                <CoverLetterEditor />
+              </MainLayout>
+            } />
+            <Route path="/cover-letters/new" element={
+              <MainLayout>
+                <CoverLetterEditor />
               </MainLayout>
             } />
             <Route path="/templates" element={
