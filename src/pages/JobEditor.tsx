@@ -58,12 +58,17 @@ const JobEditor = () => {
       return;
     }
     
-    if (id && id !== 'new') {
-      console.log('Looking for existing job with id:', id);
-      const foundJob = jobApplications.find(j => j.id === id);
+    // Handle the case where id might be an object or undefined - convert to string
+    const actualId = id?.toString() || 'new';
+    console.log('Processed id:', actualId);
+    
+    if (actualId && actualId !== 'new' && actualId !== 'undefined') {
+      console.log('Looking for existing job with id:', actualId);
+      const foundJob = jobApplications.find(j => j.id === actualId);
       if (foundJob) {
         console.log('Found existing job:', foundJob);
         setJob(foundJob);
+        setIsNew(false);
       } else {
         console.log('Job not found, redirecting to /jobs');
         navigate('/jobs');
@@ -73,7 +78,8 @@ const JobEditor = () => {
           variant: "destructive",
         });
       }
-    } else if (id === 'new') {
+    } else {
+      // Create new job for 'new', 'undefined', or empty id
       console.log('Creating new job application');
       setIsNew(true);
       const newJob: JobApplication = {
@@ -92,8 +98,6 @@ const JobEditor = () => {
       console.log('New job created:', newJob);
       setJob(newJob);
       setIsEditing(true);
-    } else {
-      console.log('No valid id provided, id is:', id);
     }
   }, [id, jobApplications, navigate, toast, isLoading]);
 
