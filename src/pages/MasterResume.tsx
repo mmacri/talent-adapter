@@ -44,7 +44,21 @@ import ResumePreview from '@/components/resume/ResumePreview';
 import { useToast } from '@/hooks/use-toast';
 
 const MasterResume = () => {
-  const { masterResume, setMasterResume } = useResume();
+  const resumeContext = useResume();
+  
+  // Add loading guard
+  if (!resumeContext || resumeContext.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading master resume...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { masterResume, setMasterResume } = resumeContext;
   const [selectedSection, setSelectedSection] = useState<string>('summary');
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -119,17 +133,6 @@ const MasterResume = () => {
     });
     setIsEditing(true);
   };
-
-  if (!masterResume) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading master resume...</p>
-        </div>
-      </div>
-    );
-  }
 
   const handleFieldUpdate = (field: string, value: any) => {
     if (!masterResume) return;
