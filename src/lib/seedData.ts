@@ -236,6 +236,10 @@ Mike Macri`,
         fontSize: 'small',
         spacing: 'compact',
         colors: 'professional-blue'
+      },
+      sectionConfig: {
+        useVariantSections: false,
+        enabledSections: ['summary', 'experience', 'skills', 'education']
       }
     },
     {
@@ -247,6 +251,10 @@ Mike Macri`,
         fontSize: 'medium',
         spacing: 'comfortable',
         colors: 'modern-gray'
+      },
+      sectionConfig: {
+        useVariantSections: true,
+        enabledSections: ['summary', 'key_achievements', 'experience', 'skills', 'education']
       }
     },
     {
@@ -258,6 +266,25 @@ Mike Macri`,
         fontSize: 'medium',
         spacing: 'traditional',
         colors: 'classic-black'
+      },
+      sectionConfig: {
+        useVariantSections: false,
+        enabledSections: ['summary', 'experience', 'education', 'skills']
+      }
+    },
+    {
+      id: 'template-creative-purple',
+      name: 'Creative Focus',
+      description: 'Modern design highlighting achievements and creativity',
+      styles: {
+        layout: 'three-column',
+        fontSize: 'medium',
+        spacing: 'comfortable',
+        colors: 'creative-purple'
+      },
+      sectionConfig: {
+        useVariantSections: true,
+        enabledSections: ['summary', 'key_achievements', 'experience', 'skills', 'awards', 'education']
       }
     }
   ];

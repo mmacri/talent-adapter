@@ -30,6 +30,9 @@ interface ResumeContextType {
   
   // Templates
   templates: Template[];
+  addTemplate: (template: Template) => void;
+  updateTemplate: (id: string, updates: Partial<Template>) => void;
+  deleteTemplate: (id: string) => void;
   
   // Clear sections methods for master resume
   clearMasterResumeSection: (section: string) => void;
@@ -186,6 +189,21 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     });
   };
 
+  const addTemplate = (template: Template) => {
+    templatesStorage.add(template);
+    setTemplates(prev => [...prev, template]);
+  };
+
+  const updateTemplate = (id: string, updates: Partial<Template>) => {
+    templatesStorage.update(id, updates);
+    setTemplates(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const deleteTemplate = (id: string) => {
+    templatesStorage.delete(id);
+    setTemplates(prev => prev.filter(t => t.id !== id));
+  };
+
   const refreshData = () => {
     loadData();
   };
@@ -208,6 +226,9 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     updateCoverLetter,
     deleteCoverLetter,
     templates,
+    addTemplate,
+    updateTemplate,
+    deleteTemplate,
     isLoading,
     refreshData,
     clearMasterResumeSection,

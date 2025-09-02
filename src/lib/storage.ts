@@ -153,4 +153,18 @@ export const templatesStorage = {
     templates.push(template);
     templatesStorage.setAll(templates);
   },
+  
+  update: (id: string, updates: Partial<Template>): void => {
+    const templates = templatesStorage.getAll();
+    const index = templates.findIndex(t => t.id === id);
+    if (index !== -1) {
+      templates[index] = { ...templates[index], ...updates };
+      templatesStorage.setAll(templates);
+    }
+  },
+  
+  delete: (id: string): void => {
+    const templates = templatesStorage.getAll().filter(t => t.id !== id);
+    templatesStorage.setAll(templates);
+  },
 };

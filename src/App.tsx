@@ -14,6 +14,7 @@ import JobEditor from "./pages/JobEditor";
 import CoverLetters from "./pages/CoverLetters";
 import CoverLetterEditor from "./pages/CoverLetterEditor";
 import ResumeViewer from "./pages/ResumeViewer";
+import Templates from "./pages/Templates";
 import Reports from "./pages/Reports";
 import Index from "./pages/Index";
 import Settings from "./pages/Settings";
@@ -96,7 +97,7 @@ const App = () => {
             } />
             <Route path="/templates" element={
               <MainLayout>
-                <Index />
+                <Templates />
               </MainLayout>
             } />
             <Route path="/settings" element={

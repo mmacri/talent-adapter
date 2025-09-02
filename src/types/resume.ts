@@ -104,6 +104,10 @@ export interface Template {
   styles: {
     [key: string]: any;
   };
+  sectionConfig?: {
+    useVariantSections: boolean;
+    enabledSections: string[];
+  };
 }
 
 export interface CoverLetter {
