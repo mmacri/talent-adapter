@@ -330,7 +330,6 @@ const JobEditor = () => {
                     <SelectValue placeholder="Select resume variant..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No variant selected</SelectItem>
                     {variants.map((variant) => (
                       <SelectItem key={variant.id} value={variant.id}>
                         {variant.name}
@@ -355,7 +354,6 @@ const JobEditor = () => {
                     <SelectValue placeholder="Select cover letter..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No cover letter</SelectItem>
                     {coverLetters.map((letter) => (
                       <SelectItem key={letter.id} value={letter.id}>
                         {letter.title}
