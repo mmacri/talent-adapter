@@ -25,11 +25,13 @@ import {
 } from 'lucide-react';
 import { Template } from '@/types/resume';
 import { VariantResolver } from '@/lib/variantResolver';
+import TemplateSettings from '@/components/resume/TemplateSettings';
 
 const Templates = () => {
-  const { templates, masterResume, variants } = useResume();
+  const { templates, masterResume, variants, updateTemplate } = useResume();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVariantId, setSelectedVariantId] = useState<string>('master');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   const filteredTemplates = templates.filter(template =>
     template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -98,6 +100,18 @@ const Templates = () => {
         headings: 'text-purple-700',
         text: 'text-gray-700',
         accent: 'border-purple-200'
+      },
+      'elegant-green': {
+        header: 'bg-green-700 text-white',
+        headings: 'text-green-700',
+        text: 'text-gray-700',
+        accent: 'border-green-200'
+      },
+      'warm-orange': {
+        header: 'bg-orange-700 text-white',
+        headings: 'text-orange-700',
+        text: 'text-gray-700',
+        accent: 'border-orange-200'
       }
     };
     
@@ -439,6 +453,7 @@ const Templates = () => {
                   <Button
                     size="sm"
                     variant="outline"
+                    onClick={() => setSelectedTemplateId(template.id)}
                   >
                     <Settings className="w-4 h-4" />
                   </Button>
@@ -466,6 +481,19 @@ const Templates = () => {
         </Card>
       )}
 
+      {/* Template Settings Dialog */}
+      {selectedTemplateId && (
+        <TemplateSettings
+          template={templates.find(t => t.id === selectedTemplateId)!}
+          isOpen={!!selectedTemplateId}
+          onClose={() => setSelectedTemplateId(null)}
+          onSave={(updatedTemplate) => {
+            updateTemplate(updatedTemplate.id, updatedTemplate);
+            setSelectedTemplateId(null);
+          }}
+        />
+      )}
+
       {/* Template Info */}
       <Card className="bg-muted/50 border-primary/20">
         <CardHeader>
@@ -479,6 +507,7 @@ const Templates = () => {
           <p>• Each template can use content from your master resume or specific variants</p>
           <p>• Professional layouts optimized for different industries and roles</p>
           <p>• Automatically format your sections, skills, and experience consistently</p>
+          <p>• Click the settings icon to customize colors, layout, and formatting</p>
         </CardContent>
       </Card>
     </div>
