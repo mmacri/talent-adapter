@@ -109,6 +109,24 @@ const Jobs = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Handler for clearing all job applications
+  const handleClearAll = () => {
+    try {
+      clearAllJobApplications();
+      toast({
+        title: "Applications Cleared",
+        description: "All job applications have been successfully removed.",
+      });
+    } catch (error) {
+      console.error('Error clearing applications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear applications. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Simple inline DatePickerWithRange component
   const DatePickerWithRange = ({ date, onDateChange }: { date?: DateRange, onDateChange?: (date: DateRange | undefined) => void }) => {
     return (
@@ -679,7 +697,7 @@ const Jobs = () => {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={clearAllJobApplications}
+                    onClick={handleClearAll}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     Clear All Applications
