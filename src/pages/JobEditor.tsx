@@ -101,6 +101,16 @@ const JobEditor = () => {
 
   const handleSave = () => {
     if (job) {
+      // Validate required fields
+      if (!job.company.trim() || !job.role.trim()) {
+        toast({
+          title: "Missing Required Fields",
+          description: "Please fill in both Company and Role before saving.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const updatedJob = {
         ...job,
         updatedAt: new Date().toISOString()
@@ -237,7 +247,7 @@ const JobEditor = () => {
           
           <Button
             onClick={handleSave}
-            disabled={!isEditing && !isNew}
+            disabled={!job?.company?.trim() || !job?.role?.trim()}
             className="bg-gradient-to-r from-primary to-primary-hover"
           >
             <Save className="w-4 h-4 mr-2" />
