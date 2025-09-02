@@ -19,11 +19,21 @@ export const VariantSectionSettings = ({
   hasCustomKeyAchievements
 }: VariantSectionSettingsProps) => {
   
+  // Ensure sectionSettings is always defined with default values
+  const safeSectionSettings = sectionSettings || {
+    summary: { enabled: true, useCustom: false },
+    key_achievements: { enabled: true, useCustom: false },
+    experience: { enabled: true },
+    education: { enabled: true },
+    awards: { enabled: true },
+    skills: { enabled: true }
+  };
+  
   const updateSectionSetting = (section: keyof Variant['sectionSettings'], setting: string, value: boolean) => {
     onSectionSettingsChange({
-      ...sectionSettings,
+      ...safeSectionSettings,
       [section]: {
-        ...sectionSettings[section],
+        ...safeSectionSettings[section],
         [setting]: value
       }
     });
@@ -84,7 +94,11 @@ export const VariantSectionSettings = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {sections.map((section) => {
-          const sectionSetting = sectionSettings[section.key];
+          // Provide default section setting if it doesn't exist
+          const sectionSetting = safeSectionSettings[section.key] || 
+            (section.hasCustomOption 
+              ? { enabled: true, useCustom: false }
+              : { enabled: true });
           const Icon = section.icon;
           
           return (
@@ -100,25 +114,25 @@ export const VariantSectionSettings = ({
                   )}
                 </div>
                 <Switch
-                  checked={sectionSetting.enabled}
+                  checked={Boolean(sectionSetting?.enabled)}
                   onCheckedChange={(checked) => updateSectionSetting(section.key, 'enabled', checked)}
                 />
               </div>
               
-              {section.hasCustomOption && sectionSetting.enabled && (
+              {section.hasCustomOption && sectionSetting?.enabled && (
                 <div className="ml-6 flex items-center justify-between">
                   <Label className="text-sm text-muted-foreground">
                     Use custom content for this variant
                   </Label>
                   <Switch
-                    checked={('useCustom' in sectionSetting) ? sectionSetting.useCustom : false}
+                    checked={Boolean(('useCustom' in sectionSetting) ? sectionSetting.useCustom : false)}
                     onCheckedChange={(checked) => updateSectionSetting(section.key, 'useCustom', checked)}
                     disabled={!section.hasCustomContent}
                   />
                 </div>
               )}
               
-              {section.hasCustomOption && sectionSetting.enabled && !section.hasCustomContent && ('useCustom' in sectionSetting) && sectionSetting.useCustom && (
+              {section.hasCustomOption && sectionSetting?.enabled && !section.hasCustomContent && ('useCustom' in sectionSetting) && sectionSetting.useCustom && (
                 <div className="ml-6 text-xs text-muted-foreground">
                   No custom content available. Add content in the "Custom Content" tab.
                 </div>
