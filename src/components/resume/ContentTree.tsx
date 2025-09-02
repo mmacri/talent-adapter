@@ -132,19 +132,19 @@ export const ContentTree = ({
               >
                 <div className="flex items-center w-full">
                   {section.count > 0 ? (
-                    <button
+                    <div
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleSection(section.id);
                       }}
-                      className="mr-1"
+                      className="mr-1 cursor-pointer hover:bg-accent/50 rounded p-0.5"
                     >
                       {isExpanded ? (
                         <ChevronDown className="w-4 h-4" />
                       ) : (
                         <ChevronRight className="w-4 h-4" />
                       )}
-                    </button>
+                    </div>
                   ) : (
                     <div className="w-5" />
                   )}
