@@ -47,24 +47,8 @@ export class VariantResolver {
   }
 
   private static applyCustomContent(resume: ResumeMaster, variant: Variant): ResumeMaster {
-    const result = { ...resume };
-    
-    // Ensure sectionSettings exists before checking useCustom
-    if (!variant.sectionSettings) {
-      return result;
-    }
-    
-    // Apply custom summary if enabled and exists
-    if (variant.sectionSettings.summary?.useCustom && variant.customSummary && variant.customSummary.length > 0) {
-      result.summary = [...variant.customSummary];
-    }
-    
-    // Apply custom key achievements if enabled and exists
-    if (variant.sectionSettings.key_achievements?.useCustom && variant.customKeyAchievements && variant.customKeyAchievements.length > 0) {
-      result.key_achievements = [...variant.customKeyAchievements];
-    }
-    
-    return result;
+    // Custom content is now handled entirely through overrides
+    return resume;
   }
 
   private static applyRules(resume: ResumeMaster, rules: VariantRule[]): ResumeMaster {

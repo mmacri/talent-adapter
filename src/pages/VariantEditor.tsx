@@ -25,7 +25,7 @@ import { DocxExporter } from '@/lib/docxExport';
 import { VariantResolver } from '@/lib/variantResolver';
 import { VariantRulesEditor } from '@/components/resume/VariantRulesEditor';
 import { VariantOverridesEditor } from '@/components/resume/VariantOverridesEditor';
-import { VariantContentEditor } from '@/components/resume/VariantContentEditor';
+
 import { VariantSectionSettings } from '@/components/resume/VariantSectionSettings';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -38,7 +38,7 @@ const VariantEditor = () => {
   
   const [variant, setVariant] = useState<Variant | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState('overrides');
 
   useEffect(() => {
     if (id) {
@@ -197,10 +197,10 @@ const VariantEditor = () => {
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="content" className="flex items-center gap-2">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="overrides" className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    Content
+                    Content & Overrides
                   </TabsTrigger>
                   <TabsTrigger value="sections" className="flex items-center gap-2">
                     <Settings className="w-4 h-4" />
@@ -210,22 +210,17 @@ const VariantEditor = () => {
                     <Settings className="w-4 h-4" />
                     Rules
                   </TabsTrigger>
-                  <TabsTrigger value="overrides" className="flex items-center gap-2">
-                    <FileText className="w-4 h-4" />
-                    Overrides
-                  </TabsTrigger>
                   <TabsTrigger value="diff" className="flex items-center gap-2">
                     <Diff className="w-4 h-4" />
                     Diff
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="content" className="mt-6">
-                  <VariantContentEditor
-                    customSummary={variant.customSummary}
-                    customKeyAchievements={variant.customKeyAchievements}
-                    onSummaryChange={(summary) => handleFieldUpdate('customSummary', summary)}
-                    onKeyAchievementsChange={(achievements) => handleFieldUpdate('customKeyAchievements', achievements)}
+                <TabsContent value="overrides" className="mt-6">
+                  <VariantOverridesEditor
+                    overrides={variant.overrides}
+                    masterResume={masterResume}
+                    onOverridesChange={(overrides) => handleFieldUpdate('overrides', overrides)}
                   />
                 </TabsContent>
 
@@ -233,8 +228,6 @@ const VariantEditor = () => {
                   <VariantSectionSettings
                     sectionSettings={variant.sectionSettings}
                     onSectionSettingsChange={(settings) => handleFieldUpdate('sectionSettings', settings)}
-                    hasCustomSummary={Boolean(variant.customSummary?.length)}
-                    hasCustomKeyAchievements={Boolean(variant.customKeyAchievements?.length)}
                   />
                 </TabsContent>
 
@@ -245,13 +238,6 @@ const VariantEditor = () => {
                   />
                 </TabsContent>
 
-                <TabsContent value="overrides" className="mt-6">
-                  <VariantOverridesEditor
-                    overrides={variant.overrides}
-                    masterResume={masterResume}
-                    onOverridesChange={(overrides) => handleFieldUpdate('overrides', overrides)}
-                  />
-                </TabsContent>
 
                 <TabsContent value="diff" className="mt-6">
                   <div className="space-y-4">
@@ -333,8 +319,8 @@ const VariantEditor = () => {
                     {resolvedResume.summary && resolvedResume.summary.length > 0 && (
                       <div>
                         <h5 className="font-medium mb-2 text-primary">
-                          Summary {variant.sectionSettings?.summary?.useCustom && 
-                          <Badge variant="secondary" className="ml-1 text-xs">Custom</Badge>}
+                          Summary {variant.overrides.some(o => o.path === 'summary' && o.operation === 'set') && 
+                          <Badge variant="secondary" className="ml-1 text-xs">Override</Badge>}
                         </h5>
                         <ul className="space-y-1 text-xs">
                           {resolvedResume.summary.map((bullet, index) => (
@@ -347,8 +333,8 @@ const VariantEditor = () => {
                     {resolvedResume.key_achievements && resolvedResume.key_achievements.length > 0 && (
                       <div>
                         <h5 className="font-medium mb-2 text-primary">
-                          Key Achievements {variant.sectionSettings?.key_achievements?.useCustom && 
-                          <Badge variant="secondary" className="ml-1 text-xs">Custom</Badge>}
+                          Key Achievements {variant.overrides.some(o => o.path === 'key_achievements' && o.operation === 'set') && 
+                          <Badge variant="secondary" className="ml-1 text-xs">Override</Badge>}
                         </h5>
                         <ul className="space-y-1 text-xs">
                           {resolvedResume.key_achievements.map((achievement, index) => (

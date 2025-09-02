@@ -8,21 +8,17 @@ import { Variant } from '@/types/resume';
 interface VariantSectionSettingsProps {
   sectionSettings: Variant['sectionSettings'];
   onSectionSettingsChange: (settings: Variant['sectionSettings']) => void;
-  hasCustomSummary: boolean;
-  hasCustomKeyAchievements: boolean;
 }
 
 export const VariantSectionSettings = ({
   sectionSettings,
-  onSectionSettingsChange,
-  hasCustomSummary,
-  hasCustomKeyAchievements
+  onSectionSettingsChange
 }: VariantSectionSettingsProps) => {
   
   // Ensure sectionSettings is always defined with default values
   const safeSectionSettings = sectionSettings || {
-    summary: { enabled: true, useCustom: false },
-    key_achievements: { enabled: true, useCustom: false },
+    summary: { enabled: true },
+    key_achievements: { enabled: true },
     experience: { enabled: true },
     education: { enabled: true },
     awards: { enabled: true },
@@ -44,43 +40,37 @@ export const VariantSectionSettings = ({
       key: 'summary' as const,
       label: 'Professional Summary',
       icon: FileText,
-      hasCustomOption: true,
-      hasCustomContent: hasCustomSummary
+      description: 'Brief overview of professional background'
     },
     {
       key: 'key_achievements' as const,
       label: 'Key Achievements',
       icon: Target,
-      hasCustomOption: true,
-      hasCustomContent: hasCustomKeyAchievements
+      description: 'Most significant accomplishments'
     },
     {
       key: 'experience' as const,
       label: 'Experience',
       icon: Briefcase,
-      hasCustomOption: false,
-      hasCustomContent: false
+      description: 'Work history and responsibilities'
     },
     {
       key: 'education' as const,
       label: 'Education',
       icon: GraduationCap,
-      hasCustomOption: false,
-      hasCustomContent: false
+      description: 'Academic background and qualifications'
     },
     {
       key: 'awards' as const,
       label: 'Awards',
       icon: Award,
-      hasCustomOption: false,
-      hasCustomContent: false
+      description: 'Recognition and honors'
     },
     {
       key: 'skills' as const,
       label: 'Skills',
       icon: Wrench,
-      hasCustomOption: false,
-      hasCustomContent: false
+      description: 'Technical and soft skills'
     }
   ];
 
@@ -91,14 +81,13 @@ export const VariantSectionSettings = ({
           <Settings className="w-5 h-5" />
           Section Settings
         </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Control which sections appear in this variant. Use "Content & Overrides" tab to customize section content.
+        </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {sections.map((section) => {
-          // Provide default section setting if it doesn't exist
-          const sectionSetting = safeSectionSettings[section.key] || 
-            (section.hasCustomOption 
-              ? { enabled: true, useCustom: false }
-              : { enabled: true });
+          const sectionSetting = safeSectionSettings[section.key] || { enabled: true };
           const Icon = section.icon;
           
           return (
@@ -106,40 +95,33 @@ export const VariantSectionSettings = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Icon className="w-4 h-4" />
-                  <Label className="font-medium">{section.label}</Label>
-                  {section.hasCustomContent && (
-                    <Badge variant="secondary" className="text-xs">
-                      Custom Content
-                    </Badge>
-                  )}
+                  <div>
+                    <Label className="font-medium">{section.label}</Label>
+                    <p className="text-xs text-muted-foreground">{section.description}</p>
+                  </div>
                 </div>
                 <Switch
                   checked={Boolean(sectionSetting?.enabled)}
                   onCheckedChange={(checked) => updateSectionSetting(section.key, 'enabled', checked)}
                 />
               </div>
-              
-              {section.hasCustomOption && sectionSetting?.enabled && (
-                <div className="ml-6 flex items-center justify-between">
-                  <Label className="text-sm text-muted-foreground">
-                    Use custom content for this variant
-                  </Label>
-                  <Switch
-                    checked={Boolean(('useCustom' in sectionSetting) ? sectionSetting.useCustom : false)}
-                    onCheckedChange={(checked) => updateSectionSetting(section.key, 'useCustom', checked)}
-                    disabled={!section.hasCustomContent}
-                  />
-                </div>
-              )}
-              
-              {section.hasCustomOption && sectionSetting?.enabled && !section.hasCustomContent && ('useCustom' in sectionSetting) && sectionSetting.useCustom && (
-                <div className="ml-6 text-xs text-muted-foreground">
-                  No custom content available. Add content in the "Custom Content" tab.
-                </div>
-              )}
             </div>
           );
         })}
+        
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+          <div className="flex items-start gap-2">
+            <FileText className="w-4 h-4 text-blue-600 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-blue-900 dark:text-blue-100">
+                💡 Want to customize content?
+              </p>
+              <p className="text-blue-700 dark:text-blue-300">
+                Use the "Content & Overrides" tab to replace default content with variant-specific text for Summary and Key Achievements.
+              </p>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

@@ -59,8 +59,8 @@ const Variants = () => {
       rules: [],
       overrides: [],
       sectionSettings: {
-        summary: { enabled: true, useCustom: false },
-        key_achievements: { enabled: true, useCustom: false },
+        summary: { enabled: true },
+        key_achievements: { enabled: true },
         experience: { enabled: true },
         education: { enabled: true },
         awards: { enabled: true },
