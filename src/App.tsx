@@ -16,6 +16,7 @@ import CoverLetterEditor from "./pages/CoverLetterEditor";
 import ResumeViewer from "./pages/ResumeViewer";
 import Reports from "./pages/Reports";
 import Index from "./pages/Index";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const App = () => {
@@ -100,7 +101,7 @@ const App = () => {
             } />
             <Route path="/settings" element={
               <MainLayout>
-                <Index />
+                <Settings />
               </MainLayout>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
