@@ -26,6 +26,7 @@ const navigationItems = [
   { title: "Dashboard", url: "/", icon: BarChart3 },
   { title: "Master Resume", url: "/master", icon: FileText },
   { title: "Variants", url: "/variants", icon: Layers },
+  { title: "Resume Viewer", url: "/viewer", icon: FileBarChart },
   { title: "Job Applications", url: "/jobs", icon: Briefcase },
   { title: "Cover Letters", url: "/cover-letters", icon: Mail },
   { title: "Templates", url: "/templates", icon: Layout },

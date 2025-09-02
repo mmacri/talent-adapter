@@ -9,7 +9,8 @@ import {
   TrendingUp, 
   Download,
   Plus,
-  Eye
+  Eye,
+  FileBarChart
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -237,7 +238,7 @@ const Dashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Link to="/master">
               <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
                 <FileText className="w-6 h-6" />
@@ -264,6 +265,16 @@ const Dashboard = () => {
                 <div className="text-center">
                   <p className="font-medium">Track Application</p>
                   <p className="text-xs text-muted-foreground">Log new job applications</p>
+                </div>
+              </Button>
+            </Link>
+            
+            <Link to="/viewer">
+              <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center gap-2">
+                <FileBarChart className="w-6 h-6" />
+                <div className="text-center">
+                  <p className="font-medium">Resume Viewer</p>
+                  <p className="text-xs text-muted-foreground">Preview and export resumes</p>
                 </div>
               </Button>
             </Link>
