@@ -5,9 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ResumeProvider } from "@/contexts/ResumeContext";
 import { MainLayout } from "@/components/layout/MainLayout";
-import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import MasterResume from "./pages/MasterResume";
+import Variants from "./pages/Variants";
+import VariantEditor from "./pages/VariantEditor";
+import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,17 +34,17 @@ const App = () => (
             } />
             <Route path="/variants" element={
               <MainLayout>
-                <Index />
+                <Variants />
               </MainLayout>
             } />
             <Route path="/variants/:id" element={
               <MainLayout>
-                <Index />
+                <VariantEditor />
               </MainLayout>
             } />
             <Route path="/variants/new" element={
               <MainLayout>
-                <Index />
+                <VariantEditor />
               </MainLayout>
             } />
             <Route path="/jobs" element={
