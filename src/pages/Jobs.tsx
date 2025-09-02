@@ -61,7 +61,21 @@ const statusColors = {
 };
 
 const Jobs = () => {
-  const { jobApplications, variants, coverLetters, deleteJobApplication } = useResume();
+  const resumeContext = useResume();
+  
+  // Add loading guard
+  if (!resumeContext || resumeContext.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading job applications...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { jobApplications, variants, coverLetters, deleteJobApplication } = resumeContext;
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'table' | 'kanban'>('table');
