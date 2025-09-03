@@ -34,7 +34,7 @@ export class VariantResolver {
       skills: { enabled: true }
     };
 
-    console.log('VariantResolver: Processing variant', variant.id, 'with sectionSettings:', sectionSettings);
+    
     
     // Handle headline specially since it's not in the sections object
     if (sectionSettings.headline && !sectionSettings.headline.enabled) {
@@ -48,7 +48,6 @@ export class VariantResolver {
       // Skip headline since it's handled above
       if (sectionKey === 'headline') return;
       
-      console.log(`Processing section: ${sectionKey}`, settings);
       
       // Safety check - ensure settings exists and has enabled property
       if (!settings || typeof settings !== 'object') {
@@ -63,15 +62,11 @@ export class VariantResolver {
       
       const section = newSections[sectionKey as keyof typeof newSections];
       if (section) {
-        console.log(`Updating section ${sectionKey} enabled from ${section.enabled} to ${settings.enabled}`);
         section.enabled = settings.enabled;
-      } else {
-        console.warn(`Section ${sectionKey} not found in resume sections`);
       }
     });
     
     result.sections = newSections;
-    console.log('VariantResolver: Final sections:', result.sections);
     return result;
   }
 
