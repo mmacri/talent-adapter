@@ -46,6 +46,7 @@ import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
 import { TipTapEditor } from '@/components/resume/TipTapEditor';
 import { TagManager } from '@/components/resume/TagManager';
+import { GlobalTagManager } from '@/components/resume/GlobalTagManager';
 import { SectionEditor } from '@/components/resume/SectionEditor';
 import { MasterResumeActions } from '@/components/resume/MasterResumeActions';
 import { HelpCard } from '@/components/ui/help-card';
@@ -321,6 +322,11 @@ const MasterResume = () => {
         
         <div className="mt-auto p-4 border-t border-border">
           <div className="space-y-2">
+            <GlobalTagManager 
+              masterResume={masterResume}
+              onMasterResumeUpdate={setMasterResume}
+            />
+            
             {masterResume && (
               <ResumePreview 
                 masterResume={masterResume}

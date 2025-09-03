@@ -28,6 +28,7 @@ import { VariantRule } from '@/types/resume';
 interface VariantRulesEditorProps {
   rules: VariantRule[];
   onRulesChange: (rules: VariantRule[]) => void;
+  masterResume?: any;
 }
 
 const commonTags = [
@@ -35,8 +36,24 @@ const commonTags = [
   'Enablement', 'Revenue', 'Consulting', 'SME', 'Delivery', 'Scale'
 ];
 
-export const VariantRulesEditor = ({ rules, onRulesChange }: VariantRulesEditorProps) => {
+export const VariantRulesEditor = ({ rules, onRulesChange, masterResume }: VariantRulesEditorProps) => {
   const [newRuleType, setNewRuleType] = useState<string>('');
+
+  // Get all tags used in master resume
+  const getAllAvailableTags = () => {
+    if (!masterResume) return commonTags;
+    
+    const usedTags = new Set<string>();
+    masterResume.experience?.forEach((exp: any) => {
+      exp.tags?.forEach((tag: string) => usedTags.add(tag));
+    });
+    
+    // Combine used tags with common tags, remove duplicates
+    const allTags = [...Array.from(usedTags), ...commonTags];
+    return [...new Set(allTags)].sort();
+  };
+
+  const availableTags = getAllAvailableTags();
 
   const addRule = () => {
     if (!newRuleType) return;
@@ -116,41 +133,65 @@ export const VariantRulesEditor = ({ rules, onRulesChange }: VariantRulesEditorP
       case 'include_tags':
       case 'exclude_tags':
         return (
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              {(rule.value as string[]).map((tag, tagIndex) => (
-                <Badge
-                  key={tagIndex}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={() => {
-                    const newTags = (rule.value as string[]).filter((_, i) => i !== tagIndex);
-                    updateRule(index, { value: newTags });
-                  }}
-                >
-                  {tag} ×
-                </Badge>
-              ))}
+            <div className="space-y-3">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h5 className="font-medium mb-2 flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  Selected Tags ({(rule.value as string[]).length})
+                </h5>
+                <div className="flex flex-wrap gap-2 min-h-[2rem]">
+                  {(rule.value as string[]).length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic">
+                      No tags selected. Click + buttons below to add tags.
+                    </p>
+                  ) : (
+                    (rule.value as string[]).map((tag, tagIndex) => (
+                      <Badge
+                        key={tagIndex}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                        onClick={() => {
+                          const newTags = (rule.value as string[]).filter((_, i) => i !== tagIndex);
+                          updateRule(index, { value: newTags });
+                        }}
+                        title={`Click to remove ${tag}`}
+                      >
+                        {tag} ×
+                      </Badge>
+                    ))
+                  )}
+                </div>
+              </div>
+              
+              <div>
+                <h5 className="font-medium mb-2">Available Tags ({availableTags.filter(tag => !(rule.value as string[]).includes(tag)).length})</h5>
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {availableTags
+                    .filter(tag => !(rule.value as string[]).includes(tag))
+                    .map(tag => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                        onClick={() => {
+                          const newTags = [...(rule.value as string[]), tag];
+                          updateRule(index, { value: newTags });
+                        }}
+                        title={`Click to add ${tag}`}
+                      >
+                        + {tag}
+                      </Badge>
+                    ))
+                  }
+                </div>
+                
+                {availableTags.filter(tag => !(rule.value as string[]).includes(tag)).length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">
+                    All available tags are already selected
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {commonTags
-                .filter(tag => !(rule.value as string[]).includes(tag))
-                .map(tag => (
-                  <Badge
-                    key={tag}
-                    variant="outline"
-                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
-                    onClick={() => {
-                      const newTags = [...(rule.value as string[]), tag];
-                      updateRule(index, { value: newTags });
-                    }}
-                  >
-                    + {tag}
-                  </Badge>
-                ))
-              }
-            </div>
-          </div>
         );
 
       case 'max_bullets':

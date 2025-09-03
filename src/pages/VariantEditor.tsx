@@ -262,6 +262,7 @@ const VariantEditor = () => {
                   <VariantRulesEditor
                     rules={variant.rules}
                     onRulesChange={(rules) => handleFieldUpdate('rules', rules)}
+                    masterResume={masterResume}
                   />
                 </TabsContent>
 
