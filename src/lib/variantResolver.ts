@@ -25,18 +25,27 @@ export class VariantResolver {
     
     // Ensure sectionSettings exists with defaults if missing
     const sectionSettings = variant.sectionSettings || {
-      summary: { enabled: true, useCustom: false },
-      key_achievements: { enabled: true, useCustom: false },
+      headline: { enabled: true },
+      summary: { enabled: false },
+      key_achievements: { enabled: false },
       experience: { enabled: true },
       education: { enabled: true },
       awards: { enabled: true },
       skills: { enabled: true }
     };
     
+    // Handle headline specially since it's not in the sections object
+    if (!sectionSettings.headline.enabled) {
+      result.headline = '';
+    }
+    
     // Update section settings based on variant configuration
     const newSections = { ...resume.sections };
     
     Object.entries(sectionSettings).forEach(([sectionKey, settings]) => {
+      // Skip headline since it's handled above
+      if (sectionKey === 'headline') return;
+      
       if (newSections[sectionKey as keyof typeof newSections]) {
         newSections[sectionKey as keyof typeof newSections].enabled = settings.enabled;
       }

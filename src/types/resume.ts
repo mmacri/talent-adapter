@@ -82,6 +82,7 @@ export interface Variant {
   rules: VariantRule[];
   overrides: VariantOverride[];
   sectionSettings: {
+    headline: { enabled: boolean };
     summary: { enabled: boolean };
     key_achievements: { enabled: boolean };
     experience: { enabled: boolean };

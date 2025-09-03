@@ -313,10 +313,12 @@ const VariantEditor = () => {
                   <div className="space-y-4 text-sm">
                     <div className="text-center border-b pb-2">
                       <h4 className="font-semibold">{resolvedResume.owner}</h4>
-                      <p className="text-muted-foreground text-xs">{resolvedResume.headline}</p>
+                      {resolvedResume.headline && (
+                        <p className="text-muted-foreground text-xs">{resolvedResume.headline}</p>
+                      )}
                     </div>
 
-                    {resolvedResume.summary && resolvedResume.summary.length > 0 && (
+                    {resolvedResume.summary && resolvedResume.summary.length > 0 && variant.sectionSettings?.summary?.enabled !== false && (
                       <div>
                         <h5 className="font-medium mb-2 text-primary">
                           Summary {variant.overrides.some(o => o.path === 'summary' && o.operation === 'set') && 
@@ -330,7 +332,7 @@ const VariantEditor = () => {
                       </div>
                     )}
 
-                    {resolvedResume.key_achievements && resolvedResume.key_achievements.length > 0 && (
+                    {resolvedResume.key_achievements && resolvedResume.key_achievements.length > 0 && variant.sectionSettings?.key_achievements?.enabled !== false && (
                       <div>
                         <h5 className="font-medium mb-2 text-primary">
                           Key Achievements {variant.overrides.some(o => o.path === 'key_achievements' && o.operation === 'set') && 

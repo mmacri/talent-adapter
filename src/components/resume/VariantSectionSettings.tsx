@@ -17,8 +17,9 @@ export const VariantSectionSettings = ({
   
   // Ensure sectionSettings is always defined with default values
   const safeSectionSettings = sectionSettings || {
-    summary: { enabled: true },
-    key_achievements: { enabled: true },
+    headline: { enabled: true },
+    summary: { enabled: false },
+    key_achievements: { enabled: false },
     experience: { enabled: true },
     education: { enabled: true },
     awards: { enabled: true },
@@ -36,6 +37,12 @@ export const VariantSectionSettings = ({
   };
 
   const sections = [
+    {
+      key: 'headline' as const,
+      label: 'Headline/Tagline',
+      icon: FileText,
+      description: 'Professional title or tagline'
+    },
     {
       key: 'summary' as const,
       label: 'Professional Summary',

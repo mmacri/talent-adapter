@@ -168,6 +168,7 @@ export const createSeedData = () => {
       ],
       overrides: [],
       sectionSettings: {
+        headline: { enabled: true },
         summary: { enabled: true },
         key_achievements: { enabled: true },
         experience: { enabled: true },
@@ -189,6 +190,7 @@ export const createSeedData = () => {
       ],
       overrides: [],
       sectionSettings: {
+        headline: { enabled: true },
         summary: { enabled: true },
         key_achievements: { enabled: true },
         experience: { enabled: true },
