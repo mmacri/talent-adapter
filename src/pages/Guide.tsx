@@ -15,7 +15,14 @@ import {
   Target,
   Settings2,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  BarChart,
+  Eye,
+  Calendar,
+  List,
+  Tag,
+  Diff,
+  FileSpreadsheet
 } from "lucide-react";
 
 const Guide = () => {
@@ -29,11 +36,12 @@ const Guide = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="master">Master Resume</TabsTrigger>
           <TabsTrigger value="variants">Variants</TabsTrigger>
           <TabsTrigger value="workflow">Workflow</TabsTrigger>
+          <TabsTrigger value="features">Features</TabsTrigger>
           <TabsTrigger value="tips">Tips & Tricks</TabsTrigger>
         </TabsList>
 
@@ -195,20 +203,36 @@ const Guide = () => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Filter className="w-5 h-5" />
-                    Content Rules
+                    Advanced Rules System
                   </h3>
                   <div className="space-y-3">
                     <div className="p-3 rounded-lg border">
-                      <p className="font-medium text-sm">Include/Exclude Sections</p>
-                      <p className="text-xs text-muted-foreground">Show only relevant sections for specific roles</p>
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <Tag className="w-4 h-4" />
+                        Tag Filtering
+                      </p>
+                      <p className="text-xs text-muted-foreground">Include or exclude experience based on tags</p>
                     </div>
                     <div className="p-3 rounded-lg border">
-                      <p className="font-medium text-sm">Keyword Filtering</p>
-                      <p className="text-xs text-muted-foreground">Highlight experience matching job requirements</p>
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <List className="w-4 h-4" />
+                        Content Limits
+                      </p>
+                      <p className="text-xs text-muted-foreground">Limit bullet points per experience entry</p>
                     </div>
                     <div className="p-3 rounded-lg border">
-                      <p className="font-medium text-sm">Priority Reordering</p>
-                      <p className="text-xs text-muted-foreground">Put most relevant experience first</p>
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <List className="w-4 h-4" />
+                        Section Ordering
+                      </p>
+                      <p className="text-xs text-muted-foreground">Reorder sections (Summary, Experience, Skills, etc.)</p>
+                    </div>
+                    <div className="p-3 rounded-lg border">
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        Date Filtering
+                      </p>
+                      <p className="text-xs text-muted-foreground">Show only experience within specific date ranges</p>
                     </div>
                   </div>
                 </div>
@@ -216,20 +240,27 @@ const Guide = () => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold flex items-center gap-2">
                     <Edit className="w-5 h-5" />
-                    Field Overrides
+                    Custom Content & Overrides
                   </h3>
                   <div className="space-y-3">
                     <div className="p-3 rounded-lg border">
+                      <p className="font-medium text-sm">Section Enable/Disable</p>
+                      <p className="text-xs text-muted-foreground">Show or hide entire sections per variant</p>
+                    </div>
+                    <div className="p-3 rounded-lg border">
                       <p className="font-medium text-sm">Custom Summaries</p>
-                      <p className="text-xs text-muted-foreground">Tailor professional summary for each role</p>
+                      <p className="text-xs text-muted-foreground">Role-specific professional summary content</p>
                     </div>
                     <div className="p-3 rounded-lg border">
-                      <p className="font-medium text-sm">Role-Specific Skills</p>
-                      <p className="text-xs text-muted-foreground">Emphasize relevant technical skills</p>
+                      <p className="font-medium text-sm">Key Achievement Overrides</p>
+                      <p className="text-xs text-muted-foreground">Highlight different achievements per role type</p>
                     </div>
                     <div className="p-3 rounded-lg border">
-                      <p className="font-medium text-sm">Job Titles</p>
-                      <p className="text-xs text-muted-foreground">Adjust titles to match industry terminology</p>
+                      <p className="font-medium text-sm flex items-center gap-2">
+                        <Diff className="w-4 h-4" />
+                        Advanced Field Overrides
+                      </p>
+                      <p className="text-xs text-muted-foreground">Granular control over any field using path notation</p>
                     </div>
                   </div>
                 </div>
@@ -284,21 +315,33 @@ const Guide = () => {
                   },
                   {
                     step: 2,
-                    title: "Analyze Job Postings",
-                    description: "Use the Jobs section to track opportunities and requirements",
-                    actions: ["Save job postings you're interested in", "Note key requirements and skills", "Identify common themes across similar roles"]
+                    title: "Organize with Tags & Structure",
+                    description: "Tag your experience entries for easy filtering in variants",
+                    actions: ["Tag each experience with relevant keywords (e.g., 'Leadership', 'AI', 'Partner')", "Use consistent tagging across similar experiences", "Organize sections in logical order", "Review and update contact information including LinkedIn"]
                   },
                   {
                     step: 3,
-                    title: "Create Targeted Variants",
-                    description: "Build variants for different types of roles",
-                    actions: ["Create variants for each role type", "Set up content rules to filter relevant experience", "Override fields with role-specific content", "Test different approaches"]
+                    title: "Track Job Opportunities",
+                    description: "Use the Jobs section to manage applications and requirements",
+                    actions: ["Add job applications with company and role details", "Note key requirements and skills from job postings", "Import/export applications via CSV or Excel", "Track application status and interview progress"]
                   },
                   {
                     step: 4,
-                    title: "Generate & Apply",
-                    description: "Export professional documents and track applications",
-                    actions: ["Export variants as Word documents", "Customize cover letters for each application", "Track application status", "Update master resume regularly"]
+                    title: "Create Targeted Variants",
+                    description: "Build variants for different types of roles using the 5-tab system",
+                    actions: ["Content: Set custom summaries and key achievements", "Sections: Enable/disable sections per variant", "Order: Arrange sections in optimal order", "Rules: Apply tag filtering, limits, and date ranges", "Advanced: Use field overrides for granular control"]
+                  },
+                  {
+                    step: 5,
+                    title: "Preview & Export",
+                    description: "Use the Resume Viewer and export professional documents",
+                    actions: ["Preview all variants in the Resume Viewer", "Compare different versions side-by-side", "Export variants as Word documents with standardized formatting", "Create matching cover letters using templates"]
+                  },
+                  {
+                    step: 6,
+                    title: "Track & Analyze Performance",
+                    description: "Monitor application success and optimize your approach",
+                    actions: ["Update job application statuses as they progress", "Review Reports to see success rates and trends", "Identify which variants perform best", "Refine your approach based on analytics data"]
                   }
                 ].map((item, index) => (
                   <div key={index} className="flex gap-4">
@@ -324,6 +367,222 @@ const Guide = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="features" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-primary" />
+                  Job Application Tracking
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Application Management</p>
+                      <p className="text-xs text-muted-foreground">Track company, role, status, and application dates</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Document Association</p>
+                      <p className="text-xs text-muted-foreground">Link which resume variant and cover letter you used</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">CSV/Excel Import/Export</p>
+                      <p className="text-xs text-muted-foreground">Bulk manage applications with spreadsheet tools</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-primary rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Print Reports</p>
+                      <p className="text-xs text-muted-foreground">Generate formatted reports with date filtering</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-accent" />
+                  Cover Letter Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-accent rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Template System</p>
+                      <p className="text-xs text-muted-foreground">Create reusable cover letter templates</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-accent rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Variable Substitution</p>
+                      <p className="text-xs text-muted-foreground">Use placeholders like {`{{company}}`} and {`{{role}}`}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-accent rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Rich Text Editing</p>
+                      <p className="text-xs text-muted-foreground">Full WYSIWYG editor for professional formatting</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-accent rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Usage Tracking</p>
+                      <p className="text-xs text-muted-foreground">See which letters are associated with applications</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="w-5 h-5 text-secondary-foreground" />
+                  Resume Viewer & Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-secondary-foreground rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">All Versions Display</p>
+                      <p className="text-xs text-muted-foreground">View master resume + all resolved variants</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-secondary-foreground rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Complete Content View</p>
+                      <p className="text-xs text-muted-foreground">Full resume content with proper contact info display</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-secondary-foreground rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Individual Export</p>
+                      <p className="text-xs text-muted-foreground">Export each version separately to Word format</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-secondary-foreground rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Copy JSON Data</p>
+                      <p className="text-xs text-muted-foreground">Copy raw data for debugging or external tools</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart className="w-5 h-5 text-success" />
+                  Analytics & Reporting
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-success rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Success Rate Analysis</p>
+                      <p className="text-xs text-muted-foreground">Track interview and offer conversion rates</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-success rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Time-based Trends</p>
+                      <p className="text-xs text-muted-foreground">Weekly, monthly, quarterly analysis views</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-success rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Document Effectiveness</p>
+                      <p className="text-xs text-muted-foreground">Identify which variants and cover letters work best</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-success rounded-full mt-2" />
+                    <div>
+                      <p className="font-medium text-sm">Visual Charts</p>
+                      <p className="text-xs text-muted-foreground">Line charts, pie charts, and bar charts for insights</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileSpreadsheet className="w-5 h-5 text-primary" />
+                Enhanced Import/Export System
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Standardized Formatting</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      Consistent filename generation across all exports
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      Standardized date formatting throughout the application
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      Professional Word document formatting
+                    </li>
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Bulk Operations</h4>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      CSV/Excel import with update or replace modes
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      Bulk export of job applications and data
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      Template downloads for easy data entry
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        </TabsContent>
+
         <TabsContent value="tips" className="space-y-6">
           <div className="grid gap-6 md:grid-cols-2">
             <Card>
@@ -332,16 +591,28 @@ const Guide = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <p className="font-medium text-sm">Use Tags Strategically</p>
-                  <p className="text-xs text-muted-foreground">Tag experience items to easily filter them in variants</p>
+                  <p className="font-medium text-sm">Use the 5-Tab Variant System</p>
+                  <p className="text-xs text-muted-foreground">Content → Sections → Order → Rules → Advanced for complete customization</p>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium text-sm">Version Control</p>
-                  <p className="text-xs text-muted-foreground">Export and backup your master resume regularly</p>
+                  <p className="font-medium text-sm">Tag Strategically</p>
+                  <p className="text-xs text-muted-foreground">Use consistent tags like 'Leadership', 'Partner', 'AI' for easy filtering</p>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium text-sm">Test Different Approaches</p>
-                  <p className="text-xs text-muted-foreground">Create multiple variants for the same role type to see what works</p>
+                  <p className="font-medium text-sm">Leverage Section Ordering</p>
+                  <p className="text-xs text-muted-foreground">Put most relevant sections first - drag and drop to reorder</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Use the Resume Viewer</p>
+                  <p className="text-xs text-muted-foreground">Compare all versions side-by-side before applying</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Track Everything</p>
+                  <p className="text-xs text-muted-foreground">Link applications to specific variants for performance analysis</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Analyze Performance</p>
+                  <p className="text-xs text-muted-foreground">Use Reports to identify which variants get the best results</p>
                 </div>
               </CardContent>
             </Card>
@@ -357,15 +628,55 @@ const Guide = () => {
                 </div>
                 <div className="space-y-2">
                   <p className="font-medium text-sm">Forgetting Updates</p>
-                  <p className="text-xs text-muted-foreground">Keep your master resume current to ensure all variants benefit</p>
+                  <p className="text-xs text-muted-foreground">Keep your master resume current so all variants benefit from improvements</p>
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium text-sm">Ignoring ATS</p>
-                  <p className="text-xs text-muted-foreground">Use keywords from job postings to pass applicant tracking systems</p>
+                  <p className="font-medium text-sm">Ignoring LinkedIn URLs</p>
+                  <p className="text-xs text-muted-foreground">Make sure your LinkedIn URL is properly formatted and displays correctly</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Not Using Analytics</p>
+                  <p className="text-xs text-muted-foreground">Review your Reports regularly to optimize your approach</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Inconsistent Tagging</p>
+                  <p className="text-xs text-muted-foreground">Use consistent tag names to make filtering rules more effective</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="font-medium text-sm">Missing Backups</p>
+                  <p className="text-xs text-muted-foreground">Export and backup your master resume and variants regularly</p>
                 </div>
               </CardContent>
             </Card>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">🚀 Advanced Techniques</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Variant Optimization</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Create A/B test variants for the same role type</li>
+                    <li>• Use date range rules to emphasize recent experience</li>
+                    <li>• Combine multiple rule types for precise filtering</li>
+                    <li>• Use advanced overrides for company-specific customizations</li>
+                  </ul>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Data Management</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Import job applications from spreadsheets</li>
+                    <li>• Export application data for external analysis</li>
+                    <li>• Use the template download system for consistent data entry</li>
+                    <li>• Regular backup your data using JSON export</li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
