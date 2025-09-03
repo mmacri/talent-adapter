@@ -129,12 +129,23 @@ export const transformToResumeMaster = (): ResumeMaster => {
   // Parse date ranges from experience
   const parseExperienceDates = (dateString: string) => {
     const parts = dateString.split(' – ');
-    const startDate = parts[0];
+    let startDate = parts[0];
     let endDate = parts[1];
+    
+    // Convert MM/YYYY to YYYY-MM format
+    const convertDateFormat = (date: string) => {
+      if (!date) return null;
+      const [month, year] = date.split('/');
+      return `${year}-${month.padStart(2, '0')}`;
+    };
+    
+    startDate = convertDateFormat(startDate);
     
     // Handle "Present" or current dates
     if (endDate && (endDate.includes('2025') || endDate === 'Present')) {
       endDate = null; // Current position
+    } else if (endDate) {
+      endDate = convertDateFormat(endDate);
     }
     
     return { startDate, endDate };
