@@ -49,7 +49,7 @@ export const parseCSV = (csvText: string): any[] => {
     if (values.length === headers.length) {
       const row: any = {};
       headers.forEach((header, index) => {
-        let value = values[index];
+        let value: any = values[index];
         // Handle array values (pipe-separated)
         if (typeof value === 'string' && value.includes('|')) {
           value = value.split('|');
