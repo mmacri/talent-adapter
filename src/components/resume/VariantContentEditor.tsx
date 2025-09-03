@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Trash2, FileText, Target, Lightbulb } from 'lucide-react';
+import { Plus, Trash2, FileText, Target, Lightbulb, Briefcase } from 'lucide-react';
 import { ResumeMaster, VariantOverride } from '@/types/resume';
 import { TipTapEditor } from './TipTapEditor';
+import { VariantExperienceReorder } from './VariantExperienceReorder';
 
 interface VariantContentEditorProps {
   overrides: VariantOverride[];
@@ -181,7 +182,7 @@ export const VariantContentEditor = ({
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="summary" className="flex items-center gap-2">
                 <FileText className="w-4 h-4" />
                 Professional Summary
@@ -193,6 +194,13 @@ export const VariantContentEditor = ({
                 <Target className="w-4 h-4" />
                 Key Achievements
                 {getAchievementsOverride() && (
+                  <Badge variant="secondary" className="ml-1 text-xs">Custom</Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="experience" className="flex items-center gap-2">
+                <Briefcase className="w-4 h-4" />
+                Experience Order
+                {overrides.some(o => o.path === 'experience_order' && o.operation === 'set') && (
                   <Badge variant="secondary" className="ml-1 text-xs">Custom</Badge>
                 )}
               </TabsTrigger>
@@ -262,6 +270,14 @@ export const VariantContentEditor = ({
                   )}
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="experience" className="mt-6">
+              <VariantExperienceReorder
+                masterResume={masterResume}
+                overrides={overrides}
+                onOverridesChange={onOverridesChange}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>

@@ -48,6 +48,7 @@ import { TipTapEditor } from '@/components/resume/TipTapEditor';
 import { TagManager } from '@/components/resume/TagManager';
 import { GlobalTagManager } from '@/components/resume/GlobalTagManager';
 import { SectionEditor } from '@/components/resume/SectionEditor';
+import { SortableExperienceList } from '@/components/resume/SortableExperienceList';
 import { MasterResumeActions } from '@/components/resume/MasterResumeActions';
 import { HelpCard } from '@/components/ui/help-card';
 import { InfoTooltip } from '@/components/ui/info-tooltip';
@@ -193,6 +194,11 @@ const MasterResume = () => {
     
     const filteredExperience = masterResume.experience.filter(exp => exp.id !== experienceId);
     handleFieldUpdate('experience', filteredExperience);
+  };
+
+  const handleExperienceReorder = (reorderedExperiences: Experience[]) => {
+    if (!masterResume) return;
+    handleFieldUpdate('experience', reorderedExperiences);
   };
 
   const handleExport = async () => {
@@ -722,70 +728,28 @@ const MasterResume = () => {
                      </div>
                   </div>
 
-                  <div className="space-y-6">
-                    {masterResume.experience.map((exp, index) => (
-                      <Card key={exp.id} className="relative">
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <Input
-                                value={exp.title}
-                                onChange={(e) => handleExperienceUpdate(exp.id, { title: e.target.value })}
-                                className="text-lg font-semibold bg-transparent border-0 p-0 h-auto focus-visible:ring-0"
-                              />
-                              <Input
-                                value={exp.company}
-                                onChange={(e) => handleExperienceUpdate(exp.id, { company: e.target.value })}
-                                className="text-primary bg-transparent border-0 p-0 h-auto focus-visible:ring-0 mt-1"
-                              />
-                              <div className="flex gap-2 mt-2">
-                                <Input
-                                  type="month"
-                                  value={exp.date_start}
-                                  onChange={(e) => handleExperienceUpdate(exp.id, { date_start: e.target.value })}
-                                  className="w-32"
-                                />
-                                <span className="self-center text-muted-foreground">to</span>
-                                <Input
-                                  type="month"
-                                  value={exp.date_end || ''}
-                                  onChange={(e) => handleExperienceUpdate(exp.id, { date_end: e.target.value || null })}
-                                  className="w-32"
-                                  placeholder="Present"
-                                />
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteExperience(exp.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </CardHeader>
-                        
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-medium">Responsibilities & Achievements</Label>
-                              <TipTapEditor
-                                content={exp.bullets}
-                                onChange={(bullets) => handleExperienceUpdate(exp.id, { bullets })}
-                                placeholder="Add your key responsibilities and achievements..."
-                              />
-                            </div>
-                            
-                            <TagManager
-                              tags={exp.tags}
-                              onTagsChange={(tags) => handleExperienceUpdate(exp.id, { tags })}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  {masterResume.experience.length > 0 ? (
+                    <SortableExperienceList
+                      experiences={masterResume.experience}
+                      onReorder={handleExperienceReorder}
+                      onExperienceUpdate={handleExperienceUpdate}
+                      onExperienceDelete={deleteExperience}
+                    />
+                  ) : (
+                    <Card className="border-dashed">
+                      <CardContent className="py-12 text-center">
+                        <Briefcase className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No work experience added yet</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Add your work experience to build your comprehensive master resume
+                        </p>
+                        <Button onClick={addExperience} className="bg-gradient-to-r from-accent to-accent">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Your First Experience
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </TabsContent>
 

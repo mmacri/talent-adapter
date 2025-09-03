@@ -194,6 +194,12 @@ export class VariantResolver {
     const pathParts = override.path.split('.');
     const result = { ...resume };
 
+    // Special handling for experience_order
+    if (override.path === 'experience_order' && override.operation === 'set') {
+      result.experience = this.reorderExperience(result.experience, override.value);
+      return result;
+    }
+
     switch (override.operation) {
       case 'set':
         this.setNestedProperty(result, pathParts, override.value);
@@ -207,6 +213,31 @@ export class VariantResolver {
     }
 
     return result;
+  }
+
+  private static reorderExperience(experiences: any[], order: string[]): any[] {
+    if (!Array.isArray(order) || order.length === 0) {
+      return experiences;
+    }
+
+    const experienceMap = new Map(experiences.map(exp => [exp.id, exp]));
+    const reordered = [];
+
+    // Add experiences in the specified order
+    for (const id of order) {
+      const experience = experienceMap.get(id);
+      if (experience) {
+        reordered.push(experience);
+        experienceMap.delete(id);
+      }
+    }
+
+    // Add any remaining experiences that weren't in the order list
+    for (const experience of experienceMap.values()) {
+      reordered.push(experience);
+    }
+
+    return reordered;
   }
 
   private static setNestedProperty(obj: any, path: string[], value: any): void {
