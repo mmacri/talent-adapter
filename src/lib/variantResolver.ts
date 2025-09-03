@@ -315,38 +315,72 @@ export class VariantResolver {
   }
 
   static generateDiff(master: ResumeMaster, resolved: ResumeMaster): any {
-    // Simple diff implementation - could be enhanced with jsondiffpatch
     const diff = {
-      added: [] as string[],
-      removed: [] as string[],
-      modified: [] as string[]
+      sections: {
+        added: [] as string[],
+        removed: [] as string[],
+        modified: [] as string[]
+      },
+      experiences: {
+        added: [] as string[],
+        removed: [] as string[],
+        reordered: false,
+        modified: [] as string[]
+      },
+      content: {
+        headline: master.headline !== resolved.headline,
+        summary: master.summary?.length !== resolved.summary?.length,
+        keyAchievements: master.key_achievements?.length !== resolved.key_achievements?.length
+      },
+      stats: {
+        masterExperiences: master.experience?.length || 0,
+        resolvedExperiences: resolved.experience?.length || 0,
+        masterSummaryPoints: master.summary?.length || 0,
+        resolvedSummaryPoints: resolved.summary?.length || 0,
+        masterAchievements: master.key_achievements?.length || 0,
+        resolvedAchievements: resolved.key_achievements?.length || 0
+      }
     };
 
+    // Compare sections
+    Object.entries(master.sections || {}).forEach(([key, masterSection]) => {
+      const resolvedSection = resolved.sections?.[key];
+      if (masterSection.enabled && (!resolvedSection || !resolvedSection.enabled)) {
+        diff.sections.removed.push(key.replace('_', ' '));
+      } else if (!masterSection.enabled && resolvedSection?.enabled) {
+        diff.sections.added.push(key.replace('_', ' '));
+      } else if (masterSection.order !== resolvedSection?.order) {
+        diff.sections.modified.push(`${key.replace('_', ' ')} order changed`);
+      }
+    });
+
     // Compare experience entries
-    const masterExpIds = new Set(master.experience.map(exp => exp.id));
-    const resolvedExpIds = new Set(resolved.experience.map(exp => exp.id));
+    const masterExpIds = master.experience?.map(exp => exp.id) || [];
+    const resolvedExpIds = resolved.experience?.map(exp => exp.id) || [];
 
-    // Find added/removed experiences
-    for (const id of resolvedExpIds) {
-      if (!masterExpIds.has(id)) {
-        diff.added.push(`Experience: ${resolved.experience.find(exp => exp.id === id)?.title}`);
+    // Check for filtering/removal
+    masterExpIds.forEach(id => {
+      if (!resolvedExpIds.includes(id)) {
+        const exp = master.experience?.find(exp => exp.id === id);
+        if (exp) {
+          diff.experiences.removed.push(exp.title);
+        }
       }
+    });
+
+    // Check for reordering
+    if (masterExpIds.length === resolvedExpIds.length && 
+        masterExpIds.some((id, index) => id !== resolvedExpIds[index])) {
+      diff.experiences.reordered = true;
     }
 
-    for (const id of masterExpIds) {
-      if (!resolvedExpIds.has(id)) {
-        diff.removed.push(`Experience: ${master.experience.find(exp => exp.id === id)?.title}`);
+    // Check for bullet modifications
+    resolved.experience?.forEach(resolvedExp => {
+      const masterExp = master.experience?.find(exp => exp.id === resolvedExp.id);
+      if (masterExp && masterExp.bullets.length !== resolvedExp.bullets.length) {
+        diff.experiences.modified.push(`${resolvedExp.title} (${resolvedExp.bullets.length}/${masterExp.bullets.length} bullets)`);
       }
-    }
-
-    // Check for modified content
-    if (master.summary?.length !== resolved.summary?.length) {
-      diff.modified.push('Summary bullets modified');
-    }
-
-    if (master.key_achievements?.length !== resolved.key_achievements?.length) {
-      diff.modified.push('Key achievements modified');
-    }
+    });
 
     return diff;
   }

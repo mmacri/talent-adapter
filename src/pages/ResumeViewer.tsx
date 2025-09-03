@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Eye, 
   Download, 
@@ -19,7 +20,13 @@ import {
   Calendar,
   Tag,
   Settings,
-  Copy
+  Copy,
+  AlertCircle,
+  Shuffle,
+  Filter,
+  Edit3,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
 import { ResumeMaster } from '@/types/resume';
 import { VariantResolver } from '@/lib/variantResolver';
@@ -370,6 +377,7 @@ const ResumeViewer = () => {
       resume: ResumeMaster;
       variant: any;
       type: 'master' | 'variant';
+      diff?: any;
     };
 
     const versions: ResumeVersion[] = [
@@ -385,17 +393,131 @@ const ResumeViewer = () => {
 
     variants.forEach(variant => {
       const resolvedResume = VariantResolver.resolveVariant(masterResume, variant);
+      const diff = VariantResolver.generateDiff(masterResume, resolvedResume);
       versions.push({
         id: variant.id,
         name: variant.name,
         description: variant.description,
         resume: resolvedResume,
         variant,
-        type: 'variant'
+        type: 'variant',
+        diff
       });
     });
 
     return versions;
+  };
+
+  // Helper function to render diff summary
+  const renderDiffSummary = (diff: any) => {
+    if (!diff) return null;
+
+    const hasChanges = 
+      diff.sections.removed.length > 0 ||
+      diff.sections.added.length > 0 ||
+      diff.experiences.removed.length > 0 ||
+      diff.experiences.reordered ||
+      diff.experiences.modified.length > 0 ||
+      diff.content.headline ||
+      diff.content.summary ||
+      diff.content.keyAchievements;
+
+    if (!hasChanges) {
+      return (
+        <Alert className="border-muted">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No visible differences from master resume
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    const changes = [];
+
+    // Section changes
+    if (diff.sections.removed.length > 0) {
+      changes.push({
+        type: 'removed',
+        icon: <TrendingDown className="w-3 h-3" />,
+        text: `Sections hidden: ${diff.sections.removed.join(', ')}`
+      });
+    }
+
+    // Experience changes
+    if (diff.experiences.removed.length > 0) {
+      changes.push({
+        type: 'filtered',
+        icon: <Filter className="w-3 h-3" />,
+        text: `Experiences filtered out: ${diff.experiences.removed.length}`
+      });
+    }
+
+    if (diff.experiences.reordered) {
+      changes.push({
+        type: 'reordered',
+        icon: <Shuffle className="w-3 h-3" />,
+        text: 'Experience order modified'
+      });
+    }
+
+    if (diff.experiences.modified.length > 0) {
+      changes.push({
+        type: 'modified',
+        icon: <Edit3 className="w-3 h-3" />,
+        text: `Bullet points limited in: ${diff.experiences.modified.join(', ')}`
+      });
+    }
+
+    // Content changes
+    if (diff.content.headline) {
+      changes.push({
+        type: 'modified',
+        icon: <Edit3 className="w-3 h-3" />,
+        text: 'Headline modified'
+      });
+    }
+
+    if (diff.content.summary) {
+      changes.push({
+        type: 'modified',
+        icon: <Edit3 className="w-3 h-3" />,
+        text: `Summary: ${diff.stats.resolvedSummaryPoints}/${diff.stats.masterSummaryPoints} points`
+      });
+    }
+
+    if (diff.content.keyAchievements) {
+      changes.push({
+        type: 'modified',
+        icon: <Edit3 className="w-3 h-3" />,
+        text: `Key achievements: ${diff.stats.resolvedAchievements}/${diff.stats.masterAchievements} items`
+      });
+    }
+
+    return (
+      <div className="space-y-2">
+        <h4 className="font-medium text-sm flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-amber-500" />
+          Changes from Master Resume
+        </h4>
+        <div className="space-y-1">
+          {changes.map((change, index) => (
+            <div key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
+              {change.icon}
+              {change.text}
+            </div>
+          ))}
+        </div>
+        {diff.stats.resolvedExperiences !== diff.stats.masterExperiences && (
+          <div className="flex items-center gap-2 text-xs">
+            <TrendingDown className="w-3 h-3 text-orange-500" />
+            <span className="text-muted-foreground">
+              Showing {diff.stats.resolvedExperiences} of {diff.stats.masterExperiences} experiences
+            </span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const allVersions = getAllResumeVersions();
@@ -461,6 +583,13 @@ const ResumeViewer = () => {
                   </Button>
                 </div>
               </div>
+              
+              {/* Diff Summary for Variants */}
+              {version.type === 'variant' && version.diff && (
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                  {renderDiffSummary(version.diff)}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <div className="max-h-[600px] overflow-y-auto border rounded-lg p-4 bg-background/50">
