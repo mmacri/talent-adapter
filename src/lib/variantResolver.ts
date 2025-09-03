@@ -314,56 +314,203 @@ export class VariantResolver {
     }
   }
 
-  static generateDiff(master: ResumeMaster, resolved: ResumeMaster): any {
+  static generateDiff(master: ResumeMaster, resolved: ResumeMaster, variant?: any): any {
     const diff = {
       sections: {
         added: [] as string[],
         removed: [] as string[],
-        modified: [] as string[]
+        modified: [] as string[],
+        reordered: [] as string[]
       },
       experiences: {
         added: [] as string[],
-        removed: [] as string[],
+        removed: [] as { title: string; company: string; reason: string }[],
         reordered: false,
-        modified: [] as string[]
+        modified: [] as { title: string; company: string; changes: string[] }[],
+        originalOrder: [] as string[],
+        newOrder: [] as string[]
       },
       content: {
-        headline: master.headline !== resolved.headline,
-        summary: master.summary?.length !== resolved.summary?.length,
-        keyAchievements: master.key_achievements?.length !== resolved.key_achievements?.length
+        headline: {
+          changed: master.headline !== resolved.headline,
+          original: master.headline,
+          modified: resolved.headline
+        },
+        summary: {
+          changed: (master.summary?.length || 0) !== (resolved.summary?.length || 0),
+          originalCount: master.summary?.length || 0,
+          modifiedCount: resolved.summary?.length || 0,
+          difference: (resolved.summary?.length || 0) - (master.summary?.length || 0)
+        },
+        keyAchievements: {
+          changed: (master.key_achievements?.length || 0) !== (resolved.key_achievements?.length || 0),
+          originalCount: master.key_achievements?.length || 0,
+          modifiedCount: resolved.key_achievements?.length || 0,
+          difference: (resolved.key_achievements?.length || 0) - (master.key_achievements?.length || 0)
+        }
+      },
+      rules: {
+        applied: [] as { type: string; description: string; impact: string }[]
+      },
+      overrides: {
+        applied: [] as { path: string; operation: string; description: string }[]
       },
       stats: {
         masterExperiences: master.experience?.length || 0,
         resolvedExperiences: resolved.experience?.length || 0,
-        masterSummaryPoints: master.summary?.length || 0,
-        resolvedSummaryPoints: resolved.summary?.length || 0,
-        masterAchievements: master.key_achievements?.length || 0,
-        resolvedAchievements: resolved.key_achievements?.length || 0
+        experienceReduction: (master.experience?.length || 0) - (resolved.experience?.length || 0),
+        totalBulletsOriginal: master.experience?.reduce((sum, exp) => sum + exp.bullets.length, 0) || 0,
+        totalBulletsResolved: resolved.experience?.reduce((sum, exp) => sum + exp.bullets.length, 0) || 0,
+        bulletReduction: (master.experience?.reduce((sum, exp) => sum + exp.bullets.length, 0) || 0) - 
+                         (resolved.experience?.reduce((sum, exp) => sum + exp.bullets.length, 0) || 0)
       }
     };
 
-    // Compare sections
+    // Analyze variant rules if provided
+    if (variant?.rules) {
+      variant.rules.forEach((rule: any) => {
+        let description = '';
+        let impact = '';
+        
+        switch (rule.type) {
+          case 'include_tags':
+            description = `Include only experiences with tags: ${rule.value.join(', ')}`;
+            const includedCount = master.experience?.filter(exp => 
+              exp.tags && exp.tags.some(tag => rule.value.includes(tag))
+            ).length || 0;
+            impact = `${includedCount} of ${master.experience?.length || 0} experiences included`;
+            break;
+          case 'exclude_tags':
+            description = `Exclude experiences with tags: ${rule.value.join(', ')}`;
+            const excludedCount = master.experience?.filter(exp => 
+              exp.tags && exp.tags.some(tag => rule.value.includes(tag))
+            ).length || 0;
+            impact = `${excludedCount} experiences excluded`;
+            break;
+          case 'max_bullets':
+            description = `Limit bullets to maximum ${rule.value} per experience`;
+            const totalBulletReduction = master.experience?.reduce((sum, exp) => 
+              sum + Math.max(0, exp.bullets.length - rule.value), 0) || 0;
+            impact = `${totalBulletReduction} bullets removed total`;
+            break;
+          case 'section_order':
+            description = `Reorder sections: ${rule.value.join(' → ')}`;
+            impact = 'Section order customized';
+            break;
+          case 'date_range':
+            description = `Filter by date range: ${rule.value.start} to ${rule.value.end}`;
+            const inRangeCount = master.experience?.filter(exp => {
+              if (!exp.date_start) return true;
+              try {
+                const expStart = new Date(exp.date_start);
+                const rangeStart = new Date(rule.value.start);
+                const rangeEnd = new Date(rule.value.end);
+                return expStart >= rangeStart && expStart <= rangeEnd;
+              } catch {
+                return true;
+              }
+            }).length || 0;
+            impact = `${inRangeCount} of ${master.experience?.length || 0} experiences in range`;
+            break;
+        }
+        
+        diff.rules.applied.push({
+          type: rule.type,
+          description,
+          impact
+        });
+      });
+    }
+
+    // Analyze variant overrides if provided
+    if (variant?.overrides) {
+      variant.overrides.forEach((override: any) => {
+        let description = '';
+        
+        switch (override.operation) {
+          case 'set':
+            if (override.path === 'experience_order') {
+              description = `Reorder experiences: ${override.value.length} positions specified`;
+            } else {
+              description = `Set ${override.path} to new value`;
+            }
+            break;
+          case 'add':
+            description = `Add item to ${override.path}`;
+            break;
+          case 'remove':
+            description = `Remove item from ${override.path}`;
+            break;
+        }
+        
+        diff.overrides.applied.push({
+          path: override.path,
+          operation: override.operation,
+          description
+        });
+      });
+    }
+
+    // Compare sections with detailed analysis
     Object.entries(master.sections || {}).forEach(([key, masterSection]) => {
       const resolvedSection = resolved.sections?.[key];
+      const sectionName = key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
       if (masterSection.enabled && (!resolvedSection || !resolvedSection.enabled)) {
-        diff.sections.removed.push(key.replace('_', ' '));
+        diff.sections.removed.push(sectionName);
       } else if (!masterSection.enabled && resolvedSection?.enabled) {
-        diff.sections.added.push(key.replace('_', ' '));
+        diff.sections.added.push(sectionName);
       } else if (masterSection.order !== resolvedSection?.order) {
-        diff.sections.modified.push(`${key.replace('_', ' ')} order changed`);
+        diff.sections.reordered.push(`${sectionName} moved from position ${masterSection.order} to ${resolvedSection?.order}`);
       }
     });
 
-    // Compare experience entries
+    // Compare experience entries with detailed analysis
     const masterExpIds = master.experience?.map(exp => exp.id) || [];
     const resolvedExpIds = resolved.experience?.map(exp => exp.id) || [];
 
-    // Check for filtering/removal
+    // Track original and new order
+    diff.experiences.originalOrder = master.experience?.map(exp => `${exp.company} - ${exp.title}`) || [];
+    diff.experiences.newOrder = resolved.experience?.map(exp => `${exp.company} - ${exp.title}`) || [];
+
+    // Check for filtering/removal with reasons
     masterExpIds.forEach(id => {
       if (!resolvedExpIds.includes(id)) {
         const exp = master.experience?.find(exp => exp.id === id);
         if (exp) {
-          diff.experiences.removed.push(exp.title);
+          let reason = 'Unknown';
+          
+          // Determine why experience was filtered
+          if (variant?.rules) {
+            const includeTagRule = variant.rules.find((r: any) => r.type === 'include_tags');
+            const excludeTagRule = variant.rules.find((r: any) => r.type === 'exclude_tags');
+            const dateRangeRule = variant.rules.find((r: any) => r.type === 'date_range');
+            
+            if (includeTagRule && includeTagRule.value.length > 0 && 
+                (!exp.tags || !exp.tags.some(tag => includeTagRule.value.includes(tag)))) {
+              reason = `Missing required tags: ${includeTagRule.value.join(', ')}`;
+            } else if (excludeTagRule && exp.tags && 
+                       exp.tags.some(tag => excludeTagRule.value.includes(tag))) {
+              reason = `Excluded by tags: ${exp.tags.filter(tag => excludeTagRule.value.includes(tag)).join(', ')}`;
+            } else if (dateRangeRule && exp.date_start) {
+              try {
+                const expStart = new Date(exp.date_start);
+                const rangeStart = new Date(dateRangeRule.value.start);
+                const rangeEnd = new Date(dateRangeRule.value.end);
+                if (expStart < rangeStart || expStart > rangeEnd) {
+                  reason = `Outside date range (${dateRangeRule.value.start} to ${dateRangeRule.value.end})`;
+                }
+              } catch {
+                reason = 'Date range filter applied';
+              }
+            }
+          }
+          
+          diff.experiences.removed.push({
+            title: exp.title,
+            company: exp.company,
+            reason
+          });
         }
       }
     });
@@ -374,11 +521,32 @@ export class VariantResolver {
       diff.experiences.reordered = true;
     }
 
-    // Check for bullet modifications
+    // Check for detailed modifications
     resolved.experience?.forEach(resolvedExp => {
       const masterExp = master.experience?.find(exp => exp.id === resolvedExp.id);
-      if (masterExp && masterExp.bullets.length !== resolvedExp.bullets.length) {
-        diff.experiences.modified.push(`${resolvedExp.title} (${resolvedExp.bullets.length}/${masterExp.bullets.length} bullets)`);
+      if (masterExp) {
+        const changes = [];
+        
+        if (masterExp.bullets.length !== resolvedExp.bullets.length) {
+          const reduction = masterExp.bullets.length - resolvedExp.bullets.length;
+          changes.push(`${reduction > 0 ? 'Reduced' : 'Added'} ${Math.abs(reduction)} bullet points`);
+        }
+        
+        if (masterExp.title !== resolvedExp.title) {
+          changes.push(`Title changed from "${masterExp.title}" to "${resolvedExp.title}"`);
+        }
+        
+        if (masterExp.company !== resolvedExp.company) {
+          changes.push(`Company changed from "${masterExp.company}" to "${resolvedExp.company}"`);
+        }
+        
+        if (changes.length > 0) {
+          diff.experiences.modified.push({
+            title: resolvedExp.title,
+            company: resolvedExp.company,
+            changes
+          });
+        }
       }
     });
 

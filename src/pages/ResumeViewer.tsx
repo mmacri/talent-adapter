@@ -393,7 +393,7 @@ const ResumeViewer = () => {
 
     variants.forEach(variant => {
       const resolvedResume = VariantResolver.resolveVariant(masterResume, variant);
-      const diff = VariantResolver.generateDiff(masterResume, resolvedResume);
+      const diff = VariantResolver.generateDiff(masterResume, resolvedResume, variant);
       versions.push({
         id: variant.id,
         name: variant.name,
@@ -415,12 +415,15 @@ const ResumeViewer = () => {
     const hasChanges = 
       diff.sections.removed.length > 0 ||
       diff.sections.added.length > 0 ||
+      diff.sections.reordered.length > 0 ||
       diff.experiences.removed.length > 0 ||
       diff.experiences.reordered ||
       diff.experiences.modified.length > 0 ||
-      diff.content.headline ||
-      diff.content.summary ||
-      diff.content.keyAchievements;
+      diff.content.headline.changed ||
+      diff.content.summary.changed ||
+      diff.content.keyAchievements.changed ||
+      diff.rules.applied.length > 0 ||
+      diff.overrides.applied.length > 0;
 
     if (!hasChanges) {
       return (
@@ -433,89 +436,202 @@ const ResumeViewer = () => {
       );
     }
 
-    const changes = [];
-
-    // Section changes
-    if (diff.sections.removed.length > 0) {
-      changes.push({
-        type: 'removed',
-        icon: <TrendingDown className="w-3 h-3" />,
-        text: `Sections hidden: ${diff.sections.removed.join(', ')}`
-      });
-    }
-
-    // Experience changes
-    if (diff.experiences.removed.length > 0) {
-      changes.push({
-        type: 'filtered',
-        icon: <Filter className="w-3 h-3" />,
-        text: `Experiences filtered out: ${diff.experiences.removed.length}`
-      });
-    }
-
-    if (diff.experiences.reordered) {
-      changes.push({
-        type: 'reordered',
-        icon: <Shuffle className="w-3 h-3" />,
-        text: 'Experience order modified'
-      });
-    }
-
-    if (diff.experiences.modified.length > 0) {
-      changes.push({
-        type: 'modified',
-        icon: <Edit3 className="w-3 h-3" />,
-        text: `Bullet points limited in: ${diff.experiences.modified.join(', ')}`
-      });
-    }
-
-    // Content changes
-    if (diff.content.headline) {
-      changes.push({
-        type: 'modified',
-        icon: <Edit3 className="w-3 h-3" />,
-        text: 'Headline modified'
-      });
-    }
-
-    if (diff.content.summary) {
-      changes.push({
-        type: 'modified',
-        icon: <Edit3 className="w-3 h-3" />,
-        text: `Summary: ${diff.stats.resolvedSummaryPoints}/${diff.stats.masterSummaryPoints} points`
-      });
-    }
-
-    if (diff.content.keyAchievements) {
-      changes.push({
-        type: 'modified',
-        icon: <Edit3 className="w-3 h-3" />,
-        text: `Key achievements: ${diff.stats.resolvedAchievements}/${diff.stats.masterAchievements} items`
-      });
-    }
-
     return (
-      <div className="space-y-2">
-        <h4 className="font-medium text-sm flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-amber-500" />
-          Changes from Master Resume
-        </h4>
-        <div className="space-y-1">
-          {changes.map((change, index) => (
-            <div key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
-              {change.icon}
-              {change.text}
-            </div>
-          ))}
-        </div>
-        {diff.stats.resolvedExperiences !== diff.stats.masterExperiences && (
-          <div className="flex items-center gap-2 text-xs">
-            <TrendingDown className="w-3 h-3 text-orange-500" />
-            <span className="text-muted-foreground">
-              Showing {diff.stats.resolvedExperiences} of {diff.stats.masterExperiences} experiences
-            </span>
-          </div>
+      <div className="space-y-4">
+        {/* Applied Rules */}
+        {diff.rules.applied.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                Applied Rules ({diff.rules.applied.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {diff.rules.applied.map((rule: any, index: number) => (
+                <div key={index} className="text-sm space-y-1">
+                  <div className="font-medium text-primary">{rule.description}</div>
+                  <div className="text-muted-foreground text-xs">{rule.impact}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         )}
+
+        {/* Applied Overrides */}
+        {diff.overrides.applied.length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Edit3 className="w-4 h-4" />
+                Applied Overrides ({diff.overrides.applied.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {diff.overrides.applied.map((override: any, index: number) => (
+                <div key={index} className="text-sm space-y-1">
+                  <div className="font-medium text-primary">{override.description}</div>
+                  <div className="text-muted-foreground text-xs">Path: {override.path}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Section Changes */}
+        {(diff.sections.removed.length > 0 || diff.sections.added.length > 0 || diff.sections.reordered.length > 0) && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Layers className="w-4 h-4" />
+                Section Changes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {diff.sections.removed.map((section: string, index: number) => (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <TrendingDown className="w-3 h-3 text-destructive" />
+                  <span className="text-destructive">Hidden: {section}</span>
+                </div>
+              ))}
+              {diff.sections.added.map((section: string, index: number) => (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <TrendingUp className="w-3 h-3 text-green-600" />
+                  <span className="text-green-600">Shown: {section}</span>
+                </div>
+              ))}
+              {diff.sections.reordered.map((change: string, index: number) => (
+                <div key={index} className="flex items-center gap-2 text-sm">
+                  <Shuffle className="w-3 h-3 text-blue-600" />
+                  <span className="text-blue-600">{change}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Experience Changes */}
+        {(diff.experiences.removed.length > 0 || diff.experiences.reordered || diff.experiences.modified.length > 0) && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Experience Changes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {diff.experiences.removed.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-destructive">
+                    Filtered Out ({diff.experiences.removed.length}):
+                  </div>
+                  {diff.experiences.removed.map((exp: any, index: number) => (
+                    <div key={index} className="ml-4 text-sm space-y-1">
+                      <div className="font-medium">{exp.title} at {exp.company}</div>
+                      <div className="text-muted-foreground text-xs">Reason: {exp.reason}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {diff.experiences.reordered && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Shuffle className="w-3 h-3 text-blue-600" />
+                    <span className="text-blue-600 font-medium">Experience order modified</span>
+                  </div>
+                  <div className="ml-6 text-xs text-muted-foreground">
+                    {diff.stats.resolvedExperiences} experiences reordered
+                  </div>
+                </div>
+              )}
+              
+              {diff.experiences.modified.length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-blue-600">
+                    Modified ({diff.experiences.modified.length}):
+                  </div>
+                  {diff.experiences.modified.map((exp: any, index: number) => (
+                    <div key={index} className="ml-4 text-sm space-y-1">
+                      <div className="font-medium">{exp.title} at {exp.company}</div>
+                      <ul className="text-muted-foreground text-xs list-disc ml-4">
+                        {exp.changes.map((change: string, changeIndex: number) => (
+                          <li key={changeIndex}>{change}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Content Changes */}
+        {(diff.content.headline.changed || diff.content.summary.changed || diff.content.keyAchievements.changed) && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Edit3 className="w-4 h-4" />
+                Content Changes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {diff.content.headline.changed && (
+                <div className="text-sm space-y-1">
+                  <div className="font-medium text-primary">Headline modified</div>
+                  <div className="text-muted-foreground text-xs">
+                    From: "{diff.content.headline.original}" → To: "{diff.content.headline.modified}"
+                  </div>
+                </div>
+              )}
+              {diff.content.summary.changed && (
+                <div className="text-sm space-y-1">
+                  <div className="font-medium text-primary">Summary points changed</div>
+                  <div className="text-muted-foreground text-xs">
+                    {diff.content.summary.originalCount} → {diff.content.summary.modifiedCount} points 
+                    ({diff.content.summary.difference > 0 ? '+' : ''}{diff.content.summary.difference})
+                  </div>
+                </div>
+              )}
+              {diff.content.keyAchievements.changed && (
+                <div className="text-sm space-y-1">
+                  <div className="font-medium text-primary">Key achievements changed</div>
+                  <div className="text-muted-foreground text-xs">
+                    {diff.content.keyAchievements.originalCount} → {diff.content.keyAchievements.modifiedCount} achievements 
+                    ({diff.content.keyAchievements.difference > 0 ? '+' : ''}{diff.content.keyAchievements.difference})
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Statistics Summary */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Impact Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <div className="font-medium">Experiences</div>
+              <div className="text-muted-foreground text-xs">
+                {diff.stats.resolvedExperiences} of {diff.stats.masterExperiences} 
+                {diff.stats.experienceReduction > 0 && ` (-${diff.stats.experienceReduction})`}
+              </div>
+            </div>
+            <div>
+              <div className="font-medium">Total Bullets</div>
+              <div className="text-muted-foreground text-xs">
+                {diff.stats.totalBulletsResolved} of {diff.stats.totalBulletsOriginal}
+                {diff.stats.bulletReduction > 0 && ` (-${diff.stats.bulletReduction})`}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   };
