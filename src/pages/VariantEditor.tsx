@@ -26,6 +26,7 @@ import { VariantResolver } from '@/lib/variantResolver';
 import { VariantRulesEditor } from '@/components/resume/VariantRulesEditor';
 import { VariantOverridesEditor } from '@/components/resume/VariantOverridesEditor';
 
+import { VariantContentEditor } from '@/components/resume/VariantContentEditor';
 import { VariantSectionSettings } from '@/components/resume/VariantSectionSettings';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -38,7 +39,7 @@ const VariantEditor = () => {
   
   const [variant, setVariant] = useState<Variant | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('overrides');
+  const [activeTab, setActiveTab] = useState('content');
 
   useEffect(() => {
     if (id) {
@@ -198,9 +199,9 @@ const VariantEditor = () => {
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="overrides" className="flex items-center gap-2">
+                  <TabsTrigger value="content" className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    Content & Overrides
+                    Content
                   </TabsTrigger>
                   <TabsTrigger value="sections" className="flex items-center gap-2">
                     <Settings className="w-4 h-4" />
@@ -210,14 +211,14 @@ const VariantEditor = () => {
                     <Settings className="w-4 h-4" />
                     Rules
                   </TabsTrigger>
-                  <TabsTrigger value="diff" className="flex items-center gap-2">
+                  <TabsTrigger value="overrides" className="flex items-center gap-2">
                     <Diff className="w-4 h-4" />
-                    Diff
+                    Advanced
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="overrides" className="mt-6">
-                  <VariantOverridesEditor
+                <TabsContent value="content" className="mt-6">
+                  <VariantContentEditor
                     overrides={variant.overrides}
                     masterResume={masterResume}
                     onOverridesChange={(overrides) => handleFieldUpdate('overrides', overrides)}
@@ -239,48 +240,22 @@ const VariantEditor = () => {
                 </TabsContent>
 
 
-                <TabsContent value="diff" className="mt-6">
+                <TabsContent value="overrides" className="mt-6">
                   <div className="space-y-4">
-                    <h4 className="font-medium">Changes from Master Resume</h4>
-                    
-                    {diff.added.length > 0 && (
-                      <div className="space-y-2">
-                        <h5 className="text-sm font-medium text-green-600">Added</h5>
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                          {diff.added.map((item, index) => (
-                            <li key={index} className="text-green-600">{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {diff.removed.length > 0 && (
-                      <div className="space-y-2">
-                        <h5 className="text-sm font-medium text-red-600">Removed</h5>
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                          {diff.removed.map((item, index) => (
-                            <li key={index} className="text-red-600">{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {diff.modified.length > 0 && (
-                      <div className="space-y-2">
-                        <h5 className="text-sm font-medium text-orange-600">Modified</h5>
-                        <ul className="list-disc list-inside space-y-1 text-sm">
-                          {diff.modified.map((item, index) => (
-                            <li key={index} className="text-orange-600">{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {diff.added.length === 0 && diff.removed.length === 0 && diff.modified.length === 0 && (
-                      <p className="text-muted-foreground text-sm">No changes detected from master resume.</p>
-                    )}
+                    <div className="p-4 border rounded-lg bg-muted/50">
+                      <h4 className="font-medium mb-2">Advanced Overrides</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        For advanced users: manually configure field-level overrides using path notation.
+                      </p>
+                      <VariantOverridesEditor
+                        overrides={variant.overrides}
+                        masterResume={masterResume}
+                        onOverridesChange={(overrides) => handleFieldUpdate('overrides', overrides)}
+                      />
+                    </div>
                   </div>
                 </TabsContent>
+
               </Tabs>
             </CardContent>
           </Card>

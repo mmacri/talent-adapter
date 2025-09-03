@@ -54,34 +54,69 @@ const ResumePreview = ({
     ? VariantResolver.resolveVariant(masterResume, variant)
     : masterResume;
 
-  // Filter sections based on master resume section settings
+  // Filter sections based on variant section settings when variant is provided, 
+  // otherwise use master resume section settings
   const getFilteredResume = (resume: ResumeMaster) => {
-    // If no sections object exists, assume all sections are enabled
-    if (!resume.sections) {
-      return resume;
-    }
-    
     const filtered = { ...resume };
     
-    // Default to enabled if section setting doesn't exist or is undefined
-    // Only filter out if explicitly disabled (enabled === false)
-    if (resume.sections.summary && resume.sections.summary.enabled === false) {
-      filtered.summary = [];
-    }
-    if (resume.sections.key_achievements && resume.sections.key_achievements.enabled === false) {
-      filtered.key_achievements = [];
-    }
-    if (resume.sections.experience && resume.sections.experience.enabled === false) {
-      filtered.experience = [];
-    }
-    if (resume.sections.education && resume.sections.education.enabled === false) {
-      filtered.education = [];
-    }
-    if (resume.sections.awards && resume.sections.awards.enabled === false) {
-      filtered.awards = [];
-    }
-    if (resume.sections.skills && resume.sections.skills.enabled === false) {
-      filtered.skills = { primary: [], secondary: [] };
+    // If variant is provided, use variant section settings
+    if (variant && variant.sectionSettings) {
+      // Handle headline specially since it's not in the sections object
+      if (variant.sectionSettings.headline && variant.sectionSettings.headline.enabled === false) {
+        filtered.headline = '';
+      }
+      
+      // Filter sections based on variant settings
+      if (variant.sectionSettings.summary && variant.sectionSettings.summary.enabled === false) {
+        filtered.summary = [];
+      }
+      if (variant.sectionSettings.key_achievements && variant.sectionSettings.key_achievements.enabled === false) {
+        filtered.key_achievements = [];
+      }
+      if (variant.sectionSettings.experience && variant.sectionSettings.experience.enabled === false) {
+        filtered.experience = [];
+      }
+      if (variant.sectionSettings.education && variant.sectionSettings.education.enabled === false) {
+        filtered.education = [];
+      }
+      if (variant.sectionSettings.awards && variant.sectionSettings.awards.enabled === false) {
+        filtered.awards = [];
+      }
+      if (variant.sectionSettings.certifications && variant.sectionSettings.certifications.enabled === false) {
+        filtered.certifications = [];
+      }
+      if (variant.sectionSettings.skills && variant.sectionSettings.skills.enabled === false) {
+        filtered.skills = { primary: [], secondary: [] };
+      }
+    } else {
+      // Use master resume section settings if no variant or variant has no section settings
+      if (!resume.sections) {
+        return resume;
+      }
+      
+      // Default to enabled if section setting doesn't exist or is undefined
+      // Only filter out if explicitly disabled (enabled === false)
+      if (resume.sections.summary && resume.sections.summary.enabled === false) {
+        filtered.summary = [];
+      }
+      if (resume.sections.key_achievements && resume.sections.key_achievements.enabled === false) {
+        filtered.key_achievements = [];
+      }
+      if (resume.sections.experience && resume.sections.experience.enabled === false) {
+        filtered.experience = [];
+      }
+      if (resume.sections.education && resume.sections.education.enabled === false) {
+        filtered.education = [];
+      }
+      if (resume.sections.awards && resume.sections.awards.enabled === false) {
+        filtered.awards = [];
+      }
+      if (resume.sections.certifications && resume.sections.certifications.enabled === false) {
+        filtered.certifications = [];
+      }
+      if (resume.sections.skills && resume.sections.skills.enabled === false) {
+        filtered.skills = { primary: [], secondary: [] };
+      }
     }
     
     return filtered;
@@ -436,7 +471,39 @@ const ResumePreview = ({
               </Card>
             )}
 
-            {/* Skills */}
+            {/* Certifications */}
+            {displayResume.certifications && displayResume.certifications.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Certifications</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {displayResume.certifications.map((cert, index) => (
+                    <div key={cert.id} className="border-l-2 border-primary pl-4">
+                      <h4 className="font-semibold">{cert.name}</h4>
+                      <p className="text-sm text-muted-foreground">{cert.issuer}</p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                        {cert.date && (
+                          <span>Obtained: {format(new Date(cert.date), 'MMM yyyy')}</span>
+                        )}
+                        {cert.expiryDate && (
+                          <span>Expires: {format(new Date(cert.expiryDate), 'MMM yyyy')}</span>
+                        )}
+                        {cert.credentialId && (
+                          <span>ID: {cert.credentialId}</span>
+                        )}
+                      </div>
+                      {cert.description && (
+                        <p className="text-sm mt-2">{cert.description}</p>
+                      )}
+                      {index < displayResume.certifications.length - 1 && (
+                        <Separator className="mt-4" />
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
             {displayResume.skills && (displayResume.skills.primary?.length > 0 || displayResume.skills.secondary?.length > 0) && (
               <Card>
                 <CardHeader>
