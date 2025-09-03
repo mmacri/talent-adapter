@@ -31,6 +31,7 @@ import { format } from 'date-fns';
 const ResumeViewer = () => {
   const resumeContext = useResume();
   const { toast } = useToast();
+  const [selectedResumeId, setSelectedResumeId] = useState<string>('master');
   
   // Add loading guard
   if (!resumeContext || resumeContext.isLoading) {
@@ -45,7 +46,6 @@ const ResumeViewer = () => {
   }
 
   const { masterResume, variants } = resumeContext;
-  const [selectedResumeId, setSelectedResumeId] = useState<string>('master');
 
   if (!masterResume) {
     return (
