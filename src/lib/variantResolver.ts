@@ -35,7 +35,7 @@ export class VariantResolver {
     };
     
     // Handle headline specially since it's not in the sections object
-    if (!sectionSettings.headline.enabled) {
+    if (sectionSettings.headline && !sectionSettings.headline.enabled) {
       result.headline = '';
     }
     
@@ -45,6 +45,12 @@ export class VariantResolver {
     Object.entries(sectionSettings).forEach(([sectionKey, settings]) => {
       // Skip headline since it's handled above
       if (sectionKey === 'headline') return;
+      
+      // Safety check - ensure settings exists and has enabled property
+      if (!settings || typeof settings !== 'object' || !('enabled' in settings)) {
+        console.warn(`Invalid section settings for ${sectionKey}:`, settings);
+        return;
+      }
       
       if (newSections[sectionKey as keyof typeof newSections]) {
         newSections[sectionKey as keyof typeof newSections].enabled = settings.enabled;
