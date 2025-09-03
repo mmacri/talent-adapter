@@ -21,8 +21,14 @@ This is a comprehensive, production-ready resume builder application built with 
   - Create Variant → `/variants/new`
   - Track Application → `/jobs/new`
   - Resume Viewer → `/viewer`
+- Standardized export/import actions across all pages
+- Consistent formatting using `format-consistency.tsx` utilities
 
-**Recent Changes**: Removed the "+ New Variant" button from the page header, keeping only the one in Quick Actions
+**Recent Changes**: 
+- Removed the "+ New Variant" button from the page header, keeping only the one in Quick Actions
+- Added standardized export/import components
+- Fixed LinkedIn display in resume previews to show actual URLs
+- Implemented consistent filename generation across all exports
 
 ### 2. Master Resume Management (`/master`)
 **Purpose**: Central hub for maintaining the core resume content that serves as the foundation for all variants
@@ -114,13 +120,15 @@ This is a comprehensive, production-ready resume builder application built with 
 **Purpose**: Preview, compare, and export all resume versions in one place
 **Current Features**:
 - **All Resume Versions Display**: Shows master resume + all resolved variants
-- **Complete Content View**: Full resume content for each version (not just names)
+- **Complete Content View**: Full resume content for each version with proper contact info display
+- **LinkedIn Address Display**: Shows actual LinkedIn URLs in contact information
 - **Individual Cards**: Each resume version in its own expandable card
-- **Export Buttons**: Export individual resumes to Word format
+- **Export Buttons**: Export individual resumes to Word format with standardized filenames
 - **Copy JSON**: Copy resume data to clipboard for debugging
-- **Full Preview**: Modal preview for detailed viewing
+- **Full Preview**: Modal preview for detailed viewing using ResumePreview component
 - **Version Comparison**: Easy side-by-side comparison of different versions
 - **Compact Display**: Optimized layout for scanning multiple versions
+- **Standardized Formatting**: Uses format-consistency components for dates and filenames
 
 ### 7. Reports & Analytics (`/reports`)
 **Purpose**: Comprehensive analytics on application performance and document effectiveness
@@ -183,6 +191,8 @@ localStorage.setItem('resume_templates', templates);
 src/
 ├── components/
 │   ├── ui/                    # Shadcn/ui components (40+ components)
+│   │   ├── export-import-actions.tsx  # Standardized export/import UI
+│   │   └── format-consistency.tsx     # Date formatting and filename utilities
 │   ├── layout/               # App layout components
 │   │   ├── MainLayout.tsx    # Main app shell with sidebar
 │   │   └── AppSidebar.tsx    # Navigation sidebar
@@ -208,7 +218,8 @@ src/
 │   ├── CoverLetterEditor.tsx # Individual cover letter editing
 │   ├── ResumeViewer.tsx     # Resume preview and export
 │   ├── Reports.tsx          # Analytics and reporting
-│   └── Index.tsx            # Landing/template page
+│   ├── Templates.tsx        # Template management and downloads
+│   └── TemplateDownloads.tsx # Template download functionality
 ├── contexts/                # React Context providers
 │   └── ResumeContext.tsx    # Main application state
 ├── lib/                     # Business logic and utilities
@@ -370,19 +381,26 @@ Located in `src/lib/variantResolver.ts`:
 ## Recent Updates & Current Status
 
 ### Latest Features Added
-1. **Removed Dashboard Variant Button**: Cleaned up dashboard UI by removing duplicate "+ New Variant" button
-2. **Enhanced Job Import/Export**: Full CSV/Excel support with update/replace modes
-3. **Print Reports**: Formatted application reports with date filtering
-4. **Clear All Applications**: Bulk deletion with confirmation dialog
-5. **Improved Resume Viewer**: Shows complete content for all resume versions
-6. **Fixed Section Settings**: Resolved undefined section settings errors
+1. **Standardized Export/Import System**: Created reusable export-import-actions component
+2. **Format Consistency Framework**: Implemented format-consistency utilities for dates and filenames
+3. **LinkedIn Display Fix**: Resume viewer now shows actual LinkedIn URLs in contact information
+4. **Enhanced Resume Viewer**: Shows complete content for all resume versions with proper formatting
+5. **Removed Dashboard Variant Button**: Cleaned up dashboard UI by removing duplicate "+ New Variant" button
+6. **Enhanced Job Import/Export**: Full CSV/Excel support with update/replace modes
+7. **Print Reports**: Formatted application reports with date filtering
+8. **Clear All Applications**: Bulk deletion with confirmation dialog
+9. **Fixed Section Settings**: Resolved undefined section settings errors
+10. **Template Downloads Integration**: Connected template downloads page to main navigation
 
 ### Current Bug Fixes
-1. **JobEditor Loading**: Fixed hanging "loading application" state for new job creation
-2. **Resume Preview**: Fixed display showing only names instead of full content
-3. **Icon Imports**: Resolved missing Lucide React icon references
-4. **Section Settings**: Added proper null checks and default values
-5. **Import Validation**: Enhanced CSV/Excel parsing with error handling
+1. **React Hooks Error**: Fixed "Rendered more hooks than during the previous render" in ResumeViewer
+2. **LinkedIn Contact Display**: Fixed resume preview to show actual LinkedIn URLs instead of generic text
+3. **JobEditor Loading**: Fixed hanging "loading application" state for new job creation
+4. **Resume Preview**: Fixed display showing only names instead of full content
+5. **Icon Imports**: Resolved missing Lucide React icon references
+6. **Section Settings**: Added proper null checks and default values
+7. **Import Validation**: Enhanced CSV/Excel parsing with error handling
+8. **Redundant Workflows**: Eliminated duplicate import/export code across pages
 
 ### Performance Optimizations
 1. **Lazy Loading**: Route-based code splitting for faster initial loads

@@ -1364,4 +1364,81 @@ toast({
 });
 ```
 
+## Current Page Implementations
+
+### Dashboard Page (`/`)
+**Primary Layout**: Statistics grid + recent items + quick actions
+**Current Implementation**:
+```tsx
+<div className="space-y-8">
+  {/* Stats Grid - Updated with standardized formatting */}
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    {statsCards.map(card => (
+      <StatsCard key={card.title} {...card} />
+    ))}
+  </div>
+  
+  {/* Recent Items - Enhanced with format consistency */}
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <RecentVariants variants={recentVariants} />
+    <RecentApplications applications={recentApplications} />
+  </div>
+  
+  {/* Quick Actions - Simplified navigation */}
+  <QuickActionsGrid actions={quickActions} />
+</div>
+```
+**Recent Updates**:
+- Removed duplicate "+ New Variant" button for cleaner UI
+- Added consistent date formatting using format-consistency utilities
+- Enhanced stats cards with proper click navigation
+
+### Resume Viewer Page (`/viewer`)
+**Primary Layout**: Multi-card layout with full resume content display and proper contact information
+**Current Implementation**:
+```tsx
+<div className="space-y-6">
+  {/* Page Header */}
+  <div className="flex items-center justify-between">
+    <div>
+      <h1 className="text-3xl font-bold tracking-tight">Resume Viewer</h1>
+      <p className="text-muted-foreground">View and export all resume versions with complete content</p>
+    </div>
+  </div>
+  
+  {/* Resume Version Cards - Enhanced with proper LinkedIn display */}
+  {allVersions.map(version => (
+    <Card key={version.id} className="w-full">
+      <CardHeader className="pb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <VersionIcon type={version.type} />
+            <div>
+              <CardTitle>{version.name}</CardTitle>
+              <CardDescription>{version.description}</CardDescription>
+              {/* Standardized date formatting */}
+              <StandardDateDisplay date={version.updatedAt} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ResumePreview />
+            <ExportButton />
+            <CopyJsonButton />
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Enhanced contact display with actual LinkedIn URLs */}
+        <ResumeContentDisplay resume={version.resume} compact showLinkedIn />
+      </CardContent>
+    </Card>
+  ))}
+</div>
+```
+**Recent Updates**:
+- Fixed LinkedIn display to show actual URLs instead of generic "LinkedIn" text
+- Added standardized date formatting using format-consistency utilities  
+- Enhanced export functionality with consistent filename generation
+- Improved contact information display in resume content
+
 This comprehensive UI documentation provides all the patterns, components, and guidelines needed to maintain design consistency and build new features within the application's established design system. The components are built for accessibility, responsive design, and consistent user experience across all devices and interaction methods.

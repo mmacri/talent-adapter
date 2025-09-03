@@ -147,7 +147,7 @@ const ResumeViewer = () => {
           {resume.contacts.linkedin && (
             <>
               <span>•</span>
-              <span>LinkedIn</span>
+              <span>{resume.contacts.linkedin}</span>
             </>
           )}
         </div>
