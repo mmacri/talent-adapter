@@ -163,6 +163,12 @@ const Templates = () => {
             Professional resume layouts that work with your master resume and variants
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => window.location.href = '/#/template-downloads'}>
+            <Download className="w-4 h-4 mr-2" />
+            Download Templates
+          </Button>
+        </div>
       </div>
 
       {/* Search and Variant Selector */}

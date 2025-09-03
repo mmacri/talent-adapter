@@ -29,6 +29,7 @@ import { DocxExporter } from '@/lib/docxExport';
 import { VariantResolver } from '@/lib/variantResolver';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { generateStandardFilename } from '@/components/ui/format-consistency';
 
 interface ResumePreviewProps {
   masterResume: ResumeMaster;

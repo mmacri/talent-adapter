@@ -15,8 +15,8 @@ import CoverLetters from "./pages/CoverLetters";
 import CoverLetterEditor from "./pages/CoverLetterEditor";
 import ResumeViewer from "./pages/ResumeViewer";
 import Templates from "./pages/Templates";
+import TemplateDownloads from "./pages/TemplateDownloads";
 import Reports from "./pages/Reports";
-import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
@@ -105,6 +105,11 @@ const App = () => {
             <Route path="/templates" element={
               <MainLayout>
                 <Templates />
+              </MainLayout>
+            } />
+            <Route path="/template-downloads" element={
+              <MainLayout>
+                <TemplateDownloads />
               </MainLayout>
             } />
             <Route path="/settings" element={
