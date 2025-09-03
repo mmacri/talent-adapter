@@ -34,7 +34,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={
               <MainLayout>
-                <LoadMikeResume />
+                <Dashboard />
               </MainLayout>
             } />
             <Route path="/dashboard" element={
