@@ -90,9 +90,35 @@ const ResumePreview = ({
   const displayResume = getFilteredResume(resolvedResume);
 
   const formatDateRange = (startDate: string, endDate: string | null) => {
-    const start = format(new Date(startDate), 'MMM yyyy');
-    const end = endDate ? format(new Date(endDate), 'MMM yyyy') : 'Present';
-    return `${start} - ${end}`;
+    // Convert MM/YYYY to YYYY-MM format for proper Date parsing
+    const convertDateFormat = (dateStr: string) => {
+      if (!dateStr) return null;
+      
+      // Check if it's in MM/YYYY format
+      if (dateStr.includes('/')) {
+        const [month, year] = dateStr.split('/');
+        return `${year}-${month.padStart(2, '0')}`;
+      }
+      
+      return dateStr;
+    };
+
+    try {
+      const convertedStart = convertDateFormat(startDate);
+      const start = convertedStart ? format(new Date(convertedStart), 'MMM yyyy') : startDate;
+      
+      let end = 'Present';
+      if (endDate) {
+        const convertedEnd = convertDateFormat(endDate);
+        end = convertedEnd ? format(new Date(convertedEnd), 'MMM yyyy') : endDate;
+      }
+      
+      return `${start} - ${end}`;
+    } catch (error) {
+      console.error('Date formatting error:', error, { startDate, endDate });
+      // Fallback to original strings if formatting fails
+      return `${startDate} - ${endDate || 'Present'}`;
+    }
   };
 
   const handleCopyToClipboard = async () => {

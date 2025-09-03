@@ -59,16 +59,28 @@ export default function Settings() {
         headline: 'Strategic Partner Development Leader & Solution Advisory Expert',
         summary: [mikeResumeData.professional_summary],
         key_achievements: mikeResumeData.key_achievements.map(achievement => achievement.details),
-        experience: mikeResumeData.experience.map((exp, index) => ({
-          id: `exp-${index + 1}`,
-          company: exp.company,
-          title: exp.title,
-          location: exp.location,
-          date_start: exp.dates.split(' – ')[0],
-          date_end: exp.dates.split(' – ')[1] === '05/2025' ? null : exp.dates.split(' – ')[1],
-          bullets: exp.responsibilities,
-          tags: []
-        })),
+        experience: mikeResumeData.experience.map((exp, index) => {
+          // Convert MM/YYYY to YYYY-MM format for proper Date parsing
+          const convertDateFormat = (dateStr: string) => {
+            if (!dateStr) return null;
+            const [month, year] = dateStr.split('/');
+            return `${year}-${month.padStart(2, '0')}`;
+          };
+
+          const dateStart = exp.dates.split(' – ')[0];
+          const dateEnd = exp.dates.split(' – ')[1];
+          
+          return {
+            id: `exp-${index + 1}`,
+            company: exp.company,
+            title: exp.title,
+            location: exp.location,
+            date_start: convertDateFormat(dateStart),
+            date_end: dateEnd === '05/2025' ? null : convertDateFormat(dateEnd),
+            bullets: exp.responsibilities,
+            tags: []
+          };
+        }),
         education: mikeResumeData.education.map((edu, index) => ({
           id: `edu-${index + 1}`,
           degree: edu.degree,
