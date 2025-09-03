@@ -78,6 +78,11 @@ export class VariantResolver {
   private static applyRules(resume: ResumeMaster, rules: VariantRule[]): ResumeMaster {
     let result = { ...resume };
 
+    // If no rules are provided, return the resume unchanged - show all content
+    if (!rules || rules.length === 0) {
+      return result;
+    }
+
     for (const rule of rules) {
       switch (rule.type) {
         case 'include_tags':
@@ -114,9 +119,14 @@ export class VariantResolver {
   private static filterByIncludeTags(resume: ResumeMaster, tags: string[]): ResumeMaster {
     const filtered = { ...resume };
 
+    // Only filter if tags are specified and not empty
+    if (!tags || tags.length === 0) {
+      return filtered; // Return all experiences if no tags specified
+    }
+
     // Filter experience entries by tags
     filtered.experience = resume.experience.filter(exp => 
-      exp.tags.some(tag => tags.includes(tag))
+      exp.tags && exp.tags.some(tag => tags.includes(tag))
     );
 
     return filtered;
@@ -125,9 +135,14 @@ export class VariantResolver {
   private static filterByExcludeTags(resume: ResumeMaster, tags: string[]): ResumeMaster {
     const filtered = { ...resume };
 
+    // Only filter if tags are specified and not empty
+    if (!tags || tags.length === 0) {
+      return filtered; // Return all experiences if no tags specified
+    }
+
     // Filter out experience entries with excluded tags
     filtered.experience = resume.experience.filter(exp => 
-      !exp.tags.some(tag => tags.includes(tag))
+      !exp.tags || !exp.tags.some(tag => tags.includes(tag))
     );
 
     return filtered;
@@ -178,13 +193,26 @@ export class VariantResolver {
   private static filterByDateRange(resume: ResumeMaster, dateRange: { start: string; end: string }): ResumeMaster {
     const filtered = { ...resume };
 
+    // Only filter if valid date range is provided
+    if (!dateRange || !dateRange.start || !dateRange.end) {
+      return filtered; // Return all experiences if no valid date range
+    }
+
     // Filter experience by date range
     filtered.experience = resume.experience.filter(exp => {
-      const expStart = new Date(exp.date_start);
-      const rangeStart = new Date(dateRange.start);
-      const rangeEnd = new Date(dateRange.end);
+      if (!exp.date_start) return true; // Include experiences without start dates
+      
+      try {
+        const expStart = new Date(exp.date_start);
+        const rangeStart = new Date(dateRange.start);
+        const rangeEnd = new Date(dateRange.end);
 
-      return expStart >= rangeStart && expStart <= rangeEnd;
+        // Include if experience starts within or overlaps the range
+        return expStart >= rangeStart && expStart <= rangeEnd;
+      } catch (error) {
+        console.warn('Invalid date in experience or range:', error);
+        return true; // Include experiences with invalid dates rather than exclude
+      }
     });
 
     return filtered;
