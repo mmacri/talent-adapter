@@ -147,10 +147,16 @@ const ResumeViewer = () => {
       <div className="text-center space-y-2 pb-4 border-b">
         <h1 className={`${isCompact ? 'text-xl' : 'text-2xl'} font-bold`}>{resume.owner}</h1>
         <p className={`${isCompact ? 'text-base' : 'text-lg'} text-muted-foreground`}>{resume.headline}</p>
-        <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+        <div className="flex justify-center gap-4 text-sm text-muted-foreground flex-wrap">
           <span>{resume.contacts.email}</span>
           <span>•</span>
           <span>{resume.contacts.phone}</span>
+          {resume.contacts.website && (
+            <>
+              <span>•</span>
+              <span>{resume.contacts.website}</span>
+            </>
+          )}
           {resume.contacts.linkedin && (
             <>
               <span>•</span>
