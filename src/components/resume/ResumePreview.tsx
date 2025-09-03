@@ -335,7 +335,7 @@ const ResumePreview = ({
                   {displayResume.contacts.linkedin && (
                     <div className="flex items-center gap-1">
                       <Linkedin className="w-3 h-3" />
-                      <span>LinkedIn</span>
+                      <span>{displayResume.contacts.linkedin}</span>
                     </div>
                   )}
                 </div>
