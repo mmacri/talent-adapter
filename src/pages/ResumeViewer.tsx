@@ -262,6 +262,28 @@ const ResumeViewer = () => {
               </>
             )}
             
+            {sectionKey === 'certifications' && resume.certifications && resume.certifications.length > 0 && (
+              <>
+                <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Certifications</h3>
+                <div className="space-y-2">
+                  {resume.certifications.map((cert) => (
+                    <div key={cert.id} className="flex justify-between">
+                      <div>
+                        <p className="font-medium">{cert.name}</p>
+                        <p className="text-sm text-muted-foreground">{cert.issuer}</p>
+                        {cert.description && (
+                          <p className="text-sm text-muted-foreground">{cert.description}</p>
+                        )}
+                      </div>
+                      {cert.date && (
+                        <span className="text-sm text-muted-foreground">{cert.date}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            
             {sectionKey === 'skills' && resume.skills && (resume.skills.primary?.length > 0 || resume.skills.secondary?.length > 0) && (
               <>
                 <h3 className={`${isCompact ? 'text-base' : 'text-lg'} font-semibold border-b pb-1`}>Skills</h3>

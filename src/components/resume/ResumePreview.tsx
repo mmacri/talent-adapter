@@ -378,216 +378,327 @@ const ResumePreview = ({
               </CardHeader>
             </Card>
 
-            {/* Summary */}
-            {displayResume.summary && displayResume.summary.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Professional Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {displayResume.summary.map((bullet, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-sm">{bullet}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Key Achievements */}
-            {displayResume.key_achievements && displayResume.key_achievements.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Key Achievements</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {displayResume.key_achievements.map((achievement, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-sm">{achievement}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Experience */}
-            {displayResume.experience && displayResume.experience.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Professional Experience</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {displayResume.experience.map((exp, index) => (
-                    <div key={exp.id}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h4 className="font-semibold">{exp.title}</h4>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>{exp.company}</span>
-                            {exp.location && (
-                              <>
-                                <MapPin className="w-3 h-3" />
-                                <span>{exp.location}</span>
-                              </>
-                            )}
+            {/* Dynamic Sections based on enabled status and order */}
+            {displayResume.sections && Object.entries(displayResume.sections)
+              .filter(([_, section]) => section.enabled)
+              .sort(([_, a], [__, b]) => a.order - b.order)
+              .map(([sectionKey]) => {
+                switch (sectionKey) {
+                  case 'summary':
+                    return displayResume.summary && displayResume.summary.length > 0 && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Professional Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {displayResume.summary.map((bullet, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                                <span className="text-sm">{bullet}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  case 'key_achievements':
+                    return displayResume.key_achievements && displayResume.key_achievements.length > 0 && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Key Achievements</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {displayResume.key_achievements.map((achievement, index) => (
+                              <li key={index} className="flex items-start gap-2">
+                                <span className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
+                                <span className="text-sm">{achievement}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  case 'experience':
+                    return displayResume.experience && displayResume.experience.length > 0 && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Professional Experience</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          {displayResume.experience.map((exp, index) => (
+                            <div key={exp.id}>
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <h4 className="font-semibold">{exp.title}</h4>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span>{exp.company}</span>
+                                    {exp.location && (
+                                      <>
+                                        <MapPin className="w-3 h-3" />
+                                        <span>{exp.location}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{formatDateRange(exp.date_start, exp.date_end)}</span>
+                                </div>
+                              </div>
+                              
+                              <ul className="space-y-1 ml-4">
+                                {exp.bullets.map((bullet, bulletIndex) => (
+                                  <li key={bulletIndex} className="flex items-start gap-2">
+                                    <span className="w-1 h-1 bg-muted-foreground rounded-full mt-2 flex-shrink-0" />
+                                    <span className="text-sm">{bullet}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              
+                              {exp.tags && exp.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2 ml-4">
+                                  {exp.tags.map((tag, tagIndex) => (
+                                    <Badge key={tagIndex} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {index < displayResume.experience.length - 1 && (
+                                <Separator className="mt-4" />
+                              )}
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  case 'education':
+                    return displayResume.education && displayResume.education.length > 0 && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Education</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {displayResume.education.map((edu) => (
+                              <div key={edu.id} className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="font-semibold">{edu.degree}</h4>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span>{edu.school}</span>
+                                    {edu.location && (
+                                      <>
+                                        <MapPin className="w-3 h-3" />
+                                        <span>{edu.location}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                                {edu.year && (
+                                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Calendar className="w-3 h-3" />
+                                    <span>{edu.year}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="w-3 h-3" />
-                          <span>{formatDateRange(exp.date_start, exp.date_end)}</span>
-                        </div>
-                      </div>
-                      
-                      <ul className="space-y-1 ml-4">
-                        {exp.bullets.map((bullet, bulletIndex) => (
-                          <li key={bulletIndex} className="flex items-start gap-2">
-                            <span className="w-1 h-1 bg-muted-foreground rounded-full mt-2 flex-shrink-0" />
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  case 'awards':
+                    return displayResume.awards && displayResume.awards.length > 0 && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Awards & Recognition</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-2">
+                            {displayResume.awards.map((award) => (
+                              <li key={award.id} className="flex items-start gap-2">
+                                <span className="w-2 h-2 bg-success rounded-full mt-2 flex-shrink-0" />
+                                <span className="text-sm">
+                                  {award.title}
+                                  {award.date && (
+                                    <span className="text-muted-foreground"> - {award.date}</span>
+                                  )}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  case 'certifications':
+                    return displayResume.certifications && displayResume.certifications.length > 0 && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Certifications</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {displayResume.certifications.map((cert) => (
+                              <div key={cert.id} className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="font-semibold">{cert.name}</h4>
+                                  <p className="text-sm text-muted-foreground">{cert.issuer}</p>
+                                  {cert.description && (
+                                    <p className="text-sm text-muted-foreground mt-1">{cert.description}</p>
+                                  )}
+                                  {cert.credentialId && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Credential ID: {cert.credentialId}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="text-sm text-muted-foreground text-right">
+                                  {cert.date && (
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="w-3 h-3" />
+                                      <span>{cert.date}</span>
+                                    </div>
+                                  )}
+                                  {cert.expiryDate && (
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      Expires: {cert.expiryDate}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  case 'skills':
+                    return displayResume.skills && (displayResume.skills.primary?.length > 0 || displayResume.skills.secondary?.length > 0) && (
+                      <Card key={sectionKey}>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Skills</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {displayResume.skills.primary && displayResume.skills.primary.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Core Skills</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {displayResume.skills.primary.map((skill, index) => (
+                                  <Badge key={index} variant="default" className="text-sm">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {displayResume.skills.secondary && displayResume.skills.secondary.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Additional Skills</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {displayResume.skills.secondary.map((skill, index) => (
+                                  <Badge key={index} variant="secondary" className="text-sm">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                    
+                  default:
+                    return null;
+                }
+              })
+            }
+
+            {/* Fallback to original hardcoded sections if no sections object exists */}
+            {!displayResume.sections && (
+              <>
+                {/* Summary */}
+                {displayResume.summary && displayResume.summary.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Professional Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {displayResume.summary.map((bullet, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                             <span className="text-sm">{bullet}</span>
                           </li>
                         ))}
                       </ul>
-                      
-                      {exp.tags && exp.tags.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          {exp.tags.map((tag, tagIndex) => (
-                            <Badge key={tagIndex} variant="outline" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {index < displayResume.experience.length - 1 && (
-                        <Separator className="mt-4" />
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
+                    </CardContent>
+                  </Card>
+                )}
 
-            {/* Certifications */}
-            {displayResume.certifications && displayResume.certifications.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Certifications</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {displayResume.certifications.map((cert, index) => (
-                    <div key={cert.id} className="border-l-2 border-primary pl-4">
-                      <h4 className="font-semibold">{cert.name}</h4>
-                      <p className="text-sm text-muted-foreground">{cert.issuer}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                        {cert.date && (
-                          <span>Obtained: {format(new Date(cert.date), 'MMM yyyy')}</span>
-                        )}
-                        {cert.expiryDate && (
-                          <span>Expires: {format(new Date(cert.expiryDate), 'MMM yyyy')}</span>
-                        )}
-                        {cert.credentialId && (
-                          <span>ID: {cert.credentialId}</span>
-                        )}
-                      </div>
-                      {cert.description && (
-                        <p className="text-sm mt-2">{cert.description}</p>
-                      )}
-                      {index < displayResume.certifications.length - 1 && (
-                        <Separator className="mt-4" />
-                      )}
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-            {displayResume.skills && (displayResume.skills.primary?.length > 0 || displayResume.skills.secondary?.length > 0) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Skills</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {displayResume.skills.primary && displayResume.skills.primary.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-sm mb-2">Primary Skills</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {displayResume.skills.primary.map((skill, index) => (
-                          <Badge key={index} variant="default">
-                            {skill}
-                          </Badge>
+                {/* Key Achievements */}
+                {displayResume.key_achievements && displayResume.key_achievements.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Key Achievements</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {displayResume.key_achievements.map((achievement, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0" />
+                            <span className="text-sm">{achievement}</span>
+                          </li>
                         ))}
-                      </div>
-                    </div>
-                  )}
-                  {displayResume.skills.secondary && displayResume.skills.secondary.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-sm mb-2">Additional Skills</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {displayResume.skills.secondary.map((skill, index) => (
-                          <Badge key={index} variant="secondary">
-                            {skill}
-                          </Badge>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Experience - Original fallback content truncated for brevity */}
+                {displayResume.experience && displayResume.experience.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Professional Experience</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">
+                        Experience content displayed in fallback mode
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Awards */}
+                {displayResume.awards && displayResume.awards.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Awards & Recognition</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        {displayResume.awards.map((award) => (
+                          <li key={award.id} className="flex items-start gap-2">
+                            <span className="w-2 h-2 bg-success rounded-full mt-2 flex-shrink-0" />
+                            <span className="text-sm">
+                              {award.title}
+                              {award.date && (
+                                <span className="text-muted-foreground"> - {award.date}</span>
+                              )}
+                            </span>
+                          </li>
                         ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Education */}
-            {displayResume.education && displayResume.education.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Education</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {displayResume.education.map((edu, index) => (
-                    <div key={edu.id} className="flex justify-between items-center">
-                      <div>
-                        <h4 className="font-semibold">{edu.degree}</h4>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>{edu.school}</span>
-                          {edu.location && (
-                            <>
-                              <MapPin className="w-3 h-3" />
-                              <span>{edu.location}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Awards */}
-            {displayResume.awards && displayResume.awards.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Awards & Recognition</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {displayResume.awards.map((award) => (
-                      <li key={award.id} className="flex items-start gap-2">
-                        <span className="w-2 h-2 bg-success rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-sm">
-                          {award.title}
-                          {award.date && (
-                            <span className="text-muted-foreground"> - {award.date}</span>
-                          )}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             )}
           </div>
         </ScrollArea>

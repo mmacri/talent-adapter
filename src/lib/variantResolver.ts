@@ -156,9 +156,23 @@ export class VariantResolver {
   }
 
   private static reorderSections(resume: ResumeMaster, sectionOrder: string[]): ResumeMaster {
-    // This would be implemented based on how sections are structured
-    // For now, return as-is since our current structure doesn't support dynamic ordering
-    return resume;
+    const result = { ...resume };
+    
+    // Update section order in the sections object
+    if (result.sections && sectionOrder && sectionOrder.length > 0) {
+      const newSections = { ...result.sections };
+      
+      // Apply new order numbers based on the provided sectionOrder array
+      sectionOrder.forEach((sectionId, index) => {
+        if (newSections[sectionId as keyof typeof newSections]) {
+          newSections[sectionId as keyof typeof newSections].order = index + 1;
+        }
+      });
+      
+      result.sections = newSections;
+    }
+    
+    return result;
   }
 
   private static filterByDateRange(resume: ResumeMaster, dateRange: { start: string; end: string }): ResumeMaster {

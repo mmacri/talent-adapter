@@ -17,7 +17,9 @@ import {
   Settings, 
   FileText,
   Diff,
-  History
+  History,
+  List,
+  Filter
 } from 'lucide-react';
 import ResumePreview from '@/components/resume/ResumePreview';
 import { Variant } from '@/types/resume';
@@ -28,6 +30,7 @@ import { VariantOverridesEditor } from '@/components/resume/VariantOverridesEdit
 
 import { VariantContentEditor } from '@/components/resume/VariantContentEditor';
 import { VariantSectionSettings } from '@/components/resume/VariantSectionSettings';
+import { VariantSectionOrderEditor } from '@/components/resume/VariantSectionOrderEditor';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -198,7 +201,7 @@ const VariantEditor = () => {
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                   <TabsTrigger value="content" className="flex items-center gap-2">
                     <FileText className="w-4 h-4" />
                     Content
@@ -207,8 +210,12 @@ const VariantEditor = () => {
                     <Settings className="w-4 h-4" />
                     Sections
                   </TabsTrigger>
+                  <TabsTrigger value="order" className="flex items-center gap-2">
+                    <List className="w-4 h-4" />
+                    Order
+                  </TabsTrigger>
                   <TabsTrigger value="rules" className="flex items-center gap-2">
-                    <Settings className="w-4 h-4" />
+                    <Filter className="w-4 h-4" />
                     Rules
                   </TabsTrigger>
                   <TabsTrigger value="overrides" className="flex items-center gap-2">
@@ -229,6 +236,25 @@ const VariantEditor = () => {
                   <VariantSectionSettings
                     sectionSettings={variant.sectionSettings}
                     onSectionSettingsChange={(settings) => handleFieldUpdate('sectionSettings', settings)}
+                  />
+                </TabsContent>
+
+                <TabsContent value="order" className="mt-6">
+                  <VariantSectionOrderEditor
+                    sectionOrder={
+                      variant.rules.find(r => r.type === 'section_order')?.value as string[] || 
+                      ['summary', 'key_achievements', 'experience', 'education', 'awards', 'certifications', 'skills']
+                    }
+                    onSectionOrderChange={(order) => {
+                      const newRules = variant.rules.filter(r => r.type !== 'section_order');
+                      newRules.push({ type: 'section_order', value: order });
+                      handleFieldUpdate('rules', newRules);
+                    }}
+                    availableSections={Object.entries(variant.sectionSettings || {}).map(([id, settings]) => ({
+                      id,
+                      name: id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                      enabled: settings?.enabled ?? true
+                    }))}
                   />
                 </TabsContent>
 

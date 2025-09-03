@@ -192,10 +192,24 @@ export const VariantRulesEditor = ({ rules, onRulesChange }: VariantRulesEditorP
 
       case 'section_order':
         return (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Section ordering is not yet implemented in this version.
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground mb-3">
+              Define the order in which resume sections appear. Drag to reorder or use the section order editor.
             </p>
+            <div className="space-y-2">
+              {(rule.value as string[]).map((sectionId, index) => (
+                <div key={sectionId} className="flex items-center justify-between p-2 border rounded">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center">
+                      {index + 1}
+                    </span>
+                    <span className="font-medium text-sm">
+                      {sectionId.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         );
 
@@ -223,6 +237,7 @@ export const VariantRulesEditor = ({ rules, onRulesChange }: VariantRulesEditorP
               <SelectItem value="include_tags">Include Tags</SelectItem>
               <SelectItem value="exclude_tags">Exclude Tags</SelectItem>
               <SelectItem value="max_bullets">Max Bullets</SelectItem>
+              <SelectItem value="section_order">Section Order</SelectItem>
               <SelectItem value="date_range">Date Range</SelectItem>
             </SelectContent>
           </Select>
@@ -306,6 +321,7 @@ export const VariantRulesEditor = ({ rules, onRulesChange }: VariantRulesEditorP
               <SelectItem value="include_tags">Include Tags</SelectItem>
               <SelectItem value="exclude_tags">Exclude Tags</SelectItem>
               <SelectItem value="max_bullets">Max Bullets</SelectItem>
+              <SelectItem value="section_order">Section Order</SelectItem>
               <SelectItem value="date_range">Date Range</SelectItem>
             </SelectContent>
           </Select>
