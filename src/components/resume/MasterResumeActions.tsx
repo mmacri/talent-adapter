@@ -29,6 +29,14 @@ import {
   MasterResumeSections,
   MasterResumeExportData
 } from '@/lib/masterResumeUtils';
+import { 
+  exportData, 
+  importFile, 
+  transformMasterResumeForExport, 
+  transformFlattenedToMasterResume,
+  validateImportedData,
+  ExportFormat 
+} from '@/lib/importExportUtils';
 
 const sectionLabels: Record<MasterResumeSections, string> = {
   contacts: 'Contact Information',
@@ -53,6 +61,7 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
   const [exportSections, setExportSections] = useState<MasterResumeSections[]>([
     'contacts', 'headline', 'summary', 'key_achievements', 'experience', 'education', 'awards', 'skills'
   ]);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('json');
   const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
@@ -72,14 +81,19 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
     }
 
     try {
-      const exportData = exportMasterResumeSections(masterResume, exportSections);
-      const filename = `master-resume-${exportSections.join('-')}-${new Date().toISOString().slice(0, 10)}.json`;
-      
-      downloadAsJSON(exportData, filename);
+      if (exportFormat === 'json') {
+        const exportData = exportMasterResumeSections(masterResume, exportSections);
+        const filename = `master-resume-${exportSections.join('-')}-${new Date().toISOString().slice(0, 10)}.json`;
+        downloadAsJSON(exportData, filename);
+      } else {
+        // For CSV/Excel, export the whole resume in flattened format
+        const transformedData = transformMasterResumeForExport(masterResume, exportFormat);
+        exportData(transformedData, `master-resume-${exportSections.join('-')}`, exportFormat);
+      }
       
       toast({
         title: "Export Successful",
-        description: `Exported ${exportSections.length} section(s) to ${filename}`,
+        description: `Exported ${exportSections.length} section(s) as ${exportFormat.toUpperCase()}`,
       });
       
       setShowExportDialog(false);
@@ -109,14 +123,42 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
     });
   };
 
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importData = JSON.parse(e.target?.result as string);
+    try {
+      const importData = await importFile(file);
+      
+      // Determine if it's JSON format or flattened format
+      let updatedResume;
+      
+      if (Array.isArray(importData)) {
+        // CSV/Excel flattened format
+        const validation = validateImportedData(importData, 'masterResume');
+        
+        if (!validation.isValid) {
+          toast({
+            title: "Invalid Import File",
+            description: validation.errors.join(', '),
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const transformedData = transformFlattenedToMasterResume(importData);
+        updatedResume = importMasterResumeSections(
+          masterResume,
+          {
+            sections: Object.keys(transformedData) as MasterResumeSections[],
+            data: transformedData,
+            exportDate: new Date().toISOString(),
+            version: '1.0'
+          },
+          importMode
+        );
+      } else {
+        // JSON format
         const validation = validateImportData(importData);
         
         if (!validation.isValid) {
@@ -128,31 +170,30 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
           return;
         }
 
-        const updatedResume = importMasterResumeSections(
+        updatedResume = importMasterResumeSections(
           masterResume,
           importData as MasterResumeExportData,
           importMode
         );
-        
-        setMasterResume(updatedResume);
-        
-        toast({
-          title: "Import Successful",
-          description: `Successfully imported ${importData.sections?.length || 'unknown'} section(s) in ${importMode} mode.`,
-        });
-        
-        setShowImportDialog(false);
-      } catch (error) {
-        console.error('Import failed:', error);
-        toast({
-          title: "Import Failed",
-          description: "Invalid file format or corrupted data.",
-          variant: "destructive",
-        });
       }
-    };
+
+      setMasterResume(updatedResume);
+      
+      toast({
+        title: "Import Successful",
+        description: `Successfully imported resume data in ${importMode} mode.`,
+      });
+      
+      setShowImportDialog(false);
+    } catch (error) {
+      console.error('Import failed:', error);
+      toast({
+        title: "Import Failed",
+        description: "Please check the file format and try again.",
+        variant: "destructive",
+      });
+    }
     
-    reader.readAsText(file);
     // Reset input
     event.target.value = '';
   };
@@ -194,6 +235,26 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
           </DialogHeader>
           
           <div className="space-y-4">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Export Format:</Label>
+              <Select value={exportFormat} onValueChange={(value: ExportFormat) => setExportFormat(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="json">JSON (Structured)</SelectItem>
+                  <SelectItem value="csv">CSV (Spreadsheet)</SelectItem>
+                  <SelectItem value="excel">Excel (Spreadsheet)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {exportFormat === 'json' 
+                  ? 'Best for backup and re-importing with full structure'
+                  : 'Best for viewing/editing in spreadsheet applications'
+                }
+              </p>
+            </div>
+
             <div className="space-y-3">
               <Label className="text-sm font-medium">Select Sections to Export:</Label>
               <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -288,7 +349,7 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
               <input
                 id="import-file"
                 type="file"
-                accept=".json"
+                accept=".json,.csv,.xlsx,.xls"
                 onChange={handleImport}
                 className="block w-full text-sm text-muted-foreground
                          file:mr-4 file:py-2 file:px-4
@@ -299,7 +360,7 @@ export function MasterResumeActions({ className }: MasterResumeActionsProps) {
                          cursor-pointer"
               />
               <p className="text-xs text-muted-foreground">
-                Only JSON files exported from this application are supported.
+                Accepts JSON, CSV, or Excel files. JSON files maintain full structure, while CSV/Excel files are converted from flattened format.
               </p>
             </div>
           </div>
