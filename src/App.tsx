@@ -20,6 +20,7 @@ import Index from "./pages/Index";
 import Settings from "./pages/Settings";
 import Guide from "./pages/Guide";
 import NotFound from "./pages/NotFound";
+import LoadMikeResume from "./pages/LoadMikeResume";
 
 const App = () => {
   console.log('App component initializing');
@@ -32,6 +33,11 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={
+              <MainLayout>
+                <LoadMikeResume />
+              </MainLayout>
+            } />
+            <Route path="/dashboard" element={
               <MainLayout>
                 <Dashboard />
               </MainLayout>
