@@ -23,6 +23,7 @@ export const VariantSectionSettings = ({
     experience: { enabled: true },
     education: { enabled: true },
     awards: { enabled: true },
+    certifications: { enabled: true },
     skills: { enabled: true }
   };
   
@@ -72,6 +73,12 @@ export const VariantSectionSettings = ({
       label: 'Awards',
       icon: Award,
       description: 'Recognition and honors'
+    },
+    {
+      key: 'certifications' as const,
+      label: 'Certifications',
+      icon: Award,
+      description: 'Professional certifications and credentials'
     },
     {
       key: 'skills' as const,

@@ -198,6 +198,15 @@ export const transformToResumeMaster = (): ResumeMaster => {
         description: ''
       };
     }),
+    certifications: [
+      {
+        id: 'cert-mike-1',
+        name: 'Technical Alliance Management Certification',
+        issuer: 'VMware',
+        date: '2020-01',
+        description: 'Advanced partner alliance and technical solution expertise'
+      }
+    ],
     skills: {
       primary: [
         'Partner Development',
@@ -224,7 +233,8 @@ export const transformToResumeMaster = (): ResumeMaster => {
       experience: { enabled: true, order: 3 },
       education: { enabled: true, order: 4 },
       awards: { enabled: true, order: 5 },
-      skills: { enabled: true, order: 6 }
+      certifications: { enabled: true, order: 6 },
+      skills: { enabled: true, order: 7 }
     },
     createdAt: now,
     updatedAt: now

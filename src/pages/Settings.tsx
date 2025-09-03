@@ -94,6 +94,15 @@ export default function Settings() {
           date: award.split(' – ')[1] || '',
           description: ''
         })),
+        certifications: [
+          {
+            id: 'cert-mike-1',
+            name: 'Technical Alliance Management Certification',
+            issuer: 'VMware',
+            date: '2020-01',
+            description: 'Advanced partner alliance and technical solution expertise'
+          }
+        ],
         skills: {
           primary: ['Partner Development', 'Strategic Alliances', 'Cross-functional Leadership'],
           secondary: ['VMware Technologies', 'ServiceNow Platform', 'Cloud Solutions']
@@ -104,7 +113,8 @@ export default function Settings() {
           experience: { enabled: true, order: 3 },
           education: { enabled: true, order: 4 },
           awards: { enabled: true, order: 5 },
-          skills: { enabled: true, order: 6 }
+          certifications: { enabled: true, order: 6 },
+          skills: { enabled: true, order: 7 }
         },
         createdAt: now,
         updatedAt: now

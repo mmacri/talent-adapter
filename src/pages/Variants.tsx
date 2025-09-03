@@ -65,6 +65,7 @@ const Variants = () => {
         experience: { enabled: true },
         education: { enabled: true },
         awards: { enabled: true },
+        certifications: { enabled: true },
         skills: { enabled: true }
       },
       createdAt: new Date().toISOString(),

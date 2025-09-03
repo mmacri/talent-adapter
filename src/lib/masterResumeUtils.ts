@@ -269,7 +269,8 @@ export const clearSectionData = (
         experience: { enabled: true, order: 3 },
         education: { enabled: true, order: 4 },
         awards: { enabled: true, order: 5 },
-        skills: { enabled: true, order: 6 }
+        certifications: { enabled: true, order: 6 },
+        skills: { enabled: true, order: 7 }
       };
       break;
   }

@@ -31,6 +31,16 @@ export interface Award {
   description?: string;
 }
 
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  date?: string;
+  expiryDate?: string;
+  credentialId?: string;
+  description?: string;
+}
+
 export interface Skill {
   id: string;
   name: string;
@@ -48,6 +58,7 @@ export interface ResumeMaster {
   experience: Experience[];
   education: Education[];
   awards: Award[];
+  certifications: Certification[];
   skills: {
     primary: string[];
     secondary?: string[];
@@ -58,6 +69,7 @@ export interface ResumeMaster {
     experience: { enabled: boolean; order: number };
     education: { enabled: boolean; order: number };
     awards: { enabled: boolean; order: number };
+    certifications: { enabled: boolean; order: number };
     skills: { enabled: boolean; order: number };
   };
   createdAt: string;
@@ -88,6 +100,7 @@ export interface Variant {
     experience: { enabled: boolean };
     education: { enabled: boolean };
     awards: { enabled: boolean };
+    certifications: { enabled: boolean };
     skills: { enabled: boolean };
   };
   templateId?: string;

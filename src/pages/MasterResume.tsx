@@ -39,7 +39,8 @@ import {
   User,
   GraduationCap,
   Trophy,
-  Wrench
+  Wrench,
+  Award as AwardIcon
 } from 'lucide-react';
 import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
@@ -249,11 +250,11 @@ const MasterResume = () => {
       order: masterResume?.sections?.education?.order ?? 4
     },
     { 
-      id: 'awards', 
-      title: 'Awards', 
-      icon: Plus,
-      enabled: masterResume?.sections?.awards?.enabled ?? true,
-      order: masterResume?.sections?.awards?.order ?? 5
+      id: 'certifications', 
+      title: 'Certifications', 
+      icon: AwardIcon,
+      enabled: masterResume?.sections?.certifications?.enabled ?? true,
+      order: masterResume?.sections?.certifications?.order ?? 6
     },
     { 
       id: 'skills', 
@@ -840,6 +841,22 @@ const MasterResume = () => {
                 />
               </TabsContent>
 
+              <TabsContent value="certifications" className="mt-0">
+                 <div className="flex items-center justify-between mb-4">
+                   <div>
+                     <h3 className="text-xl font-semibold">Certifications</h3>
+                     <p className="text-muted-foreground">Professional certifications and credentials</p>
+                   </div>
+                 </div>
+                <SectionEditor
+                  title=""
+                  description=""
+                  content={masterResume.certifications}
+                  onUpdate={(content) => handleFieldUpdate('certifications', content)}
+                  type="certifications"
+                />
+              </TabsContent>
+
               <TabsContent value="skills" className="mt-0">
                 <HelpCard 
                   title="Skills Section Strategy" 
@@ -860,11 +877,6 @@ const MasterResume = () => {
                      <h3 className="text-xl font-semibold">Skills & Expertise</h3>
                      <p className="text-muted-foreground">Your key skills and areas of expertise</p>
                    </div>
-                   {/* <SectionActions
-                     section="skills"
-                     sectionTitle="Skills & Expertise"
-                     onSave={() => handleSave()}
-                   /> */}
                  </div>
                 <SectionEditor
                   title=""

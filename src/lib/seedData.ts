@@ -141,6 +141,22 @@ export const createSeedData = () => {
         location: 'Cincinnati, OH' 
       }
     ],
+    certifications: [
+      {
+        id: 'cert-1',
+        name: 'Certified Information Systems Security Professional (CISSP)',
+        issuer: '(ISC)² - International Information System Security Certification Consortium',
+        date: '2018-03',
+        description: 'Advanced certification in information security and risk management'
+      },
+      {
+        id: 'cert-2', 
+        name: 'ServiceNow Certified System Administrator',
+        issuer: 'ServiceNow',
+        date: '2022-01',
+        description: 'Platform administration and configuration expertise'
+      }
+    ],
     skills: {
       primary: ['ServiceNow GRC/IRM', 'Partner Strategy', 'Solution Consulting', 'Customer Success', 'AI Governance']
     },
@@ -150,7 +166,8 @@ export const createSeedData = () => {
       experience: { enabled: true, order: 3 },
       education: { enabled: true, order: 4 },
       awards: { enabled: true, order: 5 },
-      skills: { enabled: true, order: 6 }
+      certifications: { enabled: true, order: 6 },
+      skills: { enabled: true, order: 7 }
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -174,6 +191,7 @@ export const createSeedData = () => {
         experience: { enabled: true },
         education: { enabled: true },
         awards: { enabled: true },
+        certifications: { enabled: true },
         skills: { enabled: true }
       },
       createdAt: new Date().toISOString(),
@@ -196,6 +214,7 @@ export const createSeedData = () => {
         experience: { enabled: true },
         education: { enabled: true },
         awards: { enabled: true },
+        certifications: { enabled: true },
         skills: { enabled: true }
       },
       createdAt: new Date().toISOString(),
