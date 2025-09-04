@@ -58,6 +58,7 @@ import {
   Printer,
   CalendarRange,
   Upload,
+  Briefcase,
   Table2,
   Clock
 } from 'lucide-react';
