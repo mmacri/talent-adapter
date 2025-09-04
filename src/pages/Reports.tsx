@@ -12,6 +12,7 @@ import {
   Users,
   Plus
 } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const Reports = () => {
   console.log('Reports component rendering');
@@ -168,6 +169,58 @@ const Reports = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Job Applications Table */}
+      {totalApplications > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="w-5 h-5" />
+              Job Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Position</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Applied Date</TableHead>
+                  <TableHead>Status Date</TableHead>
+                  <TableHead>Variant Used</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jobApplications?.map((app) => {
+                  const variant = variants?.find(v => v.id === app.variantId);
+                  return (
+                    <TableRow key={app.id}>
+                      <TableCell className="font-medium">{app.company}</TableCell>
+                      <TableCell>{app.role}</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          app.status === 'offer' ? 'default' :
+                          app.status === 'interview' ? 'secondary' :
+                          app.status === 'rejected' ? 'destructive' :
+                          'outline'
+                        }>
+                          {app.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{new Date(app.appliedOn).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        {app.statusDate ? new Date(app.statusDate).toLocaleDateString() : '-'}
+                      </TableCell>
+                      <TableCell>{variant?.name || 'Unknown'}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Empty State */}
       {totalApplications === 0 && (
