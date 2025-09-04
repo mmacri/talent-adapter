@@ -598,6 +598,27 @@ const Jobs = () => {
     }
   };
 
+  const handleSetStatusDatesToday = () => {
+    const today = new Date().toISOString().split('T')[0];
+    let updatedCount = 0;
+    
+    jobApplications.forEach(job => {
+      if (job.status !== 'rejected' && job.statusDate !== today) {
+        updateJobApplication(job.id, {
+          ...job,
+          statusDate: today,
+          updatedAt: new Date().toISOString()
+        });
+        updatedCount++;
+      }
+    });
+
+    toast({
+      title: "Status Dates Updated",
+      description: `Set status date to today for ${updatedCount} non-rejected applications.`,
+    });
+  };
+
   const getVariantName = (variantId?: string) => {
     if (!variantId) return 'No variant selected';
     const variant = variants.find(v => v.id === variantId);
@@ -695,6 +716,19 @@ const Jobs = () => {
             <span className="sm:hidden">Add</span>
           </Button>
           
+          {/* Set Status Dates Button */}
+          {jobApplications.filter(job => job.status !== 'rejected').length > 0 && (
+            <Button 
+              variant="outline" 
+              onClick={handleSetStatusDatesToday}
+              className="touch-manipulation w-full sm:w-auto"
+            >
+              <CalendarIcon className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Set Status Dates</span>
+              <span className="sm:hidden">Status</span>
+            </Button>
+          )}
+
           {/* Clear All Button */}
           {jobApplications.length > 0 && (
             <AlertDialog>
