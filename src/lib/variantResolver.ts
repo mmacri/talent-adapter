@@ -203,22 +203,38 @@ export class VariantResolver {
       if (!exp.date_start) return true; // Include experiences without start dates
       
       try {
-        // Ensure consistent date parsing by adding day if missing
-        const normalizeDate = (dateStr: string) => {
+        // Parse dates directly without Date constructor to avoid timezone issues
+        const parseDate = (dateStr: string) => {
           if (!dateStr) return null;
-          // If in YYYY-MM format, add day to prevent timezone issues
+          
+          // Handle YYYY-MM format
           if (/^\d{4}-\d{2}$/.test(dateStr)) {
-            return `${dateStr}-01`;
+            const [year, month] = dateStr.split('-');
+            return { year: parseInt(year, 10), month: parseInt(month, 10) };
           }
-          return dateStr;
+          
+          // Handle MM/YYYY format  
+          if (dateStr.includes('/')) {
+            const [month, year] = dateStr.split('/');
+            return { year: parseInt(year, 10), month: parseInt(month, 10) };
+          }
+          
+          return null;
         };
 
-        const expStart = new Date(normalizeDate(exp.date_start) + 'T00:00:00'); // Force local timezone
-        const rangeStart = new Date(normalizeDate(dateRange.start) + 'T00:00:00'); // Force local timezone  
-        const rangeEnd = new Date(normalizeDate(dateRange.end) + 'T23:59:59'); // Force local timezone
+        const expStart = parseDate(exp.date_start);
+        const rangeStart = parseDate(dateRange.start);
+        const rangeEnd = parseDate(dateRange.end);
+
+        if (!expStart || !rangeStart || !rangeEnd) return true;
+
+        // Compare year and month directly
+        const expStartNum = expStart.year * 12 + expStart.month;
+        const rangeStartNum = rangeStart.year * 12 + rangeStart.month;
+        const rangeEndNum = rangeEnd.year * 12 + rangeEnd.month;
 
         // Include if experience starts within or overlaps the range
-        return expStart >= rangeStart && expStart <= rangeEnd;
+        return expStartNum >= rangeStartNum && expStartNum <= rangeEndNum;
       } catch (error) {
         console.warn('Invalid date in experience or range:', error);
         return true; // Include experiences with invalid dates rather than exclude
