@@ -132,11 +132,11 @@ export const transformToResumeMaster = (): ResumeMaster => {
     let startDate = parts[0];
     let endDate = parts[1];
     
-    // Convert MM/YYYY to YYYY-MM format
+    // Convert MM/YYYY to YYYY-MM-DD format for proper Date parsing
     const convertDateFormat = (date: string) => {
       if (!date) return null;
       const [month, year] = date.split('/');
-      return `${year}-${month.padStart(2, '0')}`;
+      return `${year}-${month.padStart(2, '0')}-01`; // Add day to avoid timezone issues
     };
     
     startDate = convertDateFormat(startDate);

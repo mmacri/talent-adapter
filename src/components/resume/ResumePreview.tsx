@@ -126,14 +126,19 @@ const ResumePreview = ({
   const displayResume = getFilteredResume(resolvedResume);
 
   const formatDateRange = (startDate: string, endDate: string | null) => {
-    // Convert MM/YYYY to YYYY-MM format for proper Date parsing
+    // Convert MM/YYYY to YYYY-MM-DD format for proper Date parsing
     const convertDateFormat = (dateStr: string) => {
       if (!dateStr) return null;
       
       // Check if it's in MM/YYYY format
       if (dateStr.includes('/')) {
         const [month, year] = dateStr.split('/');
-        return `${year}-${month.padStart(2, '0')}`;
+        return `${year}-${month.padStart(2, '0')}-01`; // Add day to avoid timezone issues
+      }
+      
+      // If already in YYYY-MM format, add day
+      if (/^\d{4}-\d{2}$/.test(dateStr)) {
+        return `${dateStr}-01`;
       }
       
       return dateStr;
