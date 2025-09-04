@@ -51,6 +51,44 @@ export class DocxExporter {
     });
   }
 
+  // Helper method to format dates consistently
+  private static formatDateRange(startDate: string, endDate: string | null): string {
+    // Convert MM/YYYY to YYYY-MM-DD format for proper Date parsing
+    const convertDateFormat = (dateStr: string) => {
+      if (!dateStr) return null;
+      
+      // Check if it's in MM/YYYY format
+      if (dateStr.includes('/')) {
+        const [month, year] = dateStr.split('/');
+        return `${year}-${month.padStart(2, '0')}-01`; // Add day to avoid timezone issues
+      }
+      
+      // If already in YYYY-MM format, add day
+      if (/^\d{4}-\d{2}$/.test(dateStr)) {
+        return `${dateStr}-01`;
+      }
+      
+      return dateStr;
+    };
+
+    try {
+      const convertedStart = convertDateFormat(startDate);
+      const start = convertedStart ? new Date(convertedStart).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : startDate;
+      
+      let end = 'Present';
+      if (endDate) {
+        const convertedEnd = convertDateFormat(endDate);
+        end = convertedEnd ? new Date(convertedEnd).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : endDate;
+      }
+      
+      return `${start} – ${end}`;
+    } catch (error) {
+      console.error('Date formatting error:', error, { startDate, endDate });
+      // Fallback to original strings if formatting fails
+      return `${startDate} – ${endDate || 'Present'}`;
+    }
+  }
+
   // Helper method to create formatted bullet paragraphs with proper indentation
   private static createBulletParagraph(text: string, level: number = 0): Paragraph {
     const cleanText = text.replace(/^[•◦▪‣\-\*\+]\s*/, '').trim();
@@ -111,7 +149,7 @@ export class DocxExporter {
     return new Paragraph({
       children: [
         new TextRun({
-          text: `${location} | ${dateStart} – ${dateEnd || 'Present'}`,
+          text: `${location} | ${this.formatDateRange(dateStart, dateEnd)}`,
           italics: true,
           size: 20,
           font: "Calibri",

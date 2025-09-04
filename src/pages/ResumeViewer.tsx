@@ -140,6 +140,44 @@ const ResumeViewer = () => {
 
   const stats = getResumeStats(selectedResume);
 
+  // Date formatting helper (consistent with ResumePreview)
+  const formatDateRange = (startDate: string, endDate: string | null) => {
+    // Convert MM/YYYY to YYYY-MM-DD format for proper Date parsing
+    const convertDateFormat = (dateStr: string) => {
+      if (!dateStr) return null;
+      
+      // Check if it's in MM/YYYY format
+      if (dateStr.includes('/')) {
+        const [month, year] = dateStr.split('/');
+        return `${year}-${month.padStart(2, '0')}-01`; // Add day to avoid timezone issues
+      }
+      
+      // If already in YYYY-MM format, add day
+      if (/^\d{4}-\d{2}$/.test(dateStr)) {
+        return `${dateStr}-01`;
+      }
+      
+      return dateStr;
+    };
+
+    try {
+      const convertedStart = convertDateFormat(startDate);
+      const start = convertedStart ? format(new Date(convertedStart), 'MMM yyyy') : startDate;
+      
+      let end = 'Present';
+      if (endDate) {
+        const convertedEnd = convertDateFormat(endDate);
+        end = convertedEnd ? format(new Date(convertedEnd), 'MMM yyyy') : endDate;
+      }
+      
+      return `${start} - ${end}`;
+    } catch (error) {
+      console.error('Date formatting error:', error, { startDate, endDate });
+      // Fallback to original strings if formatting fails
+      return `${startDate} - ${endDate || 'Present'}`;
+    }
+  };
+
   // Helper function to render resume content
   const renderResumeContent = (resume: ResumeMaster, variant?: any, isCompact = false) => (
     <div className={`space-y-${isCompact ? '4' : '6'}`}>
@@ -206,7 +244,7 @@ const ResumeViewer = () => {
                           <p className="text-muted-foreground">{exp.company} • {exp.location}</p>
                         </div>
                         <span className="text-sm text-muted-foreground">
-                          {exp.date_start} - {exp.date_end || 'Present'}
+                          {formatDateRange(exp.date_start, exp.date_end)}
                         </span>
                       </div>
                       <ul className="space-y-1 ml-4">
