@@ -58,12 +58,13 @@ import {
   Printer,
   CalendarRange,
   Upload,
-  Table2
+  Table2,
+  Clock
 } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
 import { JobApplication } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
-import { format, subDays, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { format, subDays, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval, startOfQuarter, endOfQuarter, startOfYear, endOfYear } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -107,6 +108,7 @@ const Jobs = () => {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [reportDateRange, setReportDateRange] = useState<'week' | 'month' | '3months' | 'custom'>('month');
   const [customDateRange, setCustomDateRange] = useState<DateRange | undefined>();
+  const [groupByTime, setGroupByTime] = useState<'none' | 'week' | 'month' | 'quarter' | 'year'>('none');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -560,23 +562,123 @@ const Jobs = () => {
     }
   };
 
+  // Filter jobs by search query and status
   const filteredJobs = jobApplications.filter(job => {
-    const matchesSearch = 
+    const matchesSearch = searchQuery === '' || 
       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location?.toLowerCase().includes(searchQuery.toLowerCase());
+      (job.location && job.location.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     
     return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    // Sort by most recently updated
+    return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
   });
 
-  // Sort jobs chronologically by applied date (most recent first)
-  const sortedJobs = [...filteredJobs].sort((a, b) => {
-    const dateA = a.appliedOn ? new Date(a.appliedOn).getTime() : 0;
-    const dateB = b.appliedOn ? new Date(b.appliedOn).getTime() : 0;
-    return dateB - dateA; // Most recent first
-  });
+  // Group jobs by time periods
+  const groupedJobs = groupByTime === 'none' ? { 'All Applications': filteredJobs } : (() => {
+    const groups: { [key: string]: typeof filteredJobs } = {};
+    const now = new Date();
+    
+    filteredJobs.forEach(job => {
+      if (!job.appliedOn) return;
+      
+      const appliedDate = new Date(job.appliedOn);
+      let groupKey = '';
+      
+      switch (groupByTime) {
+        case 'week':
+          if (isWithinInterval(appliedDate, { start: startOfWeek(now), end: endOfWeek(now) })) {
+            groupKey = 'This Week';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfWeek(subDays(now, 7)), 
+            end: endOfWeek(subDays(now, 7)) 
+          })) {
+            groupKey = 'Last Week';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfWeek(subDays(now, 14)), 
+            end: endOfWeek(subDays(now, 14)) 
+          })) {
+            groupKey = '2 Weeks Ago';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfWeek(subDays(now, 21)), 
+            end: endOfWeek(subDays(now, 21)) 
+          })) {
+            groupKey = '3 Weeks Ago';
+          } else if (appliedDate >= subMonths(now, 1)) {
+            groupKey = 'Earlier This Month';
+          } else {
+            groupKey = format(appliedDate, 'MMM yyyy');
+          }
+          break;
+          
+        case 'month':
+          if (isWithinInterval(appliedDate, { start: startOfMonth(now), end: endOfMonth(now) })) {
+            groupKey = 'This Month';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfMonth(subMonths(now, 1)), 
+            end: endOfMonth(subMonths(now, 1)) 
+          })) {
+            groupKey = 'Last Month';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfMonth(subMonths(now, 2)), 
+            end: endOfMonth(subMonths(now, 2)) 
+          })) {
+            groupKey = '2 Months Ago';
+          } else if (appliedDate >= subMonths(now, 6)) {
+            groupKey = format(appliedDate, 'MMM yyyy');
+          } else {
+            groupKey = format(appliedDate, 'MMM yyyy');
+          }
+          break;
+          
+        case 'quarter':
+          if (isWithinInterval(appliedDate, { start: startOfQuarter(now), end: endOfQuarter(now) })) {
+            groupKey = 'This Quarter';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfQuarter(subMonths(now, 3)), 
+            end: endOfQuarter(subMonths(now, 3)) 
+          })) {
+            groupKey = 'Last Quarter';
+          } else {
+            groupKey = `Q${Math.ceil((appliedDate.getMonth() + 1) / 3)} ${appliedDate.getFullYear()}`;
+          }
+          break;
+          
+        case 'year':
+          if (isWithinInterval(appliedDate, { start: startOfYear(now), end: endOfYear(now) })) {
+            groupKey = 'This Year';
+          } else if (isWithinInterval(appliedDate, { 
+            start: startOfYear(new Date(now.getFullYear() - 1, 0, 1)), 
+            end: endOfYear(new Date(now.getFullYear() - 1, 11, 31)) 
+          })) {
+            groupKey = 'Last Year';
+          } else {
+            groupKey = appliedDate.getFullYear().toString();
+          }
+          break;
+      }
+      
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(job);
+    });
+    
+    // Sort groups by most recent first
+    const sortedGroups: { [key: string]: typeof filteredJobs } = {};
+    Object.keys(groups).sort((a, b) => {
+      const aJobs = groups[a];
+      const bJobs = groups[b];
+      const aLatest = aJobs.length > 0 ? Math.max(...aJobs.map(j => new Date(j.appliedOn).getTime())) : 0;
+      const bLatest = bJobs.length > 0 ? Math.max(...bJobs.map(j => new Date(j.appliedOn).getTime())) : 0;
+      return bLatest - aLatest;
+    }).forEach(key => {
+      sortedGroups[key] = groups[key];
+    });
+    
+    return sortedGroups;
+  })();
 
   const handleDeleteJob = (jobId: string) => {
     deleteJobApplication(jobId);
@@ -1004,176 +1106,466 @@ const Jobs = () => {
 
       {/* Filters - Mobile responsive */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search companies, roles, or locations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="prospect">Prospects</SelectItem>
-            <SelectItem value="applied">Applied</SelectItem>
-            <SelectItem value="interview">Interview</SelectItem>
-            <SelectItem value="offer">Offer</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="closed">Closed</SelectItem>
-          </SelectContent>
-        </Select>
+          <div className="flex items-center gap-2">
+            <Search className="w-4 h-4" />
+            <Input
+              placeholder="Search by company, role, or location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-72"
+            />
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="prospect">Prospect</SelectItem>
+                <SelectItem value="applied">Applied</SelectItem>
+                <SelectItem value="interview">Interview</SelectItem>
+                <SelectItem value="offer">Offer</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'kanban')}>
-          <TabsList className="w-full sm:w-auto">
-            <TabsTrigger value="table" className="flex-1 sm:flex-initial">Table</TabsTrigger>
-            <TabsTrigger value="kanban" className="flex-1 sm:flex-initial">Kanban</TabsTrigger>
-          </TabsList>
-        </Tabs>
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4" />
+            <Select value={groupByTime} onValueChange={(value: any) => setGroupByTime(value)}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Group by time" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Grouping</SelectItem>
+                <SelectItem value="week">By Week</SelectItem>
+                <SelectItem value="month">By Month</SelectItem>
+                <SelectItem value="quarter">By Quarter</SelectItem>
+                <SelectItem value="year">By Year</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+        <div className="flex items-center gap-2">
+          <Clock className="w-4 h-4" />
+          <Select value={groupByTime} onValueChange={(value: any) => setGroupByTime(value)}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Group by time" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No Grouping</SelectItem>
+              <SelectItem value="week">By Week</SelectItem>
+              <SelectItem value="month">By Month</SelectItem>
+              <SelectItem value="quarter">By Quarter</SelectItem>
+              <SelectItem value="year">By Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Content - Mobile responsive */}
-      {viewMode === 'table' ? (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[200px]">Company & Role</TableHead>
-                  <TableHead className="min-w-[100px]">Status</TableHead>
-                  <TableHead className="min-w-[120px]">Applied Date</TableHead>
-                  <TableHead className="min-w-[120px]">Status Date</TableHead>
-                  <TableHead className="min-w-[150px] hidden md:table-cell">Variant Used</TableHead>
-                  <TableHead className="min-w-[150px] hidden lg:table-cell">Cover Letter</TableHead>
-                  <TableHead className="text-right min-w-[100px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedJobs.map((job) => (
-                  <TableRow key={job.id} className="cursor-pointer hover:bg-muted/50">
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium text-sm md:text-base">{job.role}</div>
-                        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                          <Building className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{job.company}</span>
-                          {job.location && (
-                            <>
-                              <span className="hidden sm:inline">•</span>
-                              <MapPin className="w-3 h-3 flex-shrink-0 hidden sm:inline" />
-                              <span className="truncate hidden sm:inline">{job.location}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    
-                    <TableCell>
-                      <Badge 
-                        variant="outline" 
-                        className={`${statusColors[job.status]} text-xs`}
-                      >
-                        <span className="hidden sm:inline">
-                          {job.status === 'prospect' ? 'Prospect' : job.status}
-                        </span>
-                        <span className="sm:hidden">
-                          {job.status.charAt(0).toUpperCase()}
-                        </span>
+      {/* Content */}
+      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'table' | 'kanban')}>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="table" className="flex-1 sm:flex-initial">Table</TabsTrigger>
+          <TabsTrigger value="kanban" className="flex-1 sm:flex-initial">Kanban</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="table" className="space-y-4">
+          {Object.keys(groupedJobs).length > 0 && Object.values(groupedJobs).some(group => group.length > 0) ? (
+            <div className="space-y-6">
+              {Object.entries(groupedJobs).map(([groupName, jobs]) => (
+                jobs.length > 0 && (
+                  <Card key={groupName}>
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        <Clock className="w-5 h-5" />
+                        {groupName}
+                        <Badge variant="outline" className="ml-auto">
+                          {jobs.length} application{jobs.length !== 1 ? 's' : ''}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Company</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Applied On</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {jobs.map((job) => (
+                            <TableRow key={job.id}>
+                              <TableCell className="font-medium">{job.company}</TableCell>
+                              <TableCell>{job.role}</TableCell>
+                              <TableCell>
+                                <Badge className={statusColors[job.status]}>{job.status}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {job.appliedOn ? format(new Date(job.appliedOn), 'MMM d, yyyy') : '-'}
+                              </TableCell>
+                              <TableCell>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => navigate(`/job-editor/${job.id}`)}
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                )
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Briefcase className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No applications found</h3>
+                <p className="text-muted-foreground mb-4">
+                  Start tracking your job applications to see them grouped by time periods.
+                </p>
+                <Button onClick={() => navigate('/job-editor')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Application
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="kanban" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].map((status) => {
+              const statusJobs = filteredJobs.filter(job => job.status === status);
+              return (
+                <Card key={status} className="bg-muted/30">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium capitalize flex items-center justify-between">
+                      {status}
+                      <Badge variant="secondary" className="text-xs">
+                        {statusJobs.length}
                       </Badge>
-                    </TableCell>
-                    
-                    <TableCell>
-                      <DatePicker
-                        date={job.appliedOn ? new Date(job.appliedOn) : undefined}
-                        onDateChange={(date) => handleDateChange(job.id, 'appliedOn', date)}
-                        placeholder="Set applied date"
-                        className="w-[140px] h-8 text-xs"
-                      />
-                    </TableCell>
-                    
-                    <TableCell>
-                      <DatePicker
-                        date={job.statusDate ? new Date(job.statusDate) : undefined}
-                        onDateChange={(date) => handleDateChange(job.id, 'statusDate', date)}
-                        placeholder="Set status date"
-                        className="w-[140px] h-8 text-xs"
-                      />
-                    </TableCell>
-                    
-                    <TableCell className="hidden md:table-cell">
-                      <span className="text-sm truncate block max-w-[150px]">{getVariantName(job.variantId)}</span>
-                    </TableCell>
-                    
-                    <TableCell className="hidden lg:table-cell">
-                      <span className="text-sm truncate block max-w-[150px]">{getCoverLetterTitle(job.coverLetterId)}</span>
-                    </TableCell>
-                    
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/jobs/${job.id}`)}
-                          className="touch-manipulation"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </Button>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {statusJobs.map((job) => (
+                      <Card key={job.id} className="p-3 bg-background cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => navigate(`/job-editor/${job.id}`)}>
+                        <div className="space-y-1">
+                          <h4 className="font-medium text-sm">{job.company}</h4>
+                          <p className="text-xs text-muted-foreground">{job.role}</p>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <CalendarIcon className="w-3 h-3" />
+                            {job.appliedOn ? format(new Date(job.appliedOn), 'MMM d') : 'Not applied'}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                    {statusJobs.length === 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-4">
+                        No {status} applications
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
+        <div className="space-y-6">
+          {Object.keys(groupedJobs).length > 0 && Object.values(groupedJobs).some(group => group.length > 0) ? (
+            Object.entries(groupedJobs).map(([groupName, jobs]) => (
+              jobs.length > 0 && (
+                <Card key={groupName}>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Clock className="w-5 h-5" />
+                      {groupName}
+                      <Badge variant="outline" className="ml-auto">
+                        {jobs.length} application{jobs.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Company & Role</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Applied On</TableHead>
+                          <TableHead>Status Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {jobs.sort((a, b) => new Date(b.appliedOn).getTime() - new Date(a.appliedOn).getTime()).map((job) => (
+                          <TableRow key={job.id}>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-medium">{job.role}</div>
+                                <div className="text-sm text-muted-foreground">{job.company}</div>
+                                {job.location && <div className="text-xs text-muted-foreground">{job.location}</div>}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={statusColors[job.status]}>{job.status}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {job.appliedOn ? format(new Date(job.appliedOn), 'MMM d, yyyy') : '-'}
+                            </TableCell>
+                            <TableCell>
+                              {job.statusDate ? format(new Date(job.statusDate), 'MMM d, yyyy') : '-'}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => navigate(`/jobs/${job.id}`)}
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete Application</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete the application for {job.role} at {job.company}? 
+                                        This action cannot be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={() => {
+                                          deleteJobApplication(job.id);
+                                          toast({
+                                            title: "Application Deleted",
+                                            description: `Removed application for ${job.role} at ${job.company}.`,
+                                          });
+                                        }}
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )
+            ))
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Clock className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No applications found</h3>
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery || statusFilter !== 'all' 
+                    ? 'Try adjusting your search terms or filters.' 
+                    : 'Start tracking your job applications to see them here.'
+                  }
+                </p>
+                <Button onClick={() => navigate('/jobs/new')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Application
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ) : (
+        {/* Regular view - existing table/kanban */}
+        <div className="space-y-4">
+          {viewMode === 'table' ? (
+            <Card>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[200px]">Company & Role</TableHead>
+                      <TableHead className="min-w-[100px]">Status</TableHead>
+                      <TableHead className="min-w-[120px]">Applied Date</TableHead>
+                      <TableHead className="min-w-[120px]">Status Date</TableHead>
+                      <TableHead className="min-w-[150px] hidden md:table-cell">Variant Used</TableHead>
+                      <TableHead className="min-w-[150px] hidden lg:table-cell">Cover Letter</TableHead>
+                      <TableHead className="text-right min-w-[100px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredJobs.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).map((job) => (
+                      <TableRow key={job.id} className="cursor-pointer hover:bg-muted/50">
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium text-sm md:text-base">{job.role}</div>
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
+                              <Building className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate">{job.company}</span>
+                              {job.location && (
+                                <>
+                                  <span className="hidden sm:inline">•</span>
+                                  <MapPin className="w-3 h-3 flex-shrink-0 hidden sm:inline" />
+                                  <span className="truncate hidden sm:inline">{job.location}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
                         
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                        <TableCell>
+                          <Badge 
+                            variant="outline" 
+                            className={`${statusColors[job.status]} text-xs`}
+                          >
+                            <span className="hidden sm:inline">
+                              {job.status === 'prospect' ? 'Prospect' : job.status}
+                            </span>
+                            <span className="sm:hidden">
+                              {job.status.charAt(0).toUpperCase()}
+                            </span>
+                          </Badge>
+                        </TableCell>
+                        
+                        <TableCell>
+                          {job.appliedOn ? format(new Date(job.appliedOn), 'MMM d, yyyy') : '-'}
+                        </TableCell>
+                        
+                        <TableCell>
+                          {job.statusDate ? format(new Date(job.statusDate), 'MMM d, yyyy') : '-'}
+                        </TableCell>
+                        
+                        <TableCell className="hidden md:table-cell">
+                          <span className="text-sm truncate block max-w-[150px]">
+                            {variants?.find(v => v.id === job.variantId)?.name || '-'}
+                          </span>
+                        </TableCell>
+                        
+                        <TableCell className="hidden lg:table-cell">
+                          <span className="text-sm truncate block max-w-[150px]">
+                            {coverLetters?.find(cl => cl.id === job.coverLetterId)?.title || '-'}
+                          </span>
+                        </TableCell>
+                        
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-destructive hover:text-destructive touch-manipulation"
+                              onClick={() => navigate(`/jobs/${job.id}`)}
+                              className="touch-manipulation"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Edit3 className="w-4 h-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Application</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete this job application for "{job.role}" at {job.company}? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteJob(job.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
-          {statusColumns.map((status) => (
-            <KanbanColumn
-              key={status}
-              status={status}
-              jobs={sortedJobs.filter(job => job.status === status)}
-            />
-          ))}
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-destructive hover:text-destructive touch-manipulation"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Application</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this job application for "{job.role}" at {job.company}? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => {
+                                      deleteJobApplication(job.id);
+                                      toast({
+                                        title: "Application Deleted",
+                                        description: `Removed application for ${job.role} at ${job.company}.`,
+                                      });
+                                    }}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+              {['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].map((status) => {
+                const statusJobs = filteredJobs.filter(job => job.status === status);
+                return (
+                  <Card key={status} className="bg-muted/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium capitalize flex items-center justify-between">
+                        {status}
+                        <Badge variant="secondary" className="text-xs">
+                          {statusJobs.length}
+                        </Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {statusJobs.map((job) => (
+                        <Card key={job.id} className="p-3 bg-background cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => navigate(`/jobs/${job.id}`)}>
+                          <div className="space-y-1">
+                            <h4 className="font-medium text-sm">{job.company}</h4>
+                            <p className="text-xs text-muted-foreground">{job.role}</p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <CalendarIcon className="w-3 h-3" />
+                              {job.appliedOn ? format(new Date(job.appliedOn), 'MMM d') : 'Not applied'}
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                      {statusJobs.length === 0 && (
+                        <p className="text-xs text-muted-foreground text-center py-4">
+                          No {status} applications
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
 
       {/* Empty State */}
-      {sortedJobs.length === 0 && (
+      {filteredJobs.length === 0 && (
         <div className="text-center py-12">
           <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-4">
             <Building className="w-12 h-12 text-muted-foreground" />
