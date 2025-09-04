@@ -203,9 +203,19 @@ export class VariantResolver {
       if (!exp.date_start) return true; // Include experiences without start dates
       
       try {
-        const expStart = new Date(exp.date_start);
-        const rangeStart = new Date(dateRange.start);
-        const rangeEnd = new Date(dateRange.end);
+        // Ensure consistent date parsing by adding day if missing
+        const normalizeDate = (dateStr: string) => {
+          if (!dateStr) return null;
+          // If in YYYY-MM format, add day to prevent timezone issues
+          if (/^\d{4}-\d{2}$/.test(dateStr)) {
+            return `${dateStr}-01`;
+          }
+          return dateStr;
+        };
+
+        const expStart = new Date(normalizeDate(exp.date_start) + 'T00:00:00'); // Force local timezone
+        const rangeStart = new Date(normalizeDate(dateRange.start) + 'T00:00:00'); // Force local timezone  
+        const rangeEnd = new Date(normalizeDate(dateRange.end) + 'T23:59:59'); // Force local timezone
 
         // Include if experience starts within or overlaps the range
         return expStart >= rangeStart && expStart <= rangeEnd;
