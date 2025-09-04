@@ -88,6 +88,7 @@ const JobEditor = () => {
         role: '',
         location: '',
         status: 'prospect',
+        statusDate: new Date().toISOString().split('T')[0], // Set initial status date
         variantId: '',
         coverLetterId: '',
         appliedOn: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
@@ -416,6 +417,13 @@ const JobEditor = () => {
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Applied</span>
                   <span>{new Date(job.appliedOn).toLocaleDateString()}</span>
+                </div>
+              )}
+              
+              {job.statusDate && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Status Date</span>
+                  <span>{new Date(job.statusDate).toLocaleDateString()}</span>
                 </div>
               )}
             </CardContent>

@@ -368,6 +368,7 @@ const Jobs = () => {
       'Role': job.role,
       'Location': job.location || '',
       'Status': job.status,
+      'Status Date': job.statusDate || '',
       'Applied Date': job.appliedOn || '',
       'Variant ID': job.variantId || '',
       'Cover Letter ID': job.coverLetterId || '',
@@ -407,6 +408,7 @@ const Jobs = () => {
       'Role': job.role,
       'Location': job.location || '',
       'Status': job.status,
+      'Status Date': job.statusDate || '',
       'Applied Date': job.appliedOn || '',
       'Variant ID': job.variantId || '',
       'Cover Letter ID': job.coverLetterId || '',
@@ -484,6 +486,7 @@ const Jobs = () => {
           location: row.Location || undefined,
           status: (['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].includes(row.Status) 
             ? row.Status : 'prospect') as JobApplication['status'],
+          statusDate: row['Status Date'] || undefined,
           appliedOn: row['Applied Date'] || new Date().toISOString().split('T')[0],
           variantId: row['Variant ID'] || undefined,
           coverLetterId: row['Cover Letter ID'] || undefined,

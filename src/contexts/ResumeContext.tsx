@@ -144,6 +144,13 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const updateJobApplication = (id: string, updates: Partial<JobApplication>) => {
+    // Check if status is being updated and set statusDate accordingly
+    const existingJob = jobApplications.find(j => j.id === id);
+    if (existingJob && updates.status && updates.status !== existingJob.status) {
+      // Status changed - set status date to today
+      updates.statusDate = new Date().toISOString().split('T')[0];
+    }
+    
     jobsStorage.update(id, updates);
     setJobApplications(prev => prev.map(j => j.id === id ? { ...j, ...updates } : j));
   };
