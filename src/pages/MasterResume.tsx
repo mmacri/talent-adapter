@@ -17,6 +17,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Save, 
   Plus, 
@@ -40,7 +42,8 @@ import {
   GraduationCap,
   Trophy,
   Wrench,
-  Award as AwardIcon
+  Award as AwardIcon,
+  Menu
 } from 'lucide-react';
 import { ResumeMaster, Experience } from '@/types/resume';
 import { ContentTree } from '@/components/resume/ContentTree';
@@ -66,7 +69,9 @@ const MasterResume = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showJsonDialog, setShowJsonDialog] = useState(false);
   const [showSectionSettings, setShowSectionSettings] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Get masterResume and setMasterResume safely
   const masterResume = resumeContext?.masterResume || null;
@@ -286,240 +291,317 @@ const MasterResume = () => {
     setIsEditing(true);
   };
 
-  return (
-    <div className="flex h-screen bg-background">
-      {/* Left Sidebar - Content Tree */}
-      <div className="w-80 border-r border-border bg-card flex flex-col">
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Master Resume</h2>
-              <InfoTooltip content="Your comprehensive resume containing all experience and skills. This is the foundation for creating targeted variants." />
-            </div>
-            <Button
-              onClick={handleSave}
-              disabled={!isEditing}
-              className="bg-gradient-to-r from-primary to-primary-hover"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save
-            </Button>
+  // Sidebar content component for reuse
+  const SidebarContent = () => (
+    <>
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'}`}>Master Resume</h2>
+            <InfoTooltip content="Your comprehensive resume containing all experience and skills. This is the foundation for creating targeted variants." />
           </div>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search sections..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+          <Button
+            onClick={handleSave}
+            disabled={!isEditing}
+            size={isMobile ? "sm" : "default"}
+            className="bg-gradient-to-r from-primary to-primary-hover"
+          >
+            <Save className="w-4 h-4 mr-1" />
+            {isMobile ? "" : "Save"}
+          </Button>
         </div>
-
-        <ContentTree
-          resume={masterResume}
-          selectedSection={selectedSection}
-          selectedItem={selectedItem}
-          searchQuery={searchQuery}
-          onSectionSelect={setSelectedSection}
-          onItemSelect={setSelectedItem}
-        />
         
-        <div className="mt-auto p-4 border-t border-border">
-          <div className="space-y-2">
-            <GlobalTagManager 
-              masterResume={masterResume}
-              onMasterResumeUpdate={setMasterResume}
-            />
-            
-            {masterResume && (
-              <ResumePreview 
-                masterResume={masterResume}
-                triggerText="Preview Resume"
-                triggerVariant="outline"
-                triggerIcon={<Eye className="w-4 h-4" />}
-              />
-            )}
-            
-            <Dialog open={showSectionSettings} onOpenChange={setShowSectionSettings}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  <Layout className="w-4 h-4 mr-2" />
-                  Section Settings
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Layout className="w-5 h-5" />
-                    Section Visibility & Order
-                  </DialogTitle>
-                  <DialogDescription>
-                    Control which sections appear in your master resume and their order
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  <div className="grid gap-4">
-                    {sections.map((section) => (
-                      <Card key={section.id} className={`p-4 ${!section.enabled ? 'opacity-60' : ''}`}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <section.icon className="w-5 h-5" />
-                            <div>
-                              <h4 className="font-medium">{section.title}</h4>
-                              <p className="text-sm text-muted-foreground">
-                                Order: {section.order}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <Label htmlFor={`order-${section.id}`} className="text-sm">
-                                Order:
-                              </Label>
-                              <Input
-                                id={`order-${section.id}`}
-                                type="number"
-                                min="1"
-                                max="6"
-                                value={section.order}
-                                onChange={(e) => handleSectionOrderChange(section.id, parseInt(e.target.value) || 1)}
-                                className="w-16"
-                              />
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <Label htmlFor={`switch-${section.id}`} className="text-sm">
-                                Include:
-                              </Label>
-                              <Switch
-                                id={`switch-${section.id}`}
-                                checked={section.enabled}
-                                onCheckedChange={(enabled) => handleSectionToggle(section.id, enabled)}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <div className="flex justify-between pt-4 border-t">
-                    <p className="text-sm text-muted-foreground">
-                      {sections.filter(s => s.enabled).length} of {sections.length} sections enabled
-                    </p>
-                    <Button onClick={() => setShowSectionSettings(false)}>
-                      Done
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-            
-            <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  <FileJson className="w-4 h-4 mr-2" />
-                  JSON View
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <FileJson className="w-5 h-5" />
-                    Master Resume JSON Data
-                  </DialogTitle>
-                  <DialogDescription>
-                    Raw JSON data structure for your master resume
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="flex gap-2 mb-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleCopyJson}
-                  >
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy JSON
-                  </Button>
-                </div>
-
-                <ScrollArea className="flex-1">
-                  <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
-                    <code>{JSON.stringify(masterResume, null, 2)}</code>
-                  </pre>
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search sections..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 text-base"
+          />
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header - Enhanced with import/export actions */}
-        <div className="p-6 border-b border-border bg-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">{masterResume.owner}</h1>
-              <p className="text-muted-foreground">{masterResume.headline}</p>
-            </div>
-            <div className="flex gap-2">
-              <MasterResumeActions className="flex-shrink-0" />
-              
-              {masterResume && (
-                <ResumePreview 
-                  masterResume={masterResume}
-                  triggerText="Preview"
-                  triggerVariant="outline"
-                  triggerIcon={<Eye className="w-4 h-4" />}
-                />
-              )}
-              
-              <Button
-                onClick={handleExport}
-                variant="outline"
-                className="bg-gradient-to-r from-accent to-accent hover:from-accent/80 hover:to-accent/80"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export to Word
+      <ContentTree
+        resume={masterResume}
+        selectedSection={selectedSection}
+        selectedItem={selectedItem}
+        searchQuery={searchQuery}
+        onSectionSelect={(section) => {
+          setSelectedSection(section);
+          if (isMobile) setShowSidebar(false);
+        }}
+        onItemSelect={setSelectedItem}
+      />
+      
+      <div className="mt-auto p-4 border-t border-border">
+        <div className="space-y-2">
+          <GlobalTagManager 
+            masterResume={masterResume}
+            onMasterResumeUpdate={setMasterResume}
+          />
+          
+          {masterResume && (
+            <ResumePreview 
+              masterResume={masterResume}
+              triggerText={isMobile ? "Preview" : "Preview Resume"}
+              triggerVariant="outline"
+              triggerIcon={<Eye className="w-4 h-4" />}
+            />
+          )}
+          
+          <Dialog open={showSectionSettings} onOpenChange={setShowSectionSettings}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full justify-start touch-target">
+                <Layout className="w-4 h-4 mr-2" />
+                {isMobile ? "Settings" : "Section Settings"}
               </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Layout className="w-5 h-5" />
+                  Section Visibility & Order
+                </DialogTitle>
+                <DialogDescription>
+                  Control which sections appear in your master resume and their order
+                </DialogDescription>
+              </DialogHeader>
               
-              {isEditing && (
-                <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
+              <div className="space-y-4">
+                <div className="grid gap-4">
+                  {sections.map((section) => (
+                    <Card key={section.id} className={`p-4 ${!section.enabled ? 'opacity-60' : ''}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <section.icon className="w-5 h-5" />
+                          <div>
+                            <h4 className="font-medium">{section.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Order: {section.order}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`order-${section.id}`} className="text-sm">
+                              Order:
+                            </Label>
+                            <Input
+                              id={`order-${section.id}`}
+                              type="number"
+                              min="1"
+                              max="6"
+                              value={section.order}
+                              onChange={(e) => handleSectionOrderChange(section.id, parseInt(e.target.value) || 1)}
+                              className="w-16"
+                            />
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Label htmlFor={`switch-${section.id}`} className="text-sm">
+                              Include:
+                            </Label>
+                            <Switch
+                              id={`switch-${section.id}`}
+                              checked={section.enabled}
+                              onCheckedChange={(enabled) => handleSectionToggle(section.id, enabled)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                
+                <div className="flex justify-between pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    {sections.filter(s => s.enabled).length} of {sections.length} sections enabled
+                  </p>
+                  <Button onClick={() => setShowSectionSettings(false)}>
+                    Done
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={showJsonDialog} onOpenChange={setShowJsonDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full justify-start touch-target">
+                <FileJson className="w-4 h-4 mr-2" />
+                {isMobile ? "JSON" : "JSON View"}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <FileJson className="w-5 h-5" />
+                  Master Resume JSON Data
+                </DialogTitle>
+                <DialogDescription>
+                  Raw JSON data structure for your master resume
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="flex gap-2 mb-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleCopyJson}
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy JSON
+                </Button>
+              </div>
+
+              <ScrollArea className="flex-1">
+                <pre className="text-xs bg-muted p-4 rounded-lg overflow-x-auto">
+                  <code>{JSON.stringify(masterResume, null, 2)}</code>
+                </pre>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <div className={`${isMobile ? 'flex flex-col h-screen' : 'flex h-screen'} bg-background`}>
+      {/* Mobile Sidebar Sheet */}
+      {isMobile && (
+        <Sheet open={showSidebar} onOpenChange={setShowSidebar}>
+          <SheetContent side="left" className="w-80 p-0 bg-card">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Master Resume Navigation</SheetTitle>
+            </SheetHeader>
+            <div className="flex flex-col h-full">
+              <SidebarContent />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <div className="w-80 border-r border-border bg-card flex flex-col">
+          <SidebarContent />
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile Header with Menu Button */}
+        {isMobile && (
+          <div className="p-4 border-b border-border bg-card safe-top">
+            <div className="flex items-center justify-between mb-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowSidebar(true)}
+                className="touch-target"
+              >
+                <Menu className="w-5 h-5" />
+                <span className="sr-only">Open navigation</span>
+              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSave}
+                  disabled={!isEditing}
+                  size="sm"
+                  className="bg-gradient-to-r from-primary to-primary-hover"
+                >
+                  <Save className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={handleExport}
+                  variant="outline"
+                  size="sm"
+                  className="bg-gradient-to-r from-accent to-accent"
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="text-center">
+              <h1 className="text-lg font-bold truncate">{masterResume.owner}</h1>
+              <p className="text-sm text-muted-foreground truncate">{masterResume.headline}</p>
+            </div>
+            {isEditing && (
+              <div className="flex justify-center mt-2">
+                <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20 text-xs">
                   Unsaved Changes
                 </Badge>
-              )}
-              <Badge variant="outline">
-                Last updated: {new Date(masterResume.updatedAt).toLocaleDateString()}
-              </Badge>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Desktop Header */}
+        {!isMobile && (
+          <div className="p-6 border-b border-border bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold">{masterResume.owner}</h1>
+                <p className="text-muted-foreground">{masterResume.headline}</p>
+              </div>
+              <div className="flex gap-2">
+                <MasterResumeActions className="flex-shrink-0" />
+                
+                {masterResume && (
+                  <ResumePreview 
+                    masterResume={masterResume}
+                    triggerText="Preview"
+                    triggerVariant="outline"
+                    triggerIcon={<Eye className="w-4 h-4" />}
+                  />
+                )}
+                
+                <Button
+                  onClick={handleExport}
+                  variant="outline"
+                  className="bg-gradient-to-r from-accent to-accent hover:from-accent/80 hover:to-accent/80"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export to Word
+                </Button>
+                
+                {isEditing && (
+                  <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">
+                    Unsaved Changes
+                  </Badge>
+                )}
+                <Badge variant="outline">
+                  Last updated: {new Date(masterResume.updatedAt).toLocaleDateString()}
+                </Badge>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Editor Content */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto safe-bottom">
           <Tabs value={selectedSection} onValueChange={setSelectedSection} className="h-full">
             <div className="border-b border-border bg-muted/50">
-              <TabsList className="h-auto p-2 bg-transparent">
+              <TabsList className={`h-auto p-2 bg-transparent ${isMobile ? 'w-full overflow-x-auto' : ''}`}>
                 {sections.filter(section => section.enabled).map((section) => (
                   <TabsTrigger
                     key={section.id}
                     value={section.id}
-                    className="flex items-center gap-2 data-[state=active]:bg-background"
+                    className={`flex items-center gap-2 data-[state=active]:bg-background touch-target ${
+                      isMobile ? 'text-xs px-2 py-2 min-w-max flex-shrink-0' : ''
+                    }`}
                   >
-                    <section.icon className="w-4 h-4" />
-                    {section.title}
+                    <section.icon className="w-4 h-4 flex-shrink-0" />
+                    <span className={isMobile ? 'whitespace-nowrap' : ''}>{section.title}</span>
                   </TabsTrigger>
                 ))}
               </TabsList>
             </div>
 
-            <div className="p-6">
+            <div className={isMobile ? 'p-4 mobile-spacing' : 'p-6'}>
               <TabsContent value="contacts" className="mt-0">
                 <HelpCard 
                   title="Contact Information Tips" 
@@ -542,7 +624,7 @@ const MasterResume = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`grid gap-6 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-lg">Personal Details</CardTitle>
@@ -555,6 +637,7 @@ const MasterResume = () => {
                           value={masterResume.owner}
                           onChange={(e) => handleFieldUpdate('owner', e.target.value)}
                           placeholder="Your full name"
+                          className="text-base"
                         />
                       </div>
 
@@ -565,6 +648,7 @@ const MasterResume = () => {
                           value={masterResume.headline}
                           onChange={(e) => handleFieldUpdate('headline', e.target.value)}
                           placeholder="e.g. Senior Software Engineer"
+                          className="text-base"
                         />
                       </div>
                     </CardContent>
@@ -583,6 +667,7 @@ const MasterResume = () => {
                           value={masterResume.contacts.email}
                           onChange={(e) => handleContactUpdate('email', e.target.value)}
                           placeholder="your.email@example.com"
+                          className="text-base"
                         />
                       </div>
 
@@ -594,6 +679,7 @@ const MasterResume = () => {
                           value={masterResume.contacts.phone}
                           onChange={(e) => handleContactUpdate('phone', e.target.value)}
                           placeholder="(555) 123-4567"
+                          className="text-base"
                         />
                       </div>
 
@@ -605,6 +691,7 @@ const MasterResume = () => {
                           value={masterResume.contacts.website || ''}
                           onChange={(e) => handleContactUpdate('website', e.target.value)}
                           placeholder="https://yourwebsite.com"
+                          className="text-base"
                         />
                       </div>
 
@@ -616,6 +703,7 @@ const MasterResume = () => {
                           value={masterResume.contacts.linkedin || ''}
                           onChange={(e) => handleContactUpdate('linkedin', e.target.value)}
                           placeholder="https://linkedin.com/in/yourprofile"
+                          className="text-base"
                         />
                       </div>
                     </CardContent>
@@ -721,10 +809,13 @@ const MasterResume = () => {
                          sectionTitle="Work Experience"
                          onSave={() => handleSave()}
                        /> */}
-                       <Button onClick={addExperience} className="bg-gradient-to-r from-accent to-accent">
-                         <Plus className="w-4 h-4 mr-2" />
-                         Add Experience
-                       </Button>
+                       <Button 
+                          onClick={addExperience} 
+                          className={`bg-gradient-to-r from-accent to-accent touch-target ${isMobile ? 'text-sm px-3' : ''}`}
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          {isMobile ? "Add" : "Add Experience"}
+                        </Button>
                      </div>
                   </div>
 
@@ -743,9 +834,12 @@ const MasterResume = () => {
                         <p className="text-muted-foreground mb-4">
                           Add your work experience to build your comprehensive master resume
                         </p>
-                        <Button onClick={addExperience} className="bg-gradient-to-r from-accent to-accent">
+                        <Button 
+                          onClick={addExperience} 
+                          className={`bg-gradient-to-r from-accent to-accent touch-target ${isMobile ? 'text-sm' : ''}`}
+                        >
                           <Plus className="w-4 h-4 mr-2" />
-                          Add Your First Experience
+                          {isMobile ? "Add Experience" : "Add Your First Experience"}
                         </Button>
                       </CardContent>
                     </Card>
