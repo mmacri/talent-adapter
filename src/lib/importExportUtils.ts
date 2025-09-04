@@ -8,6 +8,24 @@ export interface ImportExportOptions {
   filename?: string;
 }
 
+// Date formatting utilities to prevent Excel auto-conversion
+export const formatDateForExport = (date: string | Date | null | undefined): string => {
+  if (!date) return '';
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(dateObj.getTime())) return '';
+  // Use YYYY-MM-DD format prefixed with apostrophe to prevent Excel auto-conversion
+  return `'${dateObj.toISOString().split('T')[0]}`;
+};
+
+export const parseDateFromImport = (dateStr: string): string => {
+  if (!dateStr) return '';
+  // Remove leading apostrophe if present (from Excel export)
+  const cleanDateStr = dateStr.startsWith("'") ? dateStr.substring(1) : dateStr;
+  // Validate and return ISO string
+  const date = new Date(cleanDateStr);
+  return isNaN(date.getTime()) ? '' : date.toISOString();
+};
+
 // Generic CSV utilities
 export const convertToCSV = (data: any[]): string => {
   if (!data || data.length === 0) return '';
@@ -18,8 +36,10 @@ export const convertToCSV = (data: any[]): string => {
     ...data.map(row => 
       headers.map(header => {
         let cell = row[header] ?? '';
-        // Handle arrays and objects
-        if (Array.isArray(cell)) {
+        // Handle dates first to prevent auto-conversion
+        if (header.toLowerCase().includes('date') || header.toLowerCase().includes('on')) {
+          cell = formatDateForExport(cell);
+        } else if (Array.isArray(cell)) {
           cell = cell.join('|');
         } else if (typeof cell === 'object') {
           cell = JSON.stringify(cell);
@@ -50,17 +70,21 @@ export const parseCSV = (csvText: string): any[] => {
       const row: any = {};
       headers.forEach((header, index) => {
         let value: any = values[index];
-        // Handle array values (pipe-separated)
-        if (typeof value === 'string' && value.includes('|')) {
+        // Handle date fields first
+        if (header.toLowerCase().includes('date') || header.toLowerCase().includes('on')) {
+          value = parseDateFromImport(value);
+        } else if (typeof value === 'string' && value.includes('|')) {
+          // Handle array values (pipe-separated)
           value = value.split('|');
-        }
-        // Try to parse JSON objects
-        try {
-          if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
-            value = JSON.parse(value);
+        } else {
+          // Try to parse JSON objects
+          try {
+            if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+              value = JSON.parse(value);
+            }
+          } catch {
+            // Keep as string if not valid JSON
           }
-        } catch {
-          // Keep as string if not valid JSON
         }
         row[header] = value;
       });
@@ -135,13 +159,41 @@ export const exportData = (data: any, basename: string, format: ExportFormat): v
       
     case 'excel':
       const excelData = Array.isArray(data) ? data : [data];
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      // Format dates for Excel export to prevent auto-conversion
+      const formattedExcelData = excelData.map(row => {
+        const formattedRow = { ...row };
+        Object.keys(formattedRow).forEach(key => {
+          if (key.toLowerCase().includes('date') || key.toLowerCase().includes('on')) {
+            formattedRow[key] = formatDateForExport(formattedRow[key]);
+          }
+        });
+        return formattedRow;
+      });
+      
+      const worksheet = XLSX.utils.json_to_sheet(formattedExcelData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
       
-      // Auto-size columns
-      const colWidths = Object.keys(excelData[0] || {}).map(() => ({ wch: 20 }));
+      // Auto-size columns and format date columns as text
+      const colWidths = Object.keys(formattedExcelData[0] || {}).map((key) => ({ 
+        wch: key.toLowerCase().includes('date') || key.toLowerCase().includes('on') ? 12 : 20 
+      }));
       worksheet['!cols'] = colWidths;
+      
+      // Set date columns to text format
+      const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const header = XLSX.utils.encode_col(col) + '1';
+        const headerCell = worksheet[header];
+        if (headerCell && (headerCell.v?.toLowerCase().includes('date') || headerCell.v?.toLowerCase().includes('on'))) {
+          for (let row = range.s.r + 1; row <= range.e.r; row++) {
+            const cellAddr = XLSX.utils.encode_cell({ r: row, c: col });
+            if (worksheet[cellAddr]) {
+              worksheet[cellAddr].t = 's'; // Force text format
+            }
+          }
+        }
+      }
       
       XLSX.writeFile(workbook, `${basename}_${timestamp}.xlsx`);
       break;
@@ -180,8 +232,20 @@ export const importFile = (file: File): Promise<any> => {
             if (content instanceof ArrayBuffer) {
               const workbook = XLSX.read(content);
               const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-              const data = XLSX.utils.sheet_to_json(worksheet);
-              resolve(data);
+              const rawData = XLSX.utils.sheet_to_json(worksheet);
+              
+              // Process dates from Excel import
+              const processedData = rawData.map((row: any) => {
+                const processedRow = { ...row };
+                Object.keys(processedRow).forEach(key => {
+                  if (key.toLowerCase().includes('date') || key.toLowerCase().includes('on')) {
+                    processedRow[key] = parseDateFromImport(processedRow[key]);
+                  }
+                });
+                return processedRow;
+              });
+              
+              resolve(processedData);
             } else {
               reject(new Error('Invalid Excel file content'));
             }
