@@ -19,11 +19,72 @@ export const formatDateForExport = (date: string | Date | null | undefined): str
 
 export const parseDateFromImport = (dateStr: string): string => {
   if (!dateStr) return '';
+  
   // Remove leading apostrophe if present (from Excel export)
-  const cleanDateStr = dateStr.startsWith("'") ? dateStr.substring(1) : dateStr;
-  // Validate and return ISO string
-  const date = new Date(cleanDateStr);
-  return isNaN(date.getTime()) ? '' : date.toISOString();
+  let cleanDateStr = dateStr.startsWith("'") ? dateStr.substring(1) : dateStr;
+  
+  // Remove leading hyphen if present 
+  cleanDateStr = cleanDateStr.startsWith("-") ? cleanDateStr.substring(1) : cleanDateStr;
+  
+  // Try various date formats
+  const dateFormats = [
+    // ISO format
+    /^\d{4}-\d{2}-\d{2}$/,
+    // US format MM/DD/YYYY
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/,
+    // European format DD/MM/YYYY  
+    /^\d{1,2}\/\d{1,2}\/\d{4}$/,
+    // Alternative formats with dashes
+    /^\d{1,2}-\d{1,2}-\d{4}$/,
+    // Month names
+    /^\w{3,9}\s+\d{1,2},?\s+\d{4}$/i
+  ];
+  
+  // First try direct parsing
+  let date = new Date(cleanDateStr);
+  if (!isNaN(date.getTime())) {
+    return date.toISOString();
+  }
+  
+  // If direct parsing fails, try to normalize common formats
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cleanDateStr)) {
+    // Handle MM/DD/YYYY or DD/MM/YYYY ambiguity by trying both
+    const parts = cleanDateStr.split('/');
+    const [first, second, year] = parts;
+    
+    // Try MM/DD/YYYY first (US format)
+    date = new Date(`${year}-${first.padStart(2, '0')}-${second.padStart(2, '0')}`);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+    
+    // Try DD/MM/YYYY (European format)
+    date = new Date(`${year}-${second.padStart(2, '0')}-${first.padStart(2, '0')}`);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+  
+  if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(cleanDateStr)) {
+    // Handle MM-DD-YYYY or DD-MM-YYYY
+    const parts = cleanDateStr.split('-');
+    const [first, second, year] = parts;
+    
+    // Try MM-DD-YYYY first
+    date = new Date(`${year}-${first.padStart(2, '0')}-${second.padStart(2, '0')}`);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+    
+    // Try DD-MM-YYYY
+    date = new Date(`${year}-${second.padStart(2, '0')}-${first.padStart(2, '0')}`);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+  }
+  
+  // Return empty string if all parsing attempts fail
+  return '';
 };
 
 // Generic CSV utilities
