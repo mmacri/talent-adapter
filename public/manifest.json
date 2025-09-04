@@ -1,0 +1,45 @@
+{
+  "name": "Resume Master - Professional Resume Management",
+  "short_name": "Resume Master",
+  "description": "Professional resume management system with variants, templates, and job application tracking",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/favicon.ico", 
+      "type": "image/x-icon",
+      "sizes": "48x48",
+      "form_factor": "wide"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Resume Variant",
+      "short_name": "New Variant",
+      "description": "Create a new resume variant",
+      "url": "/variants/new",
+      "icons": [{ "src": "/favicon.ico", "sizes": "48x48" }]
+    },
+    {
+      "name": "Track Job Application",
+      "short_name": "New Application",
+      "description": "Track a new job application",
+      "url": "/jobs/new",
+      "icons": [{ "src": "/favicon.ico", "sizes": "48x48" }]
+    }
+  ]
+}

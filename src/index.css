@@ -145,6 +145,7 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
   
   /* Custom Scrollbar */
@@ -158,6 +159,21 @@
   
   ::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground/30 rounded-full hover:bg-muted-foreground/50;
+  }
+  
+  /* Performance optimizations */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Better focus management */
+  *:focus {
+    outline: none;
+  }
+  
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 }
 
@@ -173,6 +189,8 @@
   /* Elegant Glassmorphism */
   .glass {
     @apply bg-card/80 backdrop-blur-sm border border-border/50;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   
   /* Professional Focus States */
@@ -190,15 +208,30 @@
   .status-offer { @apply bg-success; }
   .status-rejected { @apply bg-destructive; }
   .status-prospect { @apply bg-muted-foreground; }
-}
-
-@layer base {
-  * {
-    @apply border-border;
+  
+  /* Mobile-optimized components */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    @apply touch-manipulation;
   }
-
-  body {
-    @apply bg-background text-foreground;
+  
+  .mobile-card {
+    @apply touch-manipulation transform-gpu transition-transform duration-200 active:scale-95;
+  }
+  
+  .mobile-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    @apply touch-manipulation;
+  }
+  
+  /* Improved animations for mobile */
+  .smooth-animate {
+    @apply transition-all duration-300 ease-in-out will-change-transform;
+  }
+  
+  .loading-skeleton {
+    @apply animate-pulse bg-muted rounded;
   }
 }
 
@@ -211,11 +244,14 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Improve mobile input handling */
 input, textarea, select {
   font-size: 16px; /* Prevents zoom on iOS */
+  @apply touch-manipulation;
 }
 
 /* Mobile-friendly button sizes */
@@ -224,18 +260,39 @@ input, textarea, select {
     min-height: 44px;
     min-width: 44px;
   }
+  
+  /* Larger touch targets on mobile */
+  button, [role="button"], .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better spacing on mobile */
+  .mobile-spacing {
+    @apply p-4 space-y-4;
+  }
+  
+  /* Mobile-optimized text sizes */
+  h1 { @apply text-2xl; }
+  h2 { @apply text-xl; }
+  h3 { @apply text-lg; }
+  
+  /* Mobile-friendly tables */
+  .mobile-table {
+    @apply text-sm;
+  }
+  
+  .mobile-table th,
+  .mobile-table td {
+    @apply px-2 py-3;
+  }
 }
 
-/* Optimize glass effect for performance */
-.glass {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Improved focus states for accessibility */
-*:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-optimized {
+    @apply p-6 space-y-6;
+  }
 }
 
 /* Mobile sidebar overlay */
@@ -246,5 +303,72 @@ input, textarea, select {
     background: hsl(var(--background) / 0.8);
     backdrop-filter: blur(4px);
     z-index: 40;
+  }
+  
+  /* Mobile-specific animations */
+  .mobile-slide-in {
+    animation: slide-in-left 0.3s ease-out;
+  }
+  
+  .mobile-slide-out {
+    animation: slide-out-left 0.3s ease-out;
+  }
+}
+
+/* Enhanced performance for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
+/* Better loading states */
+.content-loading {
+  @apply opacity-50 pointer-events-none select-none;
+}
+
+/* Responsive images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    @apply bg-card border-2;
+  }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
   }
 }

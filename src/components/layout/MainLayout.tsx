@@ -18,9 +18,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Header - Enhanced for mobile */}
-          <header className="h-12 md:h-14 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40 flex items-center px-3 md:px-4 lg:px-6">
-            <SidebarTrigger className="mr-2 touch-manipulation" />
+          {/* Header - Enhanced for mobile with safe areas */}
+          <header className="h-12 md:h-14 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40 flex items-center px-3 md:px-4 lg:px-6 safe-top">
+            <SidebarTrigger className="mr-2 touch-target" />
             <div className="flex-1 flex items-center justify-between">
               <h1 className="text-sm md:text-base font-semibold text-foreground truncate">
                 Resume Manager
@@ -31,9 +31,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
           
-          {/* Main Content - Mobile optimized */}
-          <main className="flex-1 overflow-auto scroll-smooth">
-            <div className={isMobile ? "min-h-full" : ""}>
+          {/* Main Content - Mobile optimized with safe areas */}
+          <main className="flex-1 overflow-auto scroll-smooth safe-bottom">
+            <div className={`min-h-full ${isMobile ? 'mobile-spacing' : ''}`}>
               {children}
             </div>
           </main>
