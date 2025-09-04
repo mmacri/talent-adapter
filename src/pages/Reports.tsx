@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useResume } from '@/contexts/ResumeContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   TrendingUp,
   Calendar,
@@ -10,29 +11,99 @@ import {
   Briefcase,
   Target,
   Users,
-  Plus
+  Plus,
+  Filter
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { subDays, subWeeks, subMonths, startOfWeek, startOfMonth, startOfQuarter, format, parseISO, isAfter, isBefore } from 'date-fns';
+
+type TimeFilter = 'all' | 'week' | 'month' | '3months' | 'quarter' | '6months' | 'year';
 
 const Reports = () => {
-  console.log('Reports component rendering');
   const { jobApplications, variants, coverLetters } = useResume();
-  
-  console.log('Data loaded:', {
-    jobApplications: jobApplications?.length || 0,
-    variants: variants?.length || 0,
-    coverLetters: coverLetters?.length || 0
-  });
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
-  // Simple success metrics calculation
-  const totalApplications = jobApplications?.length || 0;
-  const interviewCount = jobApplications?.filter(app => app.status === 'interview').length || 0;
-  const offerCount = jobApplications?.filter(app => app.status === 'offer').length || 0;
+  // Filter applications based on time period
+  const filteredApplications = useMemo(() => {
+    if (!jobApplications || timeFilter === 'all') return jobApplications || [];
+    
+    const now = new Date();
+    let cutoffDate: Date;
+    
+    switch (timeFilter) {
+      case 'week':
+        cutoffDate = startOfWeek(subWeeks(now, 1));
+        break;
+      case 'month':
+        cutoffDate = startOfMonth(subMonths(now, 1));
+        break;
+      case '3months':
+        cutoffDate = startOfMonth(subMonths(now, 3));
+        break;
+      case 'quarter':
+        cutoffDate = startOfQuarter(subMonths(now, 3));
+        break;
+      case '6months':
+        cutoffDate = startOfMonth(subMonths(now, 6));
+        break;
+      case 'year':
+        cutoffDate = startOfMonth(subMonths(now, 12));
+        break;
+      default:
+        return jobApplications;
+    }
+    
+    return jobApplications.filter(app => {
+      const appDate = parseISO(app.appliedOn);
+      return isAfter(appDate, cutoffDate);
+    });
+  }, [jobApplications, timeFilter]);
+
+  // Calculate metrics based on filtered data
+  const totalApplications = filteredApplications?.length || 0;
+  const interviewCount = filteredApplications?.filter(app => app.status === 'interview').length || 0;
+  const offerCount = filteredApplications?.filter(app => app.status === 'offer').length || 0;
+  const rejectedCount = filteredApplications?.filter(app => app.status === 'rejected').length || 0;
+  const appliedCount = filteredApplications?.filter(app => app.status === 'applied').length || 0;
+  const prospectCount = filteredApplications?.filter(app => app.status === 'prospect').length || 0;
   
   const interviewRate = totalApplications > 0 ? ((interviewCount / totalApplications) * 100).toFixed(1) : '0';
   const offerRate = totalApplications > 0 ? ((offerCount / totalApplications) * 100).toFixed(1) : '0';
 
-  console.log('Calculated metrics:', { totalApplications, interviewCount, offerCount, interviewRate, offerRate });
+  // Prepare chart data
+  const statusDistribution = [
+    { name: 'Applied', value: appliedCount, color: '#3b82f6' },
+    { name: 'Interview', value: interviewCount, color: '#10b981' },
+    { name: 'Offer', value: offerCount, color: '#f59e0b' },
+    { name: 'Rejected', value: rejectedCount, color: '#ef4444' },
+    { name: 'Prospect', value: prospectCount, color: '#8b5cf6' },
+  ].filter(item => item.value > 0);
+
+  // Timeline data - applications over time
+  const timelineData = useMemo(() => {
+    if (!filteredApplications?.length) return [];
+    
+    const grouped = filteredApplications.reduce((acc, app) => {
+      const date = format(parseISO(app.appliedOn), 'MMM dd');
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return Object.entries(grouped)
+      .map(([date, count]) => ({ date, applications: count }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(-10); // Show last 10 data points
+  }, [filteredApplications]);
+
+  const chartConfig = {
+    applied: { label: 'Applied', color: '#3b82f6' },
+    interview: { label: 'Interview', color: '#10b981' },
+    offer: { label: 'Offer', color: '#f59e0b' },
+    rejected: { label: 'Rejected', color: '#ef4444' },
+    prospect: { label: 'Prospect', color: '#8b5cf6' },
+  };
 
   return (
     <div className="space-y-6">
@@ -43,6 +114,25 @@ const Reports = () => {
           <p className="text-muted-foreground">
             Track your job application performance and document usage patterns
           </p>
+        </div>
+        
+        {/* Time Filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select value={timeFilter} onValueChange={(value: TimeFilter) => setTimeFilter(value)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Time period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Time</SelectItem>
+              <SelectItem value="week">Last Week</SelectItem>
+              <SelectItem value="month">Last Month</SelectItem>
+              <SelectItem value="3months">Last 3 Months</SelectItem>
+              <SelectItem value="quarter">Last Quarter</SelectItem>
+              <SelectItem value="6months">Last 6 Months</SelectItem>
+              <SelectItem value="year">Last Year</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -105,12 +195,85 @@ const Reports = () => {
         </Card>
       </div>
 
+      {/* Visual Analytics */}
+      {totalApplications > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Status Distribution Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                Application Status Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px]">
+                <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                  <Pie
+                    data={statusDistribution}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {statusDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Application Timeline */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                Application Timeline
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="min-h-[300px]">
+                <LineChart data={timelineData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="applications" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    dot={{ fill: '#3b82f6' }}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Summary Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
             Application Summary
+            {timeFilter !== 'all' && (
+              <Badge variant="outline" className="ml-2">
+                {timeFilter === 'week' ? 'Last Week' :
+                 timeFilter === 'month' ? 'Last Month' :
+                 timeFilter === '3months' ? 'Last 3 Months' :
+                 timeFilter === 'quarter' ? 'Last Quarter' :
+                 timeFilter === '6months' ? 'Last 6 Months' :
+                 timeFilter === 'year' ? 'Last Year' : 'All Time'}
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -132,11 +295,15 @@ const Reports = () => {
             <div>
               <h4 className="font-medium mb-2">Application Status</h4>
               <div className="space-y-1">
-                {jobApplications && jobApplications.length > 0 ? (
+                {totalApplications > 0 ? (
                   <>
                     <div className="flex justify-between text-sm">
+                      <span>Prospect:</span>
+                      <span>{prospectCount}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
                       <span>Applied:</span>
-                      <span>{jobApplications.filter(app => app.status === 'applied').length}</span>
+                      <span>{appliedCount}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Interviews:</span>
@@ -145,6 +312,10 @@ const Reports = () => {
                     <div className="flex justify-between text-sm">
                       <span>Offers:</span>
                       <span>{offerCount}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Rejected:</span>
+                      <span>{rejectedCount}</span>
                     </div>
                   </>
                 ) : (
@@ -164,6 +335,14 @@ const Reports = () => {
                   <span>Offer Rate:</span>
                   <span className="font-medium">{offerRate}%</span>
                 </div>
+                {totalApplications > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span>Conversion:</span>
+                    <span className="font-medium">
+                      {((interviewCount + offerCount) / totalApplications * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -192,7 +371,7 @@ const Reports = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jobApplications?.map((app) => {
+                {filteredApplications?.map((app) => {
                   const variant = variants?.find(v => v.id === app.variantId);
                   return (
                     <TableRow key={app.id}>
@@ -203,14 +382,15 @@ const Reports = () => {
                           app.status === 'offer' ? 'default' :
                           app.status === 'interview' ? 'secondary' :
                           app.status === 'rejected' ? 'destructive' :
+                          app.status === 'prospect' ? 'outline' :
                           'outline'
                         }>
                           {app.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{new Date(app.appliedOn).toLocaleDateString()}</TableCell>
+                      <TableCell>{format(parseISO(app.appliedOn), 'MMM d, yyyy')}</TableCell>
                       <TableCell>
-                        {app.statusDate ? new Date(app.statusDate).toLocaleDateString() : '-'}
+                        {app.statusDate ? format(parseISO(app.statusDate), 'MMM d, yyyy') : '-'}
                       </TableCell>
                       <TableCell>{variant?.name || 'Unknown'}</TableCell>
                     </TableRow>
