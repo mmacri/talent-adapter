@@ -60,6 +60,7 @@ import {
   Upload,
   Table2
 } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
 import { JobApplication } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
 import { format, subDays, subMonths, startOfWeek, endOfWeek, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
@@ -585,6 +586,18 @@ const Jobs = () => {
     });
   };
 
+  const handleDateChange = (jobId: string, field: 'appliedOn' | 'statusDate', date: Date | undefined) => {
+    const job = jobApplications.find(j => j.id === jobId);
+    if (job) {
+      const dateString = date ? date.toISOString().split('T')[0] : undefined;
+      updateJobApplication(jobId, {
+        ...job,
+        [field]: dateString,
+        updatedAt: new Date().toISOString()
+      });
+    }
+  };
+
   const getVariantName = (variantId?: string) => {
     if (!variantId) return 'No variant selected';
     const variant = variants.find(v => v.id === variantId);
@@ -1000,6 +1013,7 @@ const Jobs = () => {
                   <TableHead className="min-w-[200px]">Company & Role</TableHead>
                   <TableHead className="min-w-[100px]">Status</TableHead>
                   <TableHead className="min-w-[120px]">Applied Date</TableHead>
+                  <TableHead className="min-w-[120px]">Status Date</TableHead>
                   <TableHead className="min-w-[150px] hidden md:table-cell">Variant Used</TableHead>
                   <TableHead className="min-w-[150px] hidden lg:table-cell">Cover Letter</TableHead>
                   <TableHead className="text-right min-w-[100px]">Actions</TableHead>
@@ -1040,16 +1054,21 @@ const Jobs = () => {
                     </TableCell>
                     
                     <TableCell>
-                      {job.appliedOn ? (
-                        <div className="flex items-center gap-1 md:gap-2">
-                          <CalendarIcon className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-xs md:text-sm">
-                            {format(new Date(job.appliedOn), 'MMM d, yyyy')}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs md:text-sm">Not applied</span>
-                      )}
+                      <DatePicker
+                        date={job.appliedOn ? new Date(job.appliedOn) : undefined}
+                        onDateChange={(date) => handleDateChange(job.id, 'appliedOn', date)}
+                        placeholder="Set applied date"
+                        className="w-[140px] h-8 text-xs"
+                      />
+                    </TableCell>
+                    
+                    <TableCell>
+                      <DatePicker
+                        date={job.statusDate ? new Date(job.statusDate) : undefined}
+                        onDateChange={(date) => handleDateChange(job.id, 'statusDate', date)}
+                        placeholder="Set status date"
+                        className="w-[140px] h-8 text-xs"
+                      />
                     </TableCell>
                     
                     <TableCell className="hidden md:table-cell">
