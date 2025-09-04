@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/contexts/ResumeContext';
-import { Download, Upload, FileArchive, Database, Settings2, Trash2 } from 'lucide-react';
+import { Download, Upload, FileArchive, Database, Settings2, Trash2, Cloud, FileText, Lock, Save } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { exportBackup, importBackup } from '@/lib/backupUtils';
 import { resumeStorage, jobsStorage, coverLettersStorage } from '@/lib/storage';
+import { workspaceSync, isFileSystemAccessSupported } from '@/lib/workspaceSync';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import mikeResumeData from '@/lib/mikeResumeData';
 
 export default function Settings() {
@@ -47,6 +50,12 @@ export default function Settings() {
     jobApplications: false,
     coverLetters: false,
   });
+
+  // Workspace sync state
+  const [workspaceConfig, setWorkspaceConfig] = React.useState(workspaceSync.getConfig());
+  const [workspacePassword, setWorkspacePassword] = React.useState('');
+  const [isWorkspaceLoading, setIsWorkspaceLoading] = React.useState(false);
+  const [workspaceFileSelected, setWorkspaceFileSelected] = React.useState(workspaceSync.hasWorkspaceFile());
 
   const handleLoadMikeResume = () => {
     // Import the transformation function from LoadMikeResume page
@@ -192,6 +201,143 @@ export default function Settings() {
     event.target.value = '';
   };
 
+  // Workspace sync handlers
+  const handleChooseWorkspaceFile = async () => {
+    setIsWorkspaceLoading(true);
+    try {
+      const success = await workspaceSync.chooseWorkspaceFile();
+      if (success) {
+        setWorkspaceFileSelected(true);
+        setWorkspaceConfig(workspaceSync.getConfig());
+        toast({
+          title: "Workspace File Selected",
+          description: `Selected ${workspaceSync.getWorkspaceFileName()}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: isFileSystemAccessSupported() 
+          ? "Failed to select workspace file" 
+          : "File System Access API not supported in this browser",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWorkspaceLoading(false);
+    }
+  };
+
+  const handleCreateWorkspaceFile = async () => {
+    setIsWorkspaceLoading(true);
+    try {
+      const success = await workspaceSync.createNewWorkspaceFile();
+      if (success) {
+        setWorkspaceFileSelected(true);
+        setWorkspaceConfig(workspaceSync.getConfig());
+        toast({
+          title: "Workspace File Created",
+          description: `Created ${workspaceSync.getWorkspaceFileName()}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create workspace file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWorkspaceLoading(false);
+    }
+  };
+
+  const handleSaveToWorkspace = async () => {
+    setIsWorkspaceLoading(true);
+    try {
+      await workspaceSync.saveToWorkspace();
+      toast({
+        title: "Saved to Workspace",
+        description: "All your data has been saved to the workspace file",
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save to workspace file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWorkspaceLoading(false);
+    }
+  };
+
+  const handleLoadFromWorkspace = async () => {
+    setIsWorkspaceLoading(true);
+    try {
+      await workspaceSync.syncFromWorkspace();
+      refreshData();
+      toast({
+        title: "Loaded from Workspace",
+        description: "Your data has been updated from the workspace file",
+      });
+    } catch (error) {
+      toast({
+        title: "Load Failed",
+        description: "Failed to load from workspace file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWorkspaceLoading(false);
+    }
+  };
+
+  const handleWorkspaceDownload = () => {
+    try {
+      workspaceSync.downloadWorkspace();
+      toast({
+        title: "Workspace Downloaded",
+        description: "Your workspace has been downloaded as a JSON file",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download workspace file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleWorkspaceUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsWorkspaceLoading(true);
+    try {
+      await workspaceSync.uploadWorkspace(file);
+      refreshData();
+      toast({
+        title: "Workspace Uploaded",
+        description: "Your data has been updated from the uploaded workspace file",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload Failed",
+        description: "Failed to process workspace file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsWorkspaceLoading(false);
+      event.target.value = '';
+    }
+  };
+
+  const handleWorkspaceConfigChange = (key: string, value: any) => {
+    const updates = { [key]: value };
+    if (key === 'encrypt' && value) {
+      updates.password = workspacePassword;
+    }
+    workspaceSync.updateConfig(updates);
+    setWorkspaceConfig(workspaceSync.getConfig());
+  };
+
   return (
     <div className="container max-w-4xl mx-auto p-6 space-y-6">
       <div className="space-y-2">
@@ -202,10 +348,14 @@ export default function Settings() {
       </div>
 
       <Tabs defaultValue="backup" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="backup" className="flex items-center gap-2">
             <FileArchive className="w-4 h-4" />
             Backup & Import
+          </TabsTrigger>
+          <TabsTrigger value="sync" className="flex items-center gap-2">
+            <Cloud className="w-4 h-4" />
+            Cloud Sync
           </TabsTrigger>
           <TabsTrigger value="data" className="flex items-center gap-2">
             <Database className="w-4 h-4" />
@@ -393,6 +543,230 @@ export default function Settings() {
                       Select at least one data type to import.
                     </p>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="sync" className="space-y-6">
+          <div className="space-y-6">
+            {/* Workspace File Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Cloud className="w-5 h-5" />
+                  Workspace File Sync
+                </CardTitle>
+                <CardDescription>
+                  Sync your resume data with a JSON file that can be stored in cloud folders (Dropbox, Google Drive, OneDrive).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {isFileSystemAccessSupported() ? (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <FileText className="w-5 h-5 text-green-600 mt-0.5" />
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-green-900 dark:text-green-100">
+                            Advanced File Access Supported
+                          </h4>
+                          <p className="text-sm text-green-700 dark:text-green-300">
+                            Your browser supports advanced file access. You can choose a workspace file from your cloud storage folder and changes will be automatically saved.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {workspaceFileSelected ? (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                          <p className="text-sm text-blue-700 dark:text-blue-300">
+                            <strong>Selected:</strong> {workspaceSync.getWorkspaceFileName()}
+                          </p>
+                        </div>
+                        
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <Button 
+                            onClick={handleSaveToWorkspace}
+                            disabled={isWorkspaceLoading}
+                            className="w-full"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Save to Workspace
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={handleLoadFromWorkspace}
+                            disabled={isWorkspaceLoading}
+                            className="w-full"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Load from Workspace
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2 md:grid-cols-2">
+                        <Button 
+                          onClick={handleChooseWorkspaceFile}
+                          disabled={isWorkspaceLoading}
+                          className="w-full"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Choose Existing File
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={handleCreateWorkspaceFile}
+                          disabled={isWorkspaceLoading}
+                          className="w-full"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Create New File
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <Upload className="w-5 h-5 text-yellow-600 mt-0.5" />
+                        <div className="space-y-2">
+                          <h4 className="font-medium text-yellow-900 dark:text-yellow-100">
+                            Manual Upload/Download Mode
+                          </h4>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                            Your browser doesn't support advanced file access. Use manual download/upload to sync with your cloud storage.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <Button 
+                        onClick={handleWorkspaceDownload}
+                        disabled={isWorkspaceLoading}
+                        className="w-full"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Workspace
+                      </Button>
+                      <div className="space-y-2">
+                        <Label htmlFor="workspace-upload" className="text-sm font-medium">
+                          Upload Workspace:
+                        </Label>
+                        <input
+                          id="workspace-upload"
+                          type="file"
+                          accept=".json"
+                          onChange={handleWorkspaceUpload}
+                          disabled={isWorkspaceLoading}
+                          className="block w-full text-sm text-muted-foreground
+                                   file:mr-4 file:py-2 file:px-4
+                                   file:rounded-md file:border-0
+                                   file:text-sm file:font-medium
+                                   file:bg-primary file:text-primary-foreground
+                                   hover:file:bg-primary/90
+                                   cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Workspace Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings2 className="w-5 h-5" />
+                  Workspace Settings
+                </CardTitle>
+                <CardDescription>
+                  Configure how your workspace file sync behaves.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  {/* Auto-save setting */}
+                  {isFileSystemAccessSupported() && workspaceFileSelected && (
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-sm font-medium">Auto-save</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Automatically save changes to workspace file
+                        </p>
+                      </div>
+                      <Switch
+                        checked={workspaceConfig.autoSave}
+                        onCheckedChange={(checked) => handleWorkspaceConfigChange('autoSave', checked)}
+                      />
+                    </div>
+                  )}
+
+                  {/* Encryption setting */}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <Label className="text-sm font-medium">Encrypt workspace file</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Add password protection to your workspace file
+                      </p>
+                    </div>
+                    <Switch
+                      checked={workspaceConfig.encrypt}
+                      onCheckedChange={(checked) => handleWorkspaceConfigChange('encrypt', checked)}
+                    />
+                  </div>
+
+                  {/* Password input when encryption is enabled */}
+                  {workspaceConfig.encrypt && (
+                    <div className="space-y-2">
+                      <Label htmlFor="workspace-password" className="text-sm font-medium">
+                        Encryption Password
+                      </Label>
+                      <Input
+                        id="workspace-password"
+                        type="password"
+                        value={workspacePassword}
+                        onChange={(e) => setWorkspacePassword(e.target.value)}
+                        placeholder="Enter encryption password"
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        This password will be used to encrypt/decrypt your workspace file.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* How it works */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Cloud className="w-5 h-5" />
+                  How Cloud Sync Works
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    <strong>1. Choose Location:</strong> Select or create a workspace.json file in your cloud storage folder (Dropbox, Google Drive, OneDrive).
+                  </p>
+                  <p>
+                    <strong>2. Automatic Sync:</strong> With auto-save enabled, your changes are automatically saved to the file.
+                  </p>
+                  <p>
+                    <strong>3. Cross-Device Access:</strong> Access your data from any device by selecting the same workspace file.
+                  </p>
+                  <p>
+                    <strong>4. Encryption:</strong> Enable encryption for additional security with password protection.
+                  </p>
                 </div>
               </CardContent>
             </Card>

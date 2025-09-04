@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ResumeMaster, Variant, JobApplication, CoverLetter, Template } from '@/types/resume';
 import { resumeStorage, jobsStorage, coverLettersStorage, templatesStorage } from '@/lib/storage';
+import { workspaceSync } from '@/lib/workspaceSync';
 import { initializeData } from '@/lib/seedData';
 
 interface ResumeContextType {
@@ -215,7 +216,25 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     loadData();
   };
 
-  const value: ResumeContextType = {
+    // Try to auto-save after data changes
+    React.useEffect(() => {
+      const autoSave = async () => {
+        try {
+          if (workspaceSync.getConfig().autoSave && workspaceSync.hasWorkspaceFile()) {
+            await workspaceSync.autoSave();
+          }
+        } catch (error) {
+          // Silent fail for auto-save - don't disrupt user experience
+          console.warn('Auto-save failed:', error);
+        }
+      };
+
+      // Debounce auto-save to avoid too frequent saves
+      const timeoutId = setTimeout(autoSave, 1000);
+      return () => clearTimeout(timeoutId);
+    }, [masterResume, variants, jobApplications, coverLetters]);
+
+    const value: ResumeContextType = {
     masterResume,
     setMasterResume,
     variants,
