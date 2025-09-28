@@ -1257,7 +1257,7 @@ const Jobs = () => {
                                 <Button 
                                   variant="ghost" 
                                   size="sm"
-                                  onClick={() => navigate(`/job-editor/${job.id}`)}
+                                  onClick={() => navigate(`/jobs/${job.id}`)}
                                 >
                                   <Edit3 className="w-4 h-4" />
                                 </Button>
@@ -1279,7 +1279,7 @@ const Jobs = () => {
                 <p className="text-muted-foreground mb-4">
                   Start tracking your job applications to see them grouped by time periods.
                 </p>
-                <Button onClick={() => navigate('/job-editor')}>
+                <Button onClick={() => navigate('/jobs/new')}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add New Application
                 </Button>
@@ -1305,7 +1305,7 @@ const Jobs = () => {
                   <CardContent className="space-y-2">
                     {statusJobs.map((job) => (
                       <Card key={job.id} className="p-3 bg-background cursor-pointer hover:shadow-md transition-shadow"
-                        onClick={() => navigate(`/job-editor/${job.id}`)}>
+                        onClick={() => navigate(`/jobs/${job.id}`)}>
                         <div className="space-y-1">
                           <h4 className="font-medium text-sm">{job.company}</h4>
                           <p className="text-xs text-muted-foreground">{job.role}</p>
