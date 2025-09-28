@@ -482,25 +482,47 @@ const Jobs = () => {
         throw new Error('Unsupported file format. Please use CSV or Excel files.');
       }
 
-      // Convert imported data to JobApplication format
+      // Convert imported data to JobApplication format with proper date handling
       const processedApplications: JobApplication[] = importedData
         .filter(row => row.Company && row.Role) // Must have company and role
-        .map((row, index) => ({
-          id: row.ID || `imported-${Date.now()}-${index}`,
-          company: row.Company || '',
-          role: row.Role || '',
-          location: row.Location || undefined,
-          url: row.URL || undefined,
-          status: (['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].includes(row.Status) 
-            ? row.Status : 'prospect') as JobApplication['status'],
-          statusDate: row['Status Date'] || undefined,
-          appliedOn: row['Applied Date'] || new Date().toISOString().split('T')[0],
-          variantId: row['Variant ID'] || undefined,
-          coverLetterId: row['Cover Letter ID'] || undefined,
-          notes: row.Notes || undefined,
-          createdAt: row['Created At'] || new Date().toISOString(),
-          updatedAt: row['Updated At'] || new Date().toISOString()
-        }));
+        .map((row, index) => {
+          // Helper function to parse dates
+          const parseDate = (dateStr: string | undefined): string | undefined => {
+            if (!dateStr || dateStr === '') return undefined;
+            
+            // Remove quotes if present
+            const cleanDate = dateStr.replace(/['"]/g, '').trim();
+            if (cleanDate === '') return undefined;
+            
+            try {
+              // Try parsing the date - handles YYYY-MM-DD, MM/DD/YYYY, etc.
+              const parsed = new Date(cleanDate);
+              if (isNaN(parsed.getTime())) return undefined;
+              
+              // Return in YYYY-MM-DD format
+              return parsed.toISOString().split('T')[0];
+            } catch {
+              return undefined;
+            }
+          };
+
+          return {
+            id: row.ID || `imported-${Date.now()}-${index}`,
+            company: row.Company || '',
+            role: row.Role || '',
+            location: row.Location || undefined,
+            url: row.URL || undefined,
+            status: (['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].includes(row.Status) 
+              ? row.Status : 'prospect') as JobApplication['status'],
+            statusDate: parseDate(row['Status Date']),
+            appliedOn: parseDate(row['Applied Date']) || new Date().toISOString().split('T')[0],
+            variantId: row['Variant ID'] || undefined,
+            coverLetterId: row['Cover Letter ID'] || undefined,
+            notes: row.Notes || undefined,
+            createdAt: row['Created At'] || new Date().toISOString(),
+            updatedAt: row['Updated At'] || new Date().toISOString()
+          };
+        });
 
       if (processedApplications.length === 0) {
         toast({
