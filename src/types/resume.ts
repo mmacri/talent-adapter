@@ -126,7 +126,6 @@ export interface CoverLetter {
   id: string;
   title: string;
   body: string;
-  variables: string[];
   createdAt: string;
   updatedAt: string;
 }

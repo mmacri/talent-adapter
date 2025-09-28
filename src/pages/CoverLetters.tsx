@@ -24,14 +24,12 @@ import {
   Trash2,
   FileText,
   Calendar,
-  Variable,
   Eye,
   ExternalLink
 } from 'lucide-react';
 import { CoverLetter } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { extractVariables, getPreviewText } from '@/lib/coverLetterUtils';
 
 const CoverLetters = () => {
   const resumeContext = useResume();
@@ -64,22 +62,21 @@ const CoverLetters = () => {
       title: 'New Cover Letter',
       body: `Dear Hiring Manager,
 
-I am writing to express my strong interest in the {{role}} position at {{company}}. With my background in {{field}}, I am confident that I would be a valuable addition to your team.
+I am writing to express my strong interest in the [Position Title] position at [Company Name]. With my background in [Your Field], I am confident that I would be a valuable addition to your team.
 
-{{reason_for_interest}}
+[Reason for your interest in the role and company]
 
 In my previous roles, I have demonstrated:
-• {{key_achievement_1}}
-• {{key_achievement_2}}
-• {{key_achievement_3}}
+• [Key achievement or skill 1]
+• [Key achievement or skill 2] 
+• [Key achievement or skill 3]
 
-I am particularly drawn to {{company}} because {{company_reason}}. I believe my skills in {{relevant_skills}} would contribute significantly to {{specific_goal}}.
+I am particularly drawn to [Company Name] because [specific reason]. I believe my skills in [relevant skills] would contribute significantly to [specific goal or project].
 
-Thank you for considering my application. I look forward to the opportunity to discuss how my experience and passion can contribute to {{company}}'s continued success.
+Thank you for considering my application. I look forward to the opportunity to discuss how my experience and passion can contribute to [Company Name]'s continued success.
 
 Best regards,
-{{your_name}}`,
-      variables: ['company', 'role', 'field', 'reason_for_interest', 'key_achievement_1', 'key_achievement_2', 'key_achievement_3', 'company_reason', 'relevant_skills', 'specific_goal', 'your_name'],
+[Your Name]`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -135,7 +132,7 @@ Best regards,
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Cover Letters</h1>
           <p className="text-muted-foreground">
-            Create and manage reusable cover letter templates with variables
+            Track and manage the exact cover letters you send with applications
           </p>
         </div>
         <Button onClick={handleCreateLetter} className="bg-gradient-to-r from-primary to-primary-hover">
@@ -181,7 +178,7 @@ Best regards,
                   {jobApplications.filter(job => job.coverLetterId).length}
                 </p>
               </div>
-              <Variable className="w-8 h-8 text-muted-foreground" />
+              <ExternalLink className="w-8 h-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -198,11 +195,12 @@ Best regards,
         />
       </div>
 
-      {/* Cover Letters Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredLetters.map((letter) => {
-          const variables = extractVariables(letter.body);
           const usageCount = getUsageCount(letter.id);
+          const previewText = letter.body.length > 150 
+            ? letter.body.substring(0, 150) + '...' 
+            : letter.body;
           
           return (
             <Card key={letter.id} className="group hover:shadow-lg transition-shadow">
@@ -274,31 +272,9 @@ Best regards,
                 <div className="space-y-2">
                   <h5 className="text-sm font-medium">Preview</h5>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {getPreviewText(letter.body)}
+                    {previewText}
                   </p>
                 </div>
-
-                {/* Variables */}
-                {variables.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Variable className="w-4 h-4" />
-                      <span className="text-sm font-medium">Variables ({variables.length})</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {variables.slice(0, 4).map((variable, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {variable}
-                        </Badge>
-                      ))}
-                      {variables.length > 4 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{variables.length - 4} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* Usage Stats */}
                 <div className="flex items-center justify-between pt-2 border-t">
@@ -339,7 +315,7 @@ Best regards,
           <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
             {searchQuery 
               ? "Try adjusting your search terms or create a new cover letter."
-              : "Create reusable cover letter templates with variables for different job applications."
+              : "Track the exact cover letters you send with your job applications."
             }
           </p>
           <Button onClick={handleCreateLetter}>

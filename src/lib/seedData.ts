@@ -241,7 +241,6 @@ I would welcome the opportunity to discuss how my proven track record in partner
 
 Best regards,
 Mike Macri`,
-      variables: ['company', 'role', 'why'],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
@@ -404,7 +403,6 @@ I would welcome the opportunity to discuss how my background in GRC and solution
 
 Sincerely,
 {{your_name}}`,
-      variables: ['hiring_manager', 'role', 'company', 'achievement_1', 'achievement_2', 'achievement_3', 'company_reason', 'relevant_expertise', 'your_name'],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }

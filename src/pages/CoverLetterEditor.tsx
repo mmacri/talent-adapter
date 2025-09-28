@@ -11,8 +11,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   ArrowLeft, 
   Save, 
-  Variable,
-  Eye,
   FileText,
   Copy,
   Download
@@ -20,7 +18,6 @@ import {
 import { CoverLetter } from '@/types/resume';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { extractVariables, getSampleValue } from '@/lib/coverLetterUtils';
 
 const CoverLetterEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -36,21 +33,12 @@ const CoverLetterEditor = () => {
   const [letter, setLetter] = useState<CoverLetter | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isNew, setIsNew] = useState(false);
-  const [previewMode, setPreviewMode] = useState(false);
-  const [sampleValues, setSampleValues] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (id && id !== 'new') {
       const foundLetter = coverLetters.find(l => l.id === id);
       if (foundLetter) {
         setLetter(foundLetter);
-        // Initialize sample values for preview
-        const variables = extractVariables(foundLetter.body);
-        const samples: Record<string, string> = {};
-        variables.forEach(variable => {
-          samples[variable] = getSampleValue(variable);
-        });
-        setSampleValues(samples);
       } else {
         navigate('/cover-letters');
         toast({
@@ -66,22 +54,21 @@ const CoverLetterEditor = () => {
         title: 'New Cover Letter',
         body: `Dear Hiring Manager,
 
-I am writing to express my strong interest in the {{role}} position at {{company}}. With my background in {{field}}, I am confident that I would be a valuable addition to your team.
+I am writing to express my strong interest in the [Position Title] position at [Company Name]. With my background in [Your Field], I am confident that I would be a valuable addition to your team.
 
-{{reason_for_interest}}
+[Reason for your interest in the role and company]
 
 In my previous roles, I have demonstrated:
-• {{key_achievement_1}}
-• {{key_achievement_2}}
-• {{key_achievement_3}}
+• [Key achievement or skill 1]
+• [Key achievement or skill 2] 
+• [Key achievement or skill 3]
 
-I am particularly drawn to {{company}} because {{company_reason}}. I believe my skills in {{relevant_skills}} would contribute significantly to {{specific_goal}}.
+I am particularly drawn to [Company Name] because [specific reason]. I believe my skills in [relevant skills] would contribute significantly to [specific goal or project].
 
-Thank you for considering my application. I look forward to the opportunity to discuss how my experience and passion can contribute to {{company}}'s continued success.
+Thank you for considering my application. I look forward to the opportunity to discuss how my experience and passion can contribute to [Company Name]'s continued success.
 
 Best regards,
-{{your_name}}`,
-        variables: [],
+[Your Name]`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -103,10 +90,8 @@ Best regards,
 
   const handleSave = () => {
     if (letter && letter.title.trim()) {
-      const variables = extractVariables(letter.body);
       const updatedLetter = {
         ...letter,
-        variables,
         updatedAt: new Date().toISOString()
       };
 
@@ -143,44 +128,18 @@ Best regards,
       [field]: value
     });
     setIsEditing(true);
-
-    // Update sample values when body changes
-    if (field === 'body') {
-      const variables = extractVariables(value);
-      const newSamples: Record<string, string> = {};
-      variables.forEach(variable => {
-        newSamples[variable] = sampleValues[variable] || getSampleValue(variable);
-      });
-      setSampleValues(newSamples);
-    }
-  };
-
-  const handleSampleValueChange = (variable: string, value: string) => {
-    setSampleValues(prev => ({
-      ...prev,
-      [variable]: value
-    }));
-  };
-
-  const renderPreview = () => {
-    let preview = letter.body;
-    Object.entries(sampleValues).forEach(([variable, value]) => {
-      const regex = new RegExp(`\\{\\{${variable}\\}\\}`, 'g');
-      preview = preview.replace(regex, value);
-    });
-    return preview;
   };
 
   const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(renderPreview());
+    navigator.clipboard.writeText(letter.body);
     toast({
       title: "Copied to Clipboard",
-      description: "The rendered cover letter has been copied to your clipboard.",
+      description: "The cover letter has been copied to your clipboard.",
     });
   };
 
   const handleDownload = () => {
-    const content = renderPreview();
+    const content = letter.body;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -195,7 +154,6 @@ Best regards,
     return usedByJobs;
   };
 
-  const variables = extractVariables(letter.body);
   const usedByJobs = getUsageInfo();
 
   return (
@@ -215,7 +173,7 @@ Best regards,
               {isNew ? 'New Cover Letter' : letter.title}
             </h1>
             <p className="text-muted-foreground">
-              {isNew ? 'Create a new cover letter template' : 'Edit your cover letter template'}
+              {isNew ? 'Create a new cover letter' : 'Edit your cover letter'}
             </p>
           </div>
         </div>
@@ -226,14 +184,6 @@ Best regards,
               Unsaved Changes
             </Badge>
           )}
-          
-          <Button
-            variant="outline"
-            onClick={() => setPreviewMode(!previewMode)}
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            {previewMode ? 'Edit' : 'Preview'}
-          </Button>
           
           <Button
             onClick={handleSave}
@@ -273,81 +223,33 @@ Best regards,
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                {previewMode ? 'Preview' : 'Content'}
+                Content
               </CardTitle>
+              <div className="flex gap-2">
+                <Button onClick={handleCopyToClipboard} size="sm" variant="outline">
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy
+                </Button>
+                <Button onClick={handleDownload} size="sm" variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
-              {previewMode ? (
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <Button onClick={handleCopyToClipboard} size="sm" variant="outline">
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy
-                    </Button>
-                    <Button onClick={handleDownload} size="sm" variant="outline">
-                      <Download className="w-4 h-4 mr-2" />
-                      Download
-                    </Button>
-                  </div>
-                  <div className="p-4 bg-muted/50 rounded-lg">
-                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
-                      {renderPreview()}
-                    </pre>
-                  </div>
-                </div>
-              ) : (
-                <Textarea
-                  value={letter.body}
-                  onChange={(e) => handleFieldUpdate('body', e.target.value)}
-                  placeholder="Write your cover letter content here. Use {{variable_name}} for dynamic content..."
-                  rows={20}
-                  className="font-mono"
-                />
-              )}
+              <Textarea
+                value={letter.body}
+                onChange={(e) => handleFieldUpdate('body', e.target.value)}
+                placeholder="Paste your cover letter content here..."
+                rows={25}
+                className="resize-none"
+              />
             </CardContent>
           </Card>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Variables */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Variable className="w-5 h-5" />
-                Variables ({variables.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {variables.length > 0 ? (
-                <ScrollArea className="h-64">
-                  <div className="space-y-3">
-                    {variables.map((variable, index) => (
-                      <div key={index} className="space-y-1">
-                        <Label className="text-xs font-medium">
-                          {variable}
-                        </Label>
-                        <Input
-                          value={sampleValues[variable] || ''}
-                          onChange={(e) => handleSampleValueChange(variable, e.target.value)}
-                          placeholder={`Sample ${variable}...`}
-                          className="text-xs"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              ) : (
-                <div className="text-center py-6">
-                  <Variable className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    No variables detected. Use {`{{variable_name}}`} syntax to add variables.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Usage Information */}
           <Card>
             <CardHeader>
@@ -381,11 +283,6 @@ Best regards,
                 </div>
               )}
 
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Variables:</span>
-                <span>{variables.length}</span>
-              </div>
-
               {!isNew && (
                 <div className="space-y-2 pt-2 border-t">
                   <div className="flex justify-between text-sm">
@@ -412,27 +309,23 @@ Best regards,
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">
-                <h5 className="text-sm font-medium">Variable Syntax:</h5>
+                <h5 className="text-sm font-medium">Simple Tracking:</h5>
                 <p className="text-xs text-muted-foreground">
-                  Use <code className="bg-muted px-1 rounded">{`{{variable_name}}`}</code> to insert dynamic content.
+                  Copy and paste the exact cover letters you send to employers to keep a record of what you submitted.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <h5 className="text-sm font-medium">Common Variables:</h5>
-                <div className="flex flex-wrap gap-1">
-                  {['company', 'role', 'your_name'].map(variable => (
-                    <Badge key={variable} variant="outline" className="text-xs">
-                      {variable}
-                    </Badge>
-                  ))}
-                </div>
+                <h5 className="text-sm font-medium">Organization:</h5>
+                <p className="text-xs text-muted-foreground">
+                  Use descriptive titles like "Software Engineer - TechCorp" to easily identify cover letters.
+                </p>
               </div>
 
               <div className="space-y-2">
-                <h5 className="text-sm font-medium">Preview Mode:</h5>
+                <h5 className="text-sm font-medium">Job Applications:</h5>
                 <p className="text-xs text-muted-foreground">
-                  Use preview mode to see how your cover letter will look with sample values.
+                  Link cover letters to specific job applications to track which version you sent to each company.
                 </p>
               </div>
             </CardContent>
