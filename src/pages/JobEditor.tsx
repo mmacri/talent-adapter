@@ -87,6 +87,7 @@ const JobEditor = () => {
         company: '',
         role: '',
         location: '',
+        url: '',
         status: 'prospect',
         statusDate: new Date().toISOString().split('T')[0], // Set initial status date
         variantId: '',
@@ -269,6 +270,17 @@ const JobEditor = () => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="url">Job Posting URL</Label>
+                <Input
+                  id="url"
+                  value={job.url}
+                  onChange={(e) => handleFieldUpdate('url', e.target.value)}
+                  placeholder="https://company.com/careers/job-posting"
+                  type="url"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

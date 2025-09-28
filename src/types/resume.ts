@@ -136,6 +136,7 @@ export interface JobApplication {
   company: string;
   role: string;
   location?: string;
+  url?: string; // Job posting URL
   status: 'prospect' | 'applied' | 'interview' | 'offer' | 'rejected' | 'closed';
   statusDate?: string; // Date when status was last changed
   variantId?: string; // Resume variant used

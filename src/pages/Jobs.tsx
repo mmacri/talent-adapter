@@ -371,6 +371,7 @@ const Jobs = () => {
       'Company': job.company,
       'Role': job.role,
       'Location': job.location || '',
+      'URL': job.url || '',
       'Status': job.status,
       'Status Date': job.statusDate || '',
       'Applied Date': job.appliedOn || '',
@@ -411,6 +412,7 @@ const Jobs = () => {
       'Company': job.company,
       'Role': job.role,
       'Location': job.location || '',
+      'URL': job.url || '',
       'Status': job.status,
       'Status Date': job.statusDate || '',
       'Applied Date': job.appliedOn || '',
@@ -488,6 +490,7 @@ const Jobs = () => {
           company: row.Company || '',
           role: row.Role || '',
           location: row.Location || undefined,
+          url: row.URL || undefined,
           status: (['prospect', 'applied', 'interview', 'offer', 'rejected', 'closed'].includes(row.Status) 
             ? row.Status : 'prospect') as JobApplication['status'],
           statusDate: row['Status Date'] || undefined,
@@ -1196,6 +1199,7 @@ const Jobs = () => {
                           <TableRow>
                             <TableHead>Company</TableHead>
                             <TableHead>Role</TableHead>
+                            <TableHead>URL</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Applied On</TableHead>
                             <TableHead>Actions</TableHead>
@@ -1206,6 +1210,21 @@ const Jobs = () => {
                             <TableRow key={job.id}>
                               <TableCell className="font-medium">{job.company}</TableCell>
                               <TableCell>{job.role}</TableCell>
+                              <TableCell className="max-w-48 truncate">
+                                {job.url ? (
+                                  <a 
+                                    href={job.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:underline text-sm"
+                                    title={job.url}
+                                  >
+                                    {job.url}
+                                  </a>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                              </TableCell>
                               <TableCell>
                                 <Badge className={statusColors[job.status]}>{job.status}</Badge>
                               </TableCell>
